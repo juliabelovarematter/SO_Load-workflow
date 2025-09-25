@@ -2,7 +2,7 @@ import { Layout } from 'antd'
 import { Router, Route, Switch } from 'wouter'
 import { TopBar } from './components/Layout/TopBar'
 import { SideBar } from './components/Layout/SideBar'
-import { Dashboard } from './routes/dashboard'
+// import { Dashboard } from './routes/dashboard'
 import { Analytics } from './routes/analytics'
 import { Settings } from './routes/settings'
 import { SalesOrders } from './routes/sales-orders'
@@ -22,7 +22,7 @@ function App() {
       <Layout style={{ minHeight: '100vh' }}>
         <TopBar collapsed={collapsed} onCollapse={setCollapsed} />
         <Layout>
-          <SideBar collapsed={collapsed} onCollapse={setCollapsed} />
+          <SideBar collapsed={collapsed} />
           <Layout style={{ padding: '0', marginLeft: collapsed ? '80px' : '216px' }}>
             <Content
               style={{

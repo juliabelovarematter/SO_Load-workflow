@@ -8,10 +8,10 @@ const { Sider } = Layout
 
 interface SideBarProps {
   collapsed: boolean
-  onCollapse: (collapsed: boolean) => void
+  // onCollapse: (collapsed: boolean) => void
 }
 
-export const SideBar = ({ collapsed, onCollapse }: SideBarProps) => {
+export const SideBar = ({ collapsed }: SideBarProps) => {
   const [location] = useLocation()
   const [openKeys, setOpenKeys] = useState<string[]>([])
 
