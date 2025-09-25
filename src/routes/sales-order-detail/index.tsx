@@ -93,9 +93,16 @@ export const SalesOrderDetail = () => {
           materialsToUse = []
         }
       } else {
-        // For new SOs, start with empty materials array
-        console.log('No saved materials found, starting with empty array for new SO')
-        materialsToUse = []
+        // If no saved materials in localStorage, check if this is a new SO or existing SO
+        if (storedFormData) {
+          // This is a new SO created via modal - start with empty materials
+          materialsToUse = []
+          console.log('New SO detected, starting with empty materials')
+        } else {
+          // This is an existing SO clicked from table - use materials from generated data
+          materialsToUse = data.materials || []
+          console.log('Existing SO detected, using materials from generated data:', materialsToUse)
+        }
       }
       
       // Update data with saved materials (empty for new SOs)
