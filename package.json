@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "antd": "^5.27.3",
+    "dayjs": "^1.11.18",
+    "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "wouter": "^3.7.1"

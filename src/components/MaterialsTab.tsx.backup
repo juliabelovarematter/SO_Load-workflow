@@ -1,0 +1,1733 @@
+import React, { useState, useEffect, useRef } from 'react'
+import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown } from 'antd'
+import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+
+const { Option } = Select
+
+interface Material {
+  id: string
+  contractMaterial: string
+  netWeight: number
+  unitPrice: number | string
+  pricingUnit: 'lb' | 'NT' | 'kg' | 'MT' | 'ea'
+  estimatedTotal: number
+  isFormula: boolean
+  isEachMaterial?: boolean
+  selectedExchange?: string
+}
+
+interface AvailableMaterial {
+  id: string
+  name: string
+  availableWeight: number
+  unit: string
+  isEachMaterial?: boolean
+  details: {
+    loose: number
+    tagged: number
+    wip: number
+    fg: number
+  }
+}
+
+interface MaterialsTabProps {
+  onMaterialsChange?: (count: number) => void
+  savedMaterials?: Material[]
+  onSaveMaterials?: (materials: Material[]) => void
+}
+
+export const MaterialsTab = ({ onMaterialsChange, savedMaterials = [], onSaveMaterials }: MaterialsTabProps) => {
+  // Add CSS for table spacing
+  React.useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      .materials-table .ant-table-tbody > tr > td {
+        padding: 6px !important;
+      }
+      .materials-table .ant-table-thead > tr > th {
+        padding: 6px !important;
+      }
+    `
+    document.head.appendChild(style)
+    return () => document.head.removeChild(style)
+  }, [])
+  const [materials, setMaterials] = useState<Material[]>(savedMaterials)
+  const [weightMode, setWeightMode] = useState<'scale' | 'price'>('scale') // 'scale' = pounds, 'price' = pricing unit
+  const [expandedMaterials, setExpandedMaterials] = useState<Set<string>>(new Set())
+  const [hasChanges, setHasChanges] = useState(false)
+  const [originalMaterials, setOriginalMaterials] = useState<Material[]>(savedMaterials)
+  const [dropdownVisible, setDropdownVisible] = useState<{ [key: string]: boolean }>({})
+  const [dropdownPosition, setDropdownPosition] = useState<{ [key: string]: { top: number, left: number } }>({})
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
+  const previousValues = useRef<{ [key: string]: string }>({})
+  
+  // Available variables for formulas
+  const variables = [
+    { key: 'comex', label: 'COMEX', description: 'Copper Exchange' },
+    { key: 'lme', label: 'LME', description: 'London Metal Exchange' },
+    { key: 'shfe', label: 'SHFE', description: 'Shanghai Futures Exchange' },
+    { key: 'nymex', label: 'NYMEX', description: 'New York Mercantile Exchange' },
+    { key: 'spot', label: 'Spot', description: 'Spot Price' },
+    { key: 'premium', label: 'Premium', description: 'Premium Rate' },
+    { key: 'discount', label: 'Discount', description: 'Discount Rate' },
+    { key: 'base', label: 'Base', description: 'Base Price' }
+  ]
+
+  const [availableMaterials, setAvailableMaterials] = useState<AvailableMaterial[]>([
+    {
+      id: '101',
+      name: '101 - Aluminum Cans',
+      availableWeight: 1000000,
+      unit: 'lb',
+      details: {
+        loose: 917976.009,
+        tagged: 83112.807,
+        wip: 65608.487,
+        fg: 17504.320
+      }
+    },
+    {
+      id: '102',
+      name: '102 - Aluminum Sheet',
+      availableWeight: 750000,
+      unit: 'lb',
+      details: {
+        loose: 600000,
+        tagged: 100000,
+        wip: 40000,
+        fg: 10000
+      }
+    },
+    {
+      id: '103',
+      name: '103 - Al 6061',
+      availableWeight: 500000,
+      unit: 'lb',
+      details: {
+        loose: 400000,
+        tagged: 70000,
+        wip: 25000,
+        fg: 5000
+      }
+    },
+    {
+      id: '104',
+      name: '104 - Al 6063',
+      availableWeight: 450000,
+      unit: 'lb',
+      details: {
+        loose: 350000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '105',
+      name: '105 - Aluminum Wire',
+      availableWeight: 300000,
+      unit: 'lb',
+      details: {
+        loose: 200000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '201',
+      name: '201 - Steel Scrap',
+      availableWeight: 2000000,
+      unit: 'lb',
+      details: {
+        loose: 1500000,
+        tagged: 300000,
+        wip: 150000,
+        fg: 50000
+      }
+    },
+    {
+      id: '202',
+      name: '202 - Steel Beams',
+      availableWeight: 800000,
+      unit: 'lb',
+      details: {
+        loose: 600000,
+        tagged: 120000,
+        wip: 60000,
+        fg: 20000
+      }
+    },
+    {
+      id: '203',
+      name: '203 - Steel Pipe',
+      availableWeight: 600000,
+      unit: 'lb',
+      details: {
+        loose: 450000,
+        tagged: 90000,
+        wip: 45000,
+        fg: 15000
+      }
+    },
+    {
+      id: '204',
+      name: '204 - Steel Wire',
+      availableWeight: 400000,
+      unit: 'lb',
+      details: {
+        loose: 300000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '205',
+      name: '205 - Stainless Steel',
+      availableWeight: 350000,
+      unit: 'lb',
+      details: {
+        loose: 250000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '301',
+      name: '301 - Copper Wire',
+      availableWeight: 500000,
+      unit: 'lb',
+      details: {
+        loose: 400000,
+        tagged: 80000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '302',
+      name: '302 - Copper Pipe',
+      availableWeight: 300000,
+      unit: 'lb',
+      details: {
+        loose: 200000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '303',
+      name: '303 - Copper Sheet',
+      availableWeight: 250000,
+      unit: 'lb',
+      details: {
+        loose: 150000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '304',
+      name: '304 - Copper Tubing',
+      availableWeight: 200000,
+      unit: 'lb',
+      details: {
+        loose: 100000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '305',
+      name: '305 - Copper Scrap',
+      availableWeight: 400000,
+      unit: 'lb',
+      details: {
+        loose: 300000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '401',
+      name: '401 - Brass Fittings',
+      availableWeight: 150000,
+      unit: 'lb',
+      details: {
+        loose: 100000,
+        tagged: 30000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '402',
+      name: '402 - Brass Pipe',
+      availableWeight: 120000,
+      unit: 'lb',
+      details: {
+        loose: 80000,
+        tagged: 25000,
+        wip: 10000,
+        fg: 5000
+      }
+    },
+    {
+      id: '403',
+      name: '403 - Brass Wire',
+      availableWeight: 100000,
+      unit: 'lb',
+      details: {
+        loose: 60000,
+        tagged: 25000,
+        wip: 10000,
+        fg: 5000
+      }
+    },
+    {
+      id: '404',
+      name: '404 - Brass Sheet',
+      availableWeight: 80000,
+      unit: 'lb',
+      details: {
+        loose: 50000,
+        tagged: 20000,
+        wip: 8000,
+        fg: 2000
+      }
+    },
+    {
+      id: '405',
+      name: '405 - Brass Scrap',
+      availableWeight: 200000,
+      unit: 'lb',
+      details: {
+        loose: 150000,
+        tagged: 30000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '501',
+      name: '501 - Lead Battery',
+      availableWeight: 300000,
+      unit: 'lb',
+      details: {
+        loose: 200000,
+        tagged: 60000,
+        wip: 30000,
+        fg: 10000
+      }
+    },
+    {
+      id: '502',
+      name: '502 - Lead Pipe',
+      availableWeight: 180000,
+      unit: 'lb',
+      details: {
+        loose: 120000,
+        tagged: 40000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '503',
+      name: '503 - Lead Sheet',
+      availableWeight: 150000,
+      unit: 'lb',
+      details: {
+        loose: 100000,
+        tagged: 30000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '504',
+      name: '504 - Lead Scrap',
+      availableWeight: 250000,
+      unit: 'lb',
+      details: {
+        loose: 180000,
+        tagged: 45000,
+        wip: 20000,
+        fg: 5000
+      }
+    },
+    {
+      id: '601',
+      name: '601 - Zinc Die Cast',
+      availableWeight: 120000,
+      unit: 'lb',
+      details: {
+        loose: 80000,
+        tagged: 25000,
+        wip: 12000,
+        fg: 3000
+      }
+    },
+    {
+      id: '602',
+      name: '602 - Zinc Sheet',
+      availableWeight: 100000,
+      unit: 'lb',
+      details: {
+        loose: 60000,
+        tagged: 25000,
+        wip: 10000,
+        fg: 5000
+      }
+    },
+    {
+      id: '603',
+      name: '603 - Zinc Scrap',
+      availableWeight: 180000,
+      unit: 'lb',
+      details: {
+        loose: 120000,
+        tagged: 40000,
+        wip: 15000,
+        fg: 5000
+      }
+    },
+    {
+      id: '701',
+      name: '701 - Nickel Alloy',
+      availableWeight: 80000,
+      unit: 'lb',
+      details: {
+        loose: 50000,
+        tagged: 20000,
+        wip: 8000,
+        fg: 2000
+      }
+    },
+    {
+      id: '702',
+      name: '702 - Nickel Wire',
+      availableWeight: 60000,
+      unit: 'lb',
+      details: {
+        loose: 35000,
+        tagged: 15000,
+        wip: 8000,
+        fg: 2000
+      }
+    },
+    {
+      id: '703',
+      name: '703 - Nickel Scrap',
+      availableWeight: 100000,
+      unit: 'lb',
+      details: {
+        loose: 70000,
+        tagged: 20000,
+        wip: 8000,
+        fg: 2000
+      }
+    },
+    {
+      id: '801',
+      name: '801 - Freight pick under 10 Miles',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 500,
+        tagged: 300,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '802',
+      name: '802 - Online Review',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 400,
+        tagged: 400,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '803',
+      name: '803 - First Time Customer',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 300,
+        tagged: 500,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '804',
+      name: '804 - Freight',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 600,
+        tagged: 250,
+        wip: 100,
+        fg: 50
+      }
+    },
+    {
+      id: '805',
+      name: '805 - Landfill Fee',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 200,
+        tagged: 600,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '806',
+      name: '806 - Tipping Fee',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 150,
+        tagged: 650,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '807',
+      name: '807 - Dirt',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 100,
+        tagged: 700,
+        wip: 150,
+        fg: 50
+      }
+    },
+    {
+      id: '808',
+      name: '808 - HVAC 1',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 250,
+        tagged: 500,
+        wip: 200,
+        fg: 50
+      }
+    },
+    {
+      id: '809',
+      name: '809 - EACH',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 300,
+        tagged: 400,
+        wip: 200,
+        fg: 100
+      }
+    },
+    {
+      id: '810',
+      name: '810 - EA MAT 2',
+      availableWeight: 1000,
+      unit: 'ea',
+      isEachMaterial: true,
+      details: {
+        loose: 200,
+        tagged: 500,
+        wip: 200,
+        fg: 100
+      }
+    }
+  ])
+
+  const addMaterial = () => {
+    const newMaterial: Material = {
+      id: Date.now().toString(),
+      contractMaterial: '',
+      netWeight: 0,
+      unitPrice: 0,
+      pricingUnit: 'lb',
+      estimatedTotal: 0,
+      isFormula: false,
+      isEachMaterial: false,
+      selectedExchange: 'COMEX'
+    }
+    setMaterials([...materials, newMaterial])
+    setHasChanges(true)
+    // Update badge count immediately when material is added
+    onMaterialsChange?.([...materials, newMaterial].length)
+  }
+
+  // Sync with saved materials when they change
+  useEffect(() => {
+    setMaterials(savedMaterials)
+    setOriginalMaterials(savedMaterials)
+    setHasChanges(false)
+  }, [savedMaterials])
+
+  // Recalculate all materials when weight mode changes
+  useEffect(() => {
+    setMaterials(materials.map(m => {
+      if (typeof m.unitPrice === 'number' && m.netWeight > 0) {
+        let weightInPricingUnit = m.netWeight
+        
+        // For "ea" materials, no conversion needed
+        if (m.pricingUnit === 'ea') {
+          weightInPricingUnit = m.netWeight
+        }
+        // For weight materials, apply conversion based on weight mode
+        else if (weightMode === 'scale' && m.pricingUnit !== 'lb') {
+          switch (m.pricingUnit) {
+            case 'NT':
+              weightInPricingUnit = m.netWeight / 2000
+              break
+            case 'kg':
+              weightInPricingUnit = m.netWeight / 2.20462
+              break
+            case 'MT':
+              weightInPricingUnit = m.netWeight / 2204.62
+              break
+            default:
+              weightInPricingUnit = m.netWeight
+          }
+        }
+        
+        return { ...m, estimatedTotal: weightInPricingUnit * m.unitPrice }
+      }
+      return m
+    }))
+  }, [weightMode])
+
+  const removeMaterial = (id: string) => {
+    setMaterials(materials.filter(m => m.id !== id))
+    setHasChanges(true)
+    // Update badge count immediately when material is deleted
+    onMaterialsChange?.(materials.filter(m => m.id !== id).length)
+  }
+
+  const toggleMaterialExpansion = (materialId: string) => {
+    setExpandedMaterials(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(materialId)) {
+        newSet.delete(materialId)
+      } else {
+        newSet.add(materialId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSave = () => {
+    setOriginalMaterials([...materials])
+    setHasChanges(false)
+    onMaterialsChange?.(materials.length)
+    onSaveMaterials?.(materials)
+    console.log('Materials saved:', materials)
+  }
+
+  const handleDiscard = () => {
+    setMaterials([...originalMaterials])
+    setHasChanges(false)
+  }
+
+  const updateMaterial = (id: string, field: keyof Material, value: any) => {
+    console.log('updateMaterial called:', { id, field, value })
+    setMaterials(materials.map(m => {
+      if (m.id === id) {
+        const updated = { ...m, [field]: value }
+        console.log('Updated material:', updated)
+        
+        // Auto-expand material when contract material is selected
+        if (field === 'contractMaterial' && value) {
+          setExpandedMaterials(prev => new Set(prev).add(id))
+          
+          // Check if this is an "each" material and set defaults
+          const selectedMaterial = availableMaterials.find(am => am.name === value)
+          if (selectedMaterial?.isEachMaterial) {
+            updated.isEachMaterial = true
+            updated.pricingUnit = 'ea'
+          } else {
+            updated.isEachMaterial = false
+            if (updated.pricingUnit === 'ea') {
+              updated.pricingUnit = 'lb'
+            }
+          }
+        }
+        
+        // Calculate estimated total with proper unit conversion
+        if (field === 'netWeight' || field === 'unitPrice' || field === 'pricingUnit') {
+          const netWeight = field === 'netWeight' ? value : m.netWeight
+          const unitPrice = field === 'unitPrice' ? value : m.unitPrice
+          const pricingUnit = field === 'pricingUnit' ? value : m.pricingUnit
+          
+          if (typeof unitPrice === 'number' && netWeight > 0) {
+            // Convert weight to pricing unit for calculation
+            let weightInPricingUnit = netWeight
+            
+            // For "ea" materials, no conversion needed
+            if (pricingUnit === 'ea') {
+              weightInPricingUnit = netWeight
+            }
+            // If weight mode is 'scale' (pounds) but pricing unit is different, convert
+            else if (weightMode === 'scale' && pricingUnit !== 'lb') {
+              switch (pricingUnit) {
+                case 'NT': // Net Ton = 2000 lbs
+                  weightInPricingUnit = netWeight / 2000
+                  break
+                case 'kg': // Kilogram = 2.20462 lbs
+                  weightInPricingUnit = netWeight / 2.20462
+                  break
+                case 'MT': // Metric Ton = 2204.62 lbs
+                  weightInPricingUnit = netWeight / 2204.62
+                  break
+                default:
+                  weightInPricingUnit = netWeight
+              }
+            }
+            // If weight mode is 'price' (pricing unit), no conversion needed
+            else if (weightMode === 'price') {
+              weightInPricingUnit = netWeight
+            }
+            
+            updated.estimatedTotal = weightInPricingUnit * unitPrice
+          } else {
+            updated.estimatedTotal = 0
+          }
+        }
+        
+        return updated
+      }
+      return m
+    }))
+    
+    // Track changes
+    setHasChanges(true)
+  }
+
+  // Add click outside handler to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+      if (!target.closest('.formula-input-container')) {
+        setDropdownVisible({})
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const handleFormulaInput = (materialId: string, value: string, cursorPosition: number) => {
+    const input = inputRefs.current[materialId]
+    if (!input) return
+
+    // Check if user just typed $ (at cursor position)
+    const previousValue = previousValues.current[materialId] || ''
+    
+    // Detect if $ was just typed by comparing lengths and checking the character at cursor-1
+    if (value.length > previousValue.length && cursorPosition > 0) {
+      const justTypedChar = value[cursorPosition - 1]
+      console.log('Just typed char:', justTypedChar, 'at position:', cursorPosition - 1)
+      
+      if (justTypedChar === '$') {
+        console.log('$ detected, showing dropdown')
+        const rect = input.getBoundingClientRect()
+        setDropdownPosition({
+          ...dropdownPosition,
+          [materialId]: {
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX
+          }
+        })
+        setDropdownVisible({
+          ...dropdownVisible,
+          [materialId]: true
+        })
+      } else {
+        setDropdownVisible({
+          ...dropdownVisible,
+          [materialId]: false
+        })
+      }
+    } else {
+      setDropdownVisible({
+        ...dropdownVisible,
+        [materialId]: false
+      })
+    }
+
+    // Store current value as previous for next comparison
+    previousValues.current[materialId] = value
+
+    // Update the material's unit price
+    updateMaterial(materialId, 'unitPrice', value)
+  }
+
+  const insertVariable = (materialId: string, variable: string, currentValue: string) => {
+    console.log('insertVariable called:', { materialId, variable, currentValue })
+    
+    const input = inputRefs.current[materialId]
+    if (!input) {
+      console.log('Input ref not found for:', materialId)
+      return
+    }
+
+    const cursorPos = input.selectionStart || 0
+    console.log('Current cursor position:', cursorPos)
+    
+    // Find the last $ before cursor and replace it with $variable
+    const lastDollarIndex = currentValue.lastIndexOf('$', cursorPos - 1)
+    console.log('Last $ index:', lastDollarIndex)
+    
+    if (lastDollarIndex !== -1) {
+      const beforeDollar = currentValue.substring(0, lastDollarIndex)
+      const afterCursor = currentValue.substring(cursorPos)
+      const newValue = beforeDollar + `$${variable}` + afterCursor
+      
+      console.log('New value will be:', newValue)
+      
+      // Update the material's unit price
+      updateMaterial(materialId, 'unitPrice', newValue)
+      
+      // Update previous value for next comparison
+      previousValues.current[materialId] = newValue
+      
+      // Set cursor position after the inserted variable
+      setTimeout(() => {
+        if (inputRefs.current[materialId]) {
+          const newCursorPos = lastDollarIndex + variable.length + 1
+          inputRefs.current[materialId]!.setSelectionRange(newCursorPos, newCursorPos)
+          console.log('Cursor set to position:', newCursorPos)
+        }
+      }, 0)
+    } else {
+      console.log('No $ found before cursor')
+    }
+
+    setDropdownVisible({
+      ...dropdownVisible,
+      [materialId]: false
+    })
+  }
+
+  const togglePriceMode = (id: string) => {
+    setMaterials(materials.map(m => {
+      if (m.id === id) {
+        const updated = { ...m, isFormula: !m.isFormula, unitPrice: m.isFormula ? 0 : 'COMEX * 0.6' }
+        
+        // Set default exchange when switching to formula mode
+        if (!m.isFormula && !updated.selectedExchange) {
+          updated.selectedExchange = 'COMEX'
+        }
+        
+        // Recalculate when switching price mode
+        if (typeof updated.unitPrice === 'number' && updated.netWeight > 0) {
+          let weightInPricingUnit = updated.netWeight
+          
+          // For "ea" materials, no conversion needed
+          if (updated.pricingUnit === 'ea') {
+            weightInPricingUnit = updated.netWeight
+          }
+          // For weight materials, apply conversion based on weight mode
+          else if (weightMode === 'scale' && updated.pricingUnit !== 'lb') {
+            switch (updated.pricingUnit) {
+              case 'NT':
+                weightInPricingUnit = updated.netWeight / 2000
+                break
+              case 'kg':
+                weightInPricingUnit = updated.netWeight / 2.20462
+                break
+              case 'MT':
+                weightInPricingUnit = updated.netWeight / 2204.62
+                break
+              default:
+                weightInPricingUnit = updated.netWeight
+            }
+          }
+          
+          updated.estimatedTotal = weightInPricingUnit * updated.unitPrice
+        } else {
+          updated.estimatedTotal = 0
+        }
+        
+        return updated
+      }
+      return m
+    }))
+  }
+
+  const columns = [
+            {
+              title: 'Contract Materials',
+              dataIndex: 'contractMaterial',
+              key: 'contractMaterial',
+              width: 200,
+              render: (value: string, record: Material) => (
+                <Select
+                  value={value}
+                  onChange={(val) => updateMaterial(record.id, 'contractMaterial', val)}
+                  placeholder="Select material"
+                  style={{ width: '100%', height: '40px' }}
+                  showSearch
+                  filterOption={(input, option) =>
+                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                  }
+                  optionFilterProp="label"
+                >
+                  {availableMaterials.map(mat => (
+                    <Option key={mat.id} value={mat.name} label={mat.name}>
+                      {mat.name}
+                    </Option>
+                  ))}
+                </Select>
+              ),
+            },
+            {
+              title: 'Net Weight',
+              dataIndex: 'netWeight',
+              key: 'netWeight',
+              width: 120,
+              align: 'right',
+              render: (value: number, record: Material) => (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    height: '40px',
+                    padding: '0 8px',
+                    border: '1px solid #d1d5db',
+                    borderRadius: '6px',
+                    background: '#fff',
+                    minWidth: '100px',
+                    justifyContent: 'space-between'
+                  }}>
+                    <span style={{ color: '#6b7280', fontSize: '12px' }}>N</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                      <InputNumber
+                        value={value}
+                        onChange={(val) => updateMaterial(record.id, 'netWeight', val || 0)}
+                        style={{ 
+                          width: '50px', 
+                          textAlign: 'right',
+                          border: 'none',
+                          background: 'transparent',
+                          padding: 0,
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          color: '#1f2937'
+                        }}
+                        min={0}
+                        controls={false}
+                      />
+                      <span style={{ color: '#6b7280', fontSize: '12px' }}>
+                        {record.isEachMaterial ? 'ea' : (weightMode === 'scale' ? 'lb' : record.pricingUnit)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ),
+            },
+    {
+      title: 'Unit Price',
+      dataIndex: 'unitPrice',
+      key: 'unitPrice',
+      width: 150,
+      align: 'right',
+      render: (value: number | string, record: Material) => (
+        <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            height: '40px',
+            padding: '0 8px',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            background: '#fff',
+            minWidth: '120px',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              overflow: 'hidden',
+              height: '24px',
+              width: '48px'
+            }}>
+              <div
+                onClick={() => record.isFormula && togglePriceMode(record.id)}
+                style={{
+                  flex: 1,
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: record.isFormula ? '#f8f9fa' : '#e3f2fd',
+                  color: record.isFormula ? '#6b7280' : '#1976d2',
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  cursor: record.isFormula ? 'pointer' : 'default',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                $
+              </div>
+              <div
+                onClick={() => !record.isFormula && togglePriceMode(record.id)}
+                style={{
+                  flex: 1,
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: record.isFormula ? '#e3f2fd' : '#f8f9fa',
+                  color: record.isFormula ? '#1976d2' : '#6b7280',
+                  fontSize: '10px',
+                  fontWeight: '600',
+                  cursor: record.isFormula ? 'default' : 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                fx
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flex: 1 }}>
+              {record.isFormula ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '2px', paddingRight: '6px' }}>
+                  <div style={{ position: 'relative' }} className="formula-input-container">
+                    <Input
+                      ref={(el) => inputRefs.current[record.id] = el}
+                      value={record.unitPrice as string || ''}
+                      onChange={(e) => {
+                        const cursorPos = e.target.selectionStart || 0
+                        console.log('Input change:', e.target.value, 'cursor:', cursorPos)
+                        handleFormulaInput(record.id, e.target.value, cursorPos)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === '$' || (e.shiftKey && e.key === '4')) {
+                          console.log('$ key pressed')
+                          // Show dropdown immediately
+                          const rect = e.currentTarget.getBoundingClientRect()
+                          setDropdownPosition({
+                            ...dropdownPosition,
+                            [record.id]: {
+                              top: rect.bottom + window.scrollY,
+                              left: rect.left + window.scrollX
+                            }
+                          })
+                          setDropdownVisible({
+                            ...dropdownVisible,
+                            [record.id]: true
+                          })
+                        }
+                      }}
+                      placeholder="1.3*$comex + 12 - 0.3"
+                      style={{ 
+                        height: '40px',
+                        border: 'none',
+                        borderRadius: '6px',
+                        background: 'transparent',
+                        fontSize: '12px',
+                        color: '#1f2937',
+                        padding: '0 8px',
+                        boxShadow: 'none'
+                      }}
+                    />
+                    {dropdownVisible[record.id] && (
+                      <div
+                        style={{
+                          position: 'absolute',
+                          top: '100%',
+                          left: 0,
+                          right: 0,
+                          background: '#fff',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '6px',
+                          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+                          zIndex: 1000,
+                          maxHeight: '200px',
+                          overflowY: 'auto'
+                        }}
+                      >
+                        {variables.map(variable => (
+                          <div
+                            key={variable.key}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              e.stopPropagation()
+                              console.log('Variable clicked:', variable.key)
+                              // Simple test - just append the variable
+                              const currentValue = record.unitPrice as string || ''
+                              const newValue = currentValue + `$${variable.key}`
+                              console.log('Simple test - new value:', newValue)
+                              updateMaterial(record.id, 'unitPrice', newValue)
+                              setDropdownVisible({
+                                ...dropdownVisible,
+                                [record.id]: false
+                              })
+                            }}
+                            style={{
+                              padding: '8px 12px',
+                              cursor: 'pointer',
+                              borderBottom: '1px solid #f0f0f0',
+                              fontSize: '12px'
+                            }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.background = '#f5f5f5'
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.background = '#fff'
+                            }}
+                          >
+                            <div style={{ fontWeight: '500', color: '#1f2937' }}>
+                              ${variable.key}
+                            </div>
+                            <div style={{ fontSize: '10px', color: '#6b7280' }}>
+                              {variable.description}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <InputNumber
+                  value={value as number}
+                  onChange={(val) => updateMaterial(record.id, 'unitPrice', val || 0)}
+                  style={{ 
+                    width: '60px', 
+                    textAlign: 'right',
+                    border: 'none',
+                    background: 'transparent',
+                    padding: '0 6px 0 0',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    color: '#1f2937'
+                  }}
+                  min={0}
+                  step={0.01}
+                  controls={false}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Pricing Unit',
+      dataIndex: 'pricingUnit',
+      key: 'pricingUnit',
+      width: 100,
+      render: (value: string, record: Material) => (
+        <Select
+          value={value}
+          onChange={(val) => updateMaterial(record.id, 'pricingUnit', val)}
+          style={{ width: '100%', height: '40px' }}
+          disabled={record.isEachMaterial}
+        >
+          <Option value="lb">lb</Option>
+          <Option value="NT">NT</Option>
+          <Option value="kg">kg</Option>
+          <Option value="MT">MT</Option>
+          <Option value="ea">ea</Option>
+        </Select>
+      ),
+    },
+    {
+      title: 'Estimated Total Price',
+      dataIndex: 'estimatedTotal',
+      key: 'estimatedTotal',
+      width: 150,
+      align: 'right',
+      render: (value: number) => (
+        <span style={{ fontWeight: '500', textAlign: 'right', display: 'block' }}>
+          ${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+        </span>
+      ),
+    },
+    {
+      title: '',
+      key: 'actions',
+      width: 50,
+      render: (_, record: Material) => (
+        <Popconfirm
+          title="Delete Material"
+          description="Are you sure you want to delete this material?"
+          onConfirm={() => removeMaterial(record.id)}
+          okText="Yes, Delete"
+          cancelText="Cancel"
+          okButtonProps={{ danger: true }}
+        >
+          <Button
+            type="text"
+            danger
+            icon={<Trash2 size={16} />}
+          />
+        </Popconfirm>
+      ),
+    },
+  ]
+
+          const totalWeight = materials.reduce((sum, m) => sum + m.netWeight, 0)
+          const totalPrice = materials.reduce((sum, m) => sum + m.estimatedTotal, 0)
+          
+          // Calculate separate totals for each materials and weight materials
+          const eachMaterials = materials.filter(m => m.isEachMaterial)
+          const weightMaterials = materials.filter(m => !m.isEachMaterial)
+          
+          const totalEachCount = eachMaterials.reduce((sum, m) => sum + m.netWeight, 0)
+          const totalWeightInPounds = weightMaterials.reduce((sum, m) => {
+            // Convert to pounds for weight materials
+            let weightInPounds = m.netWeight
+            if (weightMode === 'price' && m.pricingUnit !== 'lb') {
+              switch (m.pricingUnit) {
+                case 'NT':
+                  weightInPounds = m.netWeight * 2000
+                  break
+                case 'kg':
+                  weightInPounds = m.netWeight * 2.20462
+                  break
+                case 'MT':
+                  weightInPounds = m.netWeight * 2204.62
+                  break
+                default:
+                  weightInPounds = m.netWeight
+              }
+            }
+            return sum + weightInPounds
+          }, 0)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header Section */}
+      <div style={{ marginBottom: '16px' }}>
+        <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>
+          Sales Order Materials
+        </h3>
+        
+        {/* Weight Mode Toggle */}
+        {materials.length > 0 && materials.some(m => !m.isEachMaterial) && (
+          <div style={{ 
+            display: 'flex', 
+            background: '#f3f4f6', 
+            borderRadius: '8px', 
+            padding: '2px',
+            border: '1px solid #e5e7eb',
+            width: 'fit-content',
+            marginBottom: '16px'
+          }}>
+            <button
+              onClick={() => setWeightMode('scale')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: weightMode === 'scale' ? '#3b82f6' : 'transparent',
+                color: weightMode === 'scale' ? '#fff' : '#374151',
+                fontWeight: '500',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Scale Unit Weight
+            </button>
+            <button
+              onClick={() => setWeightMode('price')}
+              style={{
+                padding: '8px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: weightMode === 'price' ? '#3b82f6' : 'transparent',
+                color: weightMode === 'price' ? '#fff' : '#374151',
+                fontWeight: '500',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              Price Unit Weight
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Two-Container Layout */}
+      <div style={{ display: 'flex', gap: '24px', flex: 1 }}>
+        {/* Left Container - Materials Table */}
+        <div style={{ flex: 1 }}>
+          {materials.length === 0 ? (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 20px',
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid rgba(7, 20, 41, 0.1)'
+            }}>
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ 
+                  width: '64px', 
+                  height: '64px', 
+                  background: '#f3f4f6', 
+                  borderRadius: '50%', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  margin: '0 auto 16px'
+                }}>
+                  <Plus size={24} color="#6b7280" />
+                </div>
+                <h3 style={{ margin: '0 0 8px', color: '#374151' }}>No materials added yet</h3>
+                <p style={{ margin: '0 0 24px', color: '#6b7280' }}>
+                  Add materials to this sales order to get started
+                </p>
+              </div>
+              <Button 
+                type="primary" 
+                icon={<Plus size={16} />}
+                onClick={addMaterial}
+                style={{ background: '#3b82f6', border: 'none' }}
+              >
+                Add Material
+              </Button>
+            </div>
+          ) : (
+            <div style={{ 
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid rgba(7, 20, 41, 0.1)',
+              overflow: 'hidden'
+            }}>
+              <Table
+                columns={columns}
+                dataSource={materials}
+                pagination={false}
+                size="small"
+                style={{ 
+                  '& .ant-table-thead > tr > th': {
+                    padding: '6px',
+                    background: '#f8f9fa',
+                    borderBottom: '1px solid #e5e7eb',
+                    fontSize: '12px',
+                    fontWeight: '600',
+                    color: '#374151'
+                  },
+                  '& .ant-table-tbody > tr > td': {
+                    padding: '6px',
+                    borderBottom: '1px solid #f3f4f6',
+                    fontSize: '12px'
+                  }
+                }}
+              >
+                {materials.length > 0 && (
+                  <Table.Summary fixed>
+                    <Table.Summary.Row>
+                      <Table.Summary.Cell index={0} colSpan={1}>
+                        <div style={{ fontWeight: '600', color: '#1f2937' }}>
+                          Total
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={1}>
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          N {totalWeightInPounds.toLocaleString()} lb
+                          {totalEachCount > 0 && (
+                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                              N {totalEachCount.toLocaleString()} ea
+                            </div>
+                          )}
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={2}>
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          —
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={3}>
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          —
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={4}>
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
+                        </div>
+                      </Table.Summary.Cell>
+                      <Table.Summary.Cell index={5}>
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          —
+                        </div>
+                      </Table.Summary.Cell>
+                    </Table.Summary.Row>
+                  </Table.Summary>
+                )}
+              </Table>
+              
+              {/* Add Material Button */}
+              <div style={{ 
+                padding: '12px 16px', 
+                background: '#f8f9fa', 
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                justifyContent: 'flex-start',
+                alignItems: 'center'
+              }}>
+                <Button 
+                  type="default"
+                  icon={<Plus size={16} />}
+                  onClick={addMaterial}
+                  style={{ 
+                    height: '40px',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    background: '#fff',
+                    color: '#374151',
+                    fontWeight: '500'
+                  }}
+                >
+                  Add Material
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Save/Discard Buttons */}
+          {materials.length > 0 && hasChanges && (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'flex-end', 
+              gap: '12px', 
+              marginTop: '16px',
+              padding: '16px',
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid rgba(7, 20, 41, 0.1)'
+            }}>
+              <Button onClick={handleDiscard} type="default">
+                Discard
+              </Button>
+              <Button onClick={handleSave} type="primary" style={{ background: '#3b82f6', border: 'none' }}>
+                Save updates
+              </Button>
+            </div>
+          )}
+        </div>
+
+        {/* Right Container - Available Inventory */}
+        {materials.length > 0 && (
+          <div style={{ width: '280px' }}>
+            <div style={{ 
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid rgba(7, 20, 41, 0.1)',
+              padding: '16px'
+            }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                Available at Facility
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {materials.map((material, index) => {
+                  const availableMaterial = availableMaterials.find(am => am.name === material.contractMaterial)
+                  if (!availableMaterial) return null
+                  
+                  return (
+                    <div key={index} style={{ 
+                      padding: '12px',
+                      background: '#f8f9fa',
+                      borderRadius: '6px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                          {material.contractMaterial}
+                        </span>
+                        <button
+                          onClick={() => toggleMaterialExpansion(index)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            color: '#6b7280'
+                          }}
+                        >
+                          {expandedMaterials[index] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </button>
+                      </div>
+                      
+                      {expandedMaterials[index] && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>Raw Material:</span>
+                            <span>{availableMaterial.details.raw.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>WIP:</span>
+                            <span>{availableMaterial.details.wip.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>Finished Goods:</span>
+                            <span>{availableMaterial.details.fg.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+        {materials.length === 0 ? (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: '60px 20px',
+            background: '#fff',
+            borderRadius: '8px',
+            border: '1px solid rgba(7, 20, 41, 0.1)'
+          }}>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ 
+                width: '64px', 
+                height: '64px', 
+                background: '#f3f4f6', 
+                borderRadius: '50%', 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                margin: '0 auto 16px'
+              }}>
+                <Plus size={24} color="#6b7280" />
+              </div>
+              <h3 style={{ margin: '0 0 8px', color: '#374151' }}>No materials added yet</h3>
+              <p style={{ margin: '0 0 24px', color: '#6b7280' }}>
+                Add materials to this sales order to get started
+              </p>
+            </div>
+            <Button 
+              type="primary" 
+              icon={<Plus size={16} />}
+              onClick={addMaterial}
+              style={{ background: '#3b82f6', border: 'none' }}
+            >
+              Add Material
+            </Button>
+          </div>
+        ) : (
+          <div style={{ 
+            background: '#fff',
+            borderRadius: '8px',
+            border: '1px solid rgba(7, 20, 41, 0.1)',
+            overflow: 'hidden'
+          }}>
+            <Table
+              columns={columns}
+              dataSource={materials}
+              pagination={false}
+              size="small"
+              style={{ marginBottom: 0 }}
+              className="materials-table"
+              summary={() => (
+                <Table.Summary fixed>
+                  <Table.Summary.Row>
+                    <Table.Summary.Cell index={0} colSpan={1}>
+                      <div style={{ fontWeight: '500', color: '#374151' }}>
+                        {materials.length} Materials
+                      </div>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={1}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                        {totalWeightInPounds > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: '#6b7280', fontSize: '12px' }}>N</span>
+                            <span style={{ fontWeight: '500', color: '#374151' }}>
+                              {totalWeightInPounds.toLocaleString()}
+                            </span>
+                            <span style={{ color: '#6b7280', fontSize: '12px' }}>lb</span>
+                          </div>
+                        )}
+                        {totalEachCount > 0 && (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                            <span style={{ color: '#6b7280', fontSize: '12px' }}>N</span>
+                            <span style={{ fontWeight: '500', color: '#374151' }}>
+                              {totalEachCount.toLocaleString()}
+                            </span>
+                            <span style={{ color: '#6b7280', fontSize: '12px' }}>ea</span>
+                          </div>
+                        )}
+                      </div>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={2}>
+                      <div style={{ fontWeight: '500', color: '#374151' }}>
+                      </div>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={3}>
+                      <div style={{ fontWeight: '500', color: '#374151' }}>
+                      </div>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={4}>
+                      <div style={{ fontWeight: '600', color: '#1f2937', textAlign: 'right' }}>
+                        ${totalPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </div>
+                    </Table.Summary.Cell>
+                    <Table.Summary.Cell index={5}>
+                      <div style={{ fontWeight: '500', color: '#374151' }}>
+                      </div>
+                    </Table.Summary.Cell>
+                  </Table.Summary.Row>
+                </Table.Summary>
+              )}
+            />
+            
+            {/* Add Material Button */}
+            <div style={{ 
+              padding: '12px 16px', 
+              background: '#f8f9fa', 
+              borderTop: '1px solid #e5e7eb',
+              display: 'flex',
+              justifyContent: 'flex-start',
+              alignItems: 'center'
+            }}>
+              <Button 
+                type="default"
+                icon={<Plus size={16} />}
+                onClick={addMaterial}
+                style={{ 
+                  height: '40px',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  background: '#fff',
+                  color: '#374151',
+                  fontWeight: '500'
+                }}
+              >
+                Add Material
+              </Button>
+            </div>
+          </div>
+        )}
+        
+        {/* Save/Discard Buttons */}
+        {materials.length > 0 && hasChanges && (
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end', 
+            gap: '12px', 
+            marginTop: '16px',
+            padding: '16px',
+            background: '#fff',
+            borderRadius: '8px',
+            border: '1px solid rgba(7, 20, 41, 0.1)'
+          }}>
+            <Button onClick={handleDiscard} type="default">
+              Discard
+            </Button>
+            <Button onClick={handleSave} type="primary" style={{ background: '#3b82f6', border: 'none' }}>
+              Save updates
+            </Button>
+          </div>
+        )}
+
+        {/* Right Container - Available Inventory */}
+        {materials.length > 0 && (
+          <div style={{ width: '280px' }}>
+            <div style={{ 
+              background: '#fff',
+              borderRadius: '8px',
+              border: '1px solid rgba(7, 20, 41, 0.1)',
+              padding: '16px'
+            }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: '600', color: '#1f2937' }}>
+                Available at Facility
+              </h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {materials.map((material, index) => {
+                  const availableMaterial = availableMaterials.find(am => am.name === material.contractMaterial)
+                  if (!availableMaterial) return null
+                  
+                  return (
+                    <div key={index} style={{ 
+                      padding: '12px',
+                      background: '#f8f9fa',
+                      borderRadius: '6px',
+                      border: '1px solid #e5e7eb'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '500', color: '#1f2937' }}>
+                          {material.contractMaterial}
+                        </span>
+                        <button
+                          onClick={() => toggleMaterialExpansion(index)}
+                          style={{
+                            background: 'none',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: '4px',
+                            borderRadius: '4px',
+                            color: '#6b7280'
+                          }}
+                        >
+                          {expandedMaterials[index] ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </button>
+                      </div>
+                      
+                      {expandedMaterials[index] && (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>Raw Material:</span>
+                            <span>{availableMaterial.details.raw.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>WIP:</span>
+                            <span>{availableMaterial.details.wip.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#6b7280' }}>
+                            <span>Finished Goods:</span>
+                            <span>{availableMaterial.details.fg.toLocaleString()} {availableMaterial.unit}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

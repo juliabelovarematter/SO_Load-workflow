@@ -1,0 +1,173 @@
+// Shared mock data generation utilities
+
+export const facilities = [
+  'ReMatter Headquarters', 'ReMatter Ohio', 'ReMatter San Diego', 
+  'ReMatter Los Angeles', 'ReMatter Texas', 'ReMatter Newport Beach',
+  'ReMatter SantaMonica', 'ReMatter Lake Tahoe', 'ReMatter Denver'
+]
+
+export const customers = [
+  'RecycleHub Yard', 'GreenStream Scrap', 'EcoMetal Solutions', 'MetalWorks Inc',
+  'ScrapKing Corp', 'Metro Scrap & Metal Co.', 'Industrial Recycling Solutions',
+  'Premier Scrap Metals', 'Advanced Metal Recovery', 'EcoScrap Industries'
+]
+
+export const accountReps = [
+  'Tyler Anderson', 'Matthew Brown', 'Sarah Wilson', 'David Lee', 'Lisa Garcia',
+  'Robert Johnson', 'Jennifer Davis', 'Michael Wilson', 'Christopher Martinez', 'Amanda Taylor'
+]
+
+export const contacts = ['No Contact', 'John Smith', 'Jane Doe', 'Mike Johnson']
+
+export const shipToLocations = [
+  'RecycleHub Yard - 123 Main St, Chicago, IL 60601',
+  'GreenStream Scrap - 456 Oak Ave, Houston, TX 77001',
+  'EcoMetal Solutions - 789 Pine Rd, Phoenix, AZ 85001',
+  'MetalWorks Inc - 321 Elm St, Philadelphia, PA 19101',
+  'ScrapKing Corp - 654 Maple Dr, San Antonio, TX 78201',
+  'Metro Scrap & Metal Co. - 1234 Industrial Blvd, Los Angeles, CA 90021',
+  'Industrial Recycling Solutions - 987 Cedar Ln, San Diego, CA 92101',
+  'Premier Scrap Metals - 147 Birch St, Dallas, TX 75201',
+  'Advanced Metal Recovery - 258 Spruce Ave, San Jose, CA 95101',
+  'EcoScrap Industries - 369 Willow Way, Austin, TX 78701'
+]
+
+export const paymentCurrencies = [
+  'USD - United States Dollar', 'EUR - Euro', 'GBP - British Pound', 
+  'CAD - Canadian Dollar', 'AUD - Australian Dollar'
+]
+
+export const paymentTerms = ['No Contact', 'Net 30', 'Net 60', 'Net 90', 'Cash on Delivery']
+export const freightTerms = ['No Contact', 'FOB Origin', 'FOB Destination', 'CIF', 'EXW']
+export const statuses = ['Open', 'Closed', 'Draft', 'Shipped', 'Voided']
+
+// Available materials for SO generation
+export const availableMaterials = [
+  { id: '101', name: '101 - Aluminum Cans', unit: 'lb', isEachMaterial: false },
+  { id: '102', name: '102 - Aluminum Sheet', unit: 'lb', isEachMaterial: false },
+  { id: '103', name: '103 - Al 6061', unit: 'lb', isEachMaterial: false },
+  { id: '104', name: '104 - Al 3003', unit: 'lb', isEachMaterial: false },
+  { id: '105', name: '105 - Al 5052', unit: 'lb', isEachMaterial: false },
+  { id: '106', name: '106 - Al 6063', unit: 'lb', isEachMaterial: false },
+  { id: '107', name: '107 - Al 1100', unit: 'lb', isEachMaterial: false },
+  { id: '108', name: '108 - Al 2024', unit: 'lb', isEachMaterial: false },
+  { id: '109', name: '109 - Al 7075', unit: 'lb', isEachMaterial: false },
+  { id: '110', name: '110 - Al 3004', unit: 'lb', isEachMaterial: false },
+  { id: '201', name: '201 - Copper Wire', unit: 'lb', isEachMaterial: false },
+  { id: '202', name: '202 - Copper Pipe', unit: 'lb', isEachMaterial: false },
+  { id: '203', name: '203 - Copper Sheet', unit: 'lb', isEachMaterial: false },
+  { id: '204', name: '204 - Copper Tubing', unit: 'lb', isEachMaterial: false },
+  { id: '205', name: '205 - Copper Bus Bar', unit: 'lb', isEachMaterial: false },
+  { id: '301', name: '301 - Brass Fittings', unit: 'lb', isEachMaterial: false },
+  { id: '302', name: '302 - Brass Valves', unit: 'lb', isEachMaterial: false },
+  { id: '303', name: '303 - Brass Pipe', unit: 'lb', isEachMaterial: false },
+  { id: '304', name: '304 - Brass Sheet', unit: 'lb', isEachMaterial: false },
+  { id: '305', name: '305 - Brass Rod', unit: 'lb', isEachMaterial: false },
+  { id: '401', name: '401 - Steel Scrap', unit: 'lb', isEachMaterial: false },
+  { id: '402', name: '402 - Steel Pipe', unit: 'lb', isEachMaterial: false },
+  { id: '403', name: '403 - Steel Sheet', unit: 'lb', isEachMaterial: false },
+  { id: '404', name: '404 - Steel Beam', unit: 'lb', isEachMaterial: false },
+  { id: '405', name: '405 - Steel Plate', unit: 'lb', isEachMaterial: false },
+  { id: '501', name: '501 - Stainless Steel', unit: 'lb', isEachMaterial: false },
+  { id: '502', name: '502 - Stainless Pipe', unit: 'lb', isEachMaterial: false },
+  { id: '503', name: '503 - Stainless Sheet', unit: 'lb', isEachMaterial: false },
+  { id: '504', name: '504 - Stainless Fittings', unit: 'lb', isEachMaterial: false },
+  { id: '505', name: '505 - Stainless Valves', unit: 'lb', isEachMaterial: false },
+  { id: '601', name: '601 - Lead Battery', unit: 'ea', isEachMaterial: true },
+  { id: '602', name: '602 - Lead Pipe', unit: 'ea', isEachMaterial: true },
+  { id: '603', name: '603 - Lead Sheet', unit: 'ea', isEachMaterial: true },
+  { id: '604', name: '604 - Lead Weights', unit: 'ea', isEachMaterial: true },
+  { id: '605', name: '605 - Lead Cable', unit: 'ea', isEachMaterial: true },
+  { id: '701', name: '701 - Zinc Die Cast', unit: 'ea', isEachMaterial: true },
+  { id: '702', name: '702 - Zinc Sheet', unit: 'ea', isEachMaterial: true },
+  { id: '703', name: '703 - Zinc Pipe', unit: 'ea', isEachMaterial: true },
+  { id: '704', name: '704 - Zinc Fittings', unit: 'ea', isEachMaterial: true },
+  { id: '705', name: '705 - Zinc Valves', unit: 'ea', isEachMaterial: true }
+]
+
+// Simple seeded random number generator
+class SeededRandom {
+  private seed: number
+
+  constructor(seed: number) {
+    this.seed = seed
+  }
+
+  next(): number {
+    this.seed = (this.seed * 9301 + 49297) % 233280
+    return this.seed / 233280
+  }
+
+  nextInt(max: number): number {
+    return Math.floor(this.next() * max)
+  }
+}
+
+// Generate consistent data for a specific SO number
+export const generateSOData = (soNumber: string) => {
+  const seed = parseInt(soNumber)
+  const rng = new SeededRandom(seed)
+  
+  const facility = facilities[rng.nextInt(facilities.length)]
+  const customer = customers[rng.nextInt(customers.length)]
+  const accountRep = accountReps[rng.nextInt(accountReps.length)]
+  const contact = contacts[rng.nextInt(contacts.length)]
+  const shipToLocation = shipToLocations[rng.nextInt(shipToLocations.length)]
+  const paymentCurrency = paymentCurrencies[rng.nextInt(paymentCurrencies.length)]
+  const paymentTerm = paymentTerms[rng.nextInt(paymentTerms.length)]
+  const freightTerm = freightTerms[rng.nextInt(freightTerms.length)]
+  const status = statuses[rng.nextInt(statuses.length)]
+  
+  // Generate dates based on SO number
+  const baseDate = new Date('2024-08-20')
+  const daysOffset = rng.nextInt(10)
+  const startDate = new Date(baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000)
+  const endDate = new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000)
+  
+  // Generate materials for this SO (1-5 materials)
+  const materialsCount = rng.nextInt(5) + 1
+  const materials = []
+  
+  for (let i = 0; i < materialsCount; i++) {
+    const material = availableMaterials[rng.nextInt(availableMaterials.length)]
+    const netWeight = material.isEachMaterial 
+      ? rng.nextInt(50) + 1  // 1-50 for "ea" materials
+      : rng.nextInt(5000) + 100  // 100-5100 for "lb" materials
+    
+    const unitPrice = rng.nextInt(20) + 1  // $1-$20 per unit
+    const pricingUnit = material.isEachMaterial ? 'ea' : 'lb'
+    const estimatedTotal = netWeight * unitPrice
+    
+    materials.push({
+      id: `${soNumber}-${i + 1}`,
+      contractMaterial: material.name,
+      netWeight,
+      unitPrice,
+      pricingUnit,
+      estimatedTotal,
+      isFormula: false,
+      isEachMaterial: material.isEachMaterial,
+      selectedExchange: 'COMEX'
+    })
+  }
+  
+  return {
+    soNumber,
+    facility,
+    startDate: startDate.toISOString().split('T')[0],
+    endDate: endDate.toISOString().split('T')[0],
+    accountRep,
+    counterpartPO: `#${String(seed).padStart(6, '0')}`,
+    customerName: customer,
+    contact,
+    shipToLocation,
+    billToLocation: shipToLocation,
+    sameAsShip: true,
+    paymentCurrency,
+    paymentTerm,
+    freightTerm,
+    doNotShip: rng.nextInt(3) === 0,
+    status,
+    materials
+  }
+}
