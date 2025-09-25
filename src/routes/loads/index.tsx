@@ -1,12 +1,30 @@
 import { Table, Button, Input, Select, Dropdown, Modal, Form, DatePicker } from 'antd'
 import { MoreOutlined } from '@ant-design/icons'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { FileText, Ship, CheckCircle, RotateCcw, Printer, Trash2 } from 'lucide-react'
 import { useLocation } from 'wouter'
 import dayjs from 'dayjs'
 
 export const Loads = () => {
-  // Generate 50 loads
+  // Simple seeded random number generator for consistent data
+  class SeededRandom {
+    private seed: number
+
+    constructor(seed: number) {
+      this.seed = seed
+    }
+
+    next(): number {
+      this.seed = (this.seed * 9301 + 49297) % 233280
+      return this.seed / 233280
+    }
+
+    nextInt(max: number): number {
+      return Math.floor(this.next() * max)
+    }
+  }
+
+  // Generate 50 consistent loads using seeded random
   const generateLoadData = () => {
     const facilities = [
       'ReMatter Headquarters', 'ReMatter Ohio', 'ReMatter San Diego', 
@@ -33,15 +51,18 @@ export const Loads = () => {
     const data = []
     
     for (let i = 1; i <= 50; i++) {
+      // Use load number as seed for consistent data
+      const rng = new SeededRandom(860000 + i)
+      
       const orderNum = String(860000 + i).padStart(6, '0')
       const salesNum = String(2000 + i).padStart(6, '0')
       const bookingNum = String(300000 + i).padStart(6, '0')
       const containerNum = String(400000 + i).padStart(6, '0')
       const releaseNum = String(500000 + i).padStart(6, '0')
       
-      // Generate random dates
-      const shipDate = new Date(2025, 5, Math.floor(Math.random() * 30) + 1)
-      const createdDate = new Date(2025, Math.floor(Math.random() * 6), Math.floor(Math.random() * 28) + 1)
+      // Generate consistent dates based on seed
+      const shipDate = new Date(2025, 5, rng.nextInt(30) + 1)
+      const createdDate = new Date(2025, rng.nextInt(6), rng.nextInt(28) + 1)
       
       data.push({
         key: String(i),
@@ -51,21 +72,22 @@ export const Loads = () => {
         bookingNumber: `#${bookingNum}`,
         containerNumber: `#${containerNum}`,
         releaseNumber: `#${releaseNum}`,
-        shippingCarrier: carriers[Math.floor(Math.random() * carriers.length)],
-        customer: customers[Math.floor(Math.random() * customers.length)],
-        facility: facilities[Math.floor(Math.random() * facilities.length)],
-        materialsCount: Math.floor(Math.random() * 20) + 1,
-        netWeight: Math.floor(Math.random() * 2000) + 100,
-        status: statuses[Math.floor(Math.random() * statuses.length)],
+        shippingCarrier: carriers[rng.nextInt(carriers.length)],
+        customer: customers[rng.nextInt(customers.length)],
+        facility: facilities[rng.nextInt(facilities.length)],
+        materialsCount: rng.nextInt(20) + 1,
+        netWeight: rng.nextInt(2000) + 100,
+        status: statuses[rng.nextInt(statuses.length)],
         createdOn: createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        createdBy: createdBy[Math.floor(Math.random() * createdBy.length)]
+        createdBy: createdBy[rng.nextInt(createdBy.length)]
       })
     }
     
     return data
   }
   
-  const allData = generateLoadData()
+  // Generate 50 fixed loads using memoized data generation
+  const allData = useMemo(() => generateLoadData(), [])
   
   // Filter states
   const [searchText, setSearchText] = useState('')
@@ -77,26 +99,28 @@ export const Loads = () => {
   const [form] = Form.useForm()
   const [, setLocation] = useLocation()
   
-  // Filter the data based on search and filters
-  const filteredData = allData.filter(load => {
-    const matchesSearch = !searchText || 
-      load.orderNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-      load.salesNumber.toLowerCase().includes(searchText.toLowerCase()) ||
-      load.customer.toLowerCase().includes(searchText.toLowerCase()) ||
-      load.shippingCarrier.toLowerCase().includes(searchText.toLowerCase())
-    
-    const matchesFacility = !selectedFacility || load.facility === selectedFacility
-    const matchesStatus = !selectedStatus || selectedStatus === 'all' || load.status === selectedStatus
-    
-    return matchesSearch && matchesFacility && matchesStatus
-  })
+  // Filter the data based on search and filters (memoized)
+  const filteredData = useMemo(() => {
+    return allData.filter(load => {
+      const matchesSearch = !searchText || 
+        load.orderNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        load.salesNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        load.customer.toLowerCase().includes(searchText.toLowerCase()) ||
+        load.shippingCarrier.toLowerCase().includes(searchText.toLowerCase())
+      
+      const matchesFacility = !selectedFacility || load.facility === selectedFacility
+      const matchesStatus = !selectedStatus || selectedStatus === 'all' || load.status === selectedStatus
+      
+      return matchesSearch && matchesFacility && matchesStatus
+    })
+  }, [allData, searchText, selectedFacility, selectedStatus])
   
   // Handle create load
   const handleCreateLoad = () => {
     form.validateFields().then((values) => {
       console.log('Create Load:', values)
-      // Generate a new load number
-      const loadNumber = String(860000 + Math.floor(Math.random() * 1000)).padStart(6, '0')
+      // Generate a new load number (use timestamp for uniqueness)
+      const loadNumber = String(860000 + Date.now() % 1000).padStart(6, '0')
       
       // Store the load data for the detail page
       const loadData = {

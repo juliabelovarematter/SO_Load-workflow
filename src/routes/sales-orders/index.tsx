@@ -1,6 +1,6 @@
 import { Table, Button, Tag, Input, Select, Checkbox, Dropdown, Menu } from 'antd'
 import { SearchOutlined, MoreOutlined } from '@ant-design/icons'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useLocation } from 'wouter'
 import { CreateSalesOrderModal } from '../../components/CreateSalesOrderModal'
 import { 
@@ -18,6 +18,8 @@ import { generateSOData, facilities, customers, accountReps, statuses } from '..
 export const SalesOrders = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
   const [, setLocation] = useLocation()
+  const [searchText, setSearchText] = useState('')
+  const [selectedFacility, setSelectedFacility] = useState<string | undefined>(undefined)
 
   // Handle row click to navigate to SO detail page
   const handleRowClick = (record: any) => {
@@ -279,41 +281,52 @@ export const SalesOrders = () => {
     },
   ]
 
-  // Generate 50 sales order rows using shared data generation
-  const data = Array.from({ length: 50 }, (_, index) => {
-    const soNumber = String(860098 - index).padStart(6, '0')
-    const soData = generateSOData(soNumber)
-    
-    // Add table-specific fields
-    const materialsCount = Math.floor(Math.random() * 5) + 1
-    const netWeight = Math.floor(Math.random() * 5000) + 500
-    const shippedLoads = soData.status === 'Closed' ? materialsCount : Math.floor(Math.random() * materialsCount)
-    const fulfilledPercent = soData.status === 'Closed' ? '100%' : `${Math.floor((shippedLoads / materialsCount) * 100)}%`
-    const total = soData.status === 'Closed' ? Math.floor(Math.random() * 20000) + 1000 : (Math.random() > 0.3 ? Math.floor(Math.random() * 15000) + 500 : null)
-    
-    // Debug logging for first few items
-    if (index < 5) {
-      console.log(`Table SO ${soNumber}:`, soData.status, soData.customerName, soData.facility)
-    }
-    
-    return {
-      key: String(index + 1),
-      soNumber,
-      startDate: 'Jun 12, 2025',
-      endDate: 'Jun 12, 2025',
-      counterpart: soData.customerName,
-      customer: soData.customerName,
-      facility: soData.facility,
-      materialsCount,
-      netWeight: `${netWeight.toLocaleString()} lb`,
-      shippedLoads,
-      fulfilledPercent,
-      status: soData.status,
-      total,
-      createdOn: 'Jun 12, 2025',
-      createdBy: soData.accountRep,
-    }
-  })
+  // Generate 50 fixed sales order rows using consistent data generation (memoized)
+  const data = useMemo(() => {
+    return Array.from({ length: 50 }, (_, index) => {
+      const soNumber = String(860098 - index).padStart(6, '0')
+      const soData = generateSOData(soNumber)
+      
+      // Use consistent data from generateSOData for table fields
+      const materialsCount = soData.materials.length
+      const netWeight = soData.materials.reduce((sum, material) => sum + material.netWeight, 0)
+      const shippedLoads = soData.status === 'Closed' ? materialsCount : Math.floor(materialsCount * 0.6) // 60% shipped for non-closed
+      const fulfilledPercent = soData.status === 'Closed' ? '100%' : `${Math.floor((shippedLoads / materialsCount) * 100)}%`
+      const total = soData.materials.reduce((sum, material) => sum + material.estimatedTotal, 0)
+      
+      return {
+        key: String(index + 1),
+        soNumber,
+      startDate: new Date(soData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      endDate: new Date(soData.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        counterpart: soData.counterpartPO,
+        customer: soData.customerName,
+        facility: soData.facility,
+        materialsCount,
+        netWeight: `${netWeight.toLocaleString()} lb`,
+        shippedLoads,
+        fulfilledPercent,
+        status: soData.status,
+        total: total > 0 ? total : null,
+        createdOn: new Date(soData.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        createdBy: soData.accountRep,
+      }
+    })
+  }, []) // Empty dependency array ensures this only runs once
+
+  // Filter data based on search text and facility
+  const filteredData = useMemo(() => {
+    return data.filter(record => {
+      const matchesSearch = !searchText || 
+        record.soNumber.toLowerCase().includes(searchText.toLowerCase()) ||
+        record.customer.toLowerCase().includes(searchText.toLowerCase()) ||
+        record.counterpart.toLowerCase().includes(searchText.toLowerCase())
+      
+      const matchesFacility = !selectedFacility || record.facility === selectedFacility
+      
+      return matchesSearch && matchesFacility
+    })
+  }, [data, searchText, selectedFacility])
 
   return (
     <div style={{ padding: '24px', background: '#F8F8F9', minHeight: '100vh' }}>
@@ -336,21 +349,25 @@ export const SalesOrders = () => {
               placeholder="Search"
               prefix={<SearchOutlined />}
               style={{ width: 200 }}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
             />
             <Select
-              defaultValue="All Facilities"
+              placeholder="All Facilities"
               style={{ width: 180 }}
+              value={selectedFacility}
+              onChange={setSelectedFacility}
+              allowClear
               options={[
-                { value: 'all', label: 'All Facilities' },
-                { value: 'headquarters', label: 'ReMatter Headquarters' },
-                { value: 'ohio', label: 'ReMatter Ohio' },
-                { value: 'san-diego', label: 'ReMatter San Diego' },
-                { value: 'los-angeles', label: 'ReMatter Los Angeles' },
-                { value: 'texas', label: 'ReMatter Texas' },
-                { value: 'newport-beach', label: 'ReMatter Newport Beach' },
-                { value: 'santa-monica', label: 'ReMatter SantaMonica' },
-                { value: 'lake-tahoe', label: 'ReMatter Lake Tahoe' },
-                { value: 'denver', label: 'ReMatter Denver' },
+                { value: 'ReMatter Headquarters', label: 'ReMatter Headquarters' },
+                { value: 'ReMatter Ohio', label: 'ReMatter Ohio' },
+                { value: 'ReMatter San Diego', label: 'ReMatter San Diego' },
+                { value: 'ReMatter Los Angeles', label: 'ReMatter Los Angeles' },
+                { value: 'ReMatter Texas', label: 'ReMatter Texas' },
+                { value: 'ReMatter Newport Beach', label: 'ReMatter Newport Beach' },
+                { value: 'ReMatter SantaMonica', label: 'ReMatter SantaMonica' },
+                { value: 'ReMatter Lake Tahoe', label: 'ReMatter Lake Tahoe' },
+                { value: 'ReMatter Denver', label: 'ReMatter Denver' },
               ]}
             />
           </div>
@@ -390,7 +407,7 @@ export const SalesOrders = () => {
               >
                 <Table
                   columns={columns}
-                  dataSource={data}
+                  dataSource={filteredData}
                   pagination={{
                     pageSize: 50,
                     showSizeChanger: true,
