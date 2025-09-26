@@ -69,13 +69,11 @@ export const LoadDetail = () => {
   const [originalFormData, setOriginalFormData] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('load-info')
   const [materials, setMaterials] = useState<Material[]>([])
-  const [savedMaterials, setSavedMaterials] = useState<Material[]>([])
   const [materialsCount, setMaterialsCount] = useState(0)
   const [weightMode, setWeightMode] = useState<'scale' | 'price'>('scale')
   const [requestMode, setRequestMode] = useState<'request' | 'staged'>('request')
   const [showScales, setShowScales] = useState(true)
   const [selectedScale, setSelectedScale] = useState('FS1')
-  const [currentWeight, setCurrentWeight] = useState(23345)
   const [selectedMaterialForWeighing, setSelectedMaterialForWeighing] = useState<Material | null>(null)
   const [materialWeight, setMaterialWeight] = useState<number | null>(null)
   const [selectedFieldForWeighing, setSelectedFieldForWeighing] = useState<'gross' | 'tare' | null>(null)
@@ -159,7 +157,6 @@ export const LoadDetail = () => {
   const [dropdownVisible, setDropdownVisible] = useState<{ [key: number]: boolean }>({})
   const [dropdownPosition, setDropdownPosition] = useState<{ [key: number]: { top: number, left: number } }>({})
   const inputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({})
-  const previousValues = useRef<{ [key: number]: string }>({})
 
   // Available materials (same as SO Materials)
   const availableMaterials = [
@@ -456,7 +453,7 @@ export const LoadDetail = () => {
       if (storedMaterials) {
         const materials = JSON.parse(storedMaterials)
         console.log('Loaded saved materials:', materials)
-        setSavedMaterials(materials)
+        // setSavedMaterials(materials)
         setMaterials(materials)
       }
       
@@ -500,7 +497,7 @@ export const LoadDetail = () => {
     localStorage.setItem(`load-materials-${params.id}`, JSON.stringify(materials))
     
     // Update saved materials and count
-    setSavedMaterials([...materials])
+    // setSavedMaterials([...materials])
     setMaterialsCount(materials.length)
     
     // Update loadData materials count
@@ -1787,7 +1784,10 @@ export const LoadDetail = () => {
                             onError={(e) => {
                               // Fallback to placeholder if GIF fails to load
                               e.currentTarget.style.display = 'none'
-                              e.currentTarget.nextElementSibling.style.display = 'block'
+                              const nextElement = e.currentTarget.nextElementSibling as HTMLElement
+                              if (nextElement) {
+                                nextElement.style.display = 'block'
+                              }
                             }}
                           />
                           
