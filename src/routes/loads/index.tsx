@@ -115,6 +115,14 @@ export const Loads = () => {
     })
   }, [allData, searchText, selectedFacility, selectedStatus])
   
+  // Handle row click to navigate to Load detail page
+  const handleRowClick = (record: any) => {
+    console.log('Load row clicked:', record.orderNumber)
+    const loadId = record.orderNumber.replace('#', '')
+    console.log('Navigating to load ID:', loadId)
+    setLocation(`/load/${loadId}`)
+  }
+
   // Handle create load
   const handleCreateLoad = () => {
     form.validateFields().then((values) => {
@@ -150,7 +158,7 @@ export const Loads = () => {
         photosCount: 0
       }
       
-      localStorage.setItem(`load-${loadNumber}`, JSON.stringify(loadData))
+      localStorage.setItem(`load-form-data-${loadNumber}`, JSON.stringify(loadData))
       
       // Navigate to the load detail page
       setLocation(`/load/${loadNumber}`)
@@ -546,6 +554,7 @@ export const Loads = () => {
                 boxShadow: 'none',
                 padding: '4px 8px',
               }}
+              onClick={(e) => e.stopPropagation()}
             />
           </Dropdown>
         )
@@ -647,6 +656,10 @@ export const Loads = () => {
             x: 1500,
             y: 'calc(100vh - 200px)' // Fixed height for vertical scroll
           }}
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record),
+            style: { cursor: 'pointer' }
+          })}
         />
       </div>
       

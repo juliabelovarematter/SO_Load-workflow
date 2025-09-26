@@ -1,4 +1,4 @@
-import { Button, Input, Select, DatePicker, Checkbox, Tag, Dropdown, Progress, Tabs, Table } from 'antd'
+import { Button, Input, Select, DatePicker, Checkbox, Tag, Dropdown, Tabs, Table } from 'antd'
 import { useLocation, useRoute } from 'wouter'
 import { ArrowLeft, Calendar, ChevronDown, MoreHorizontal, Copy, Plus, Printer, Download, RotateCcw, CheckCircle, Trash2 } from 'lucide-react'
 import { useState, useEffect } from 'react'
@@ -343,17 +343,6 @@ export const SalesOrderDetail = () => {
     }
   }
 
-  // Get status color for Tag component (matching SO table)
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Open': return 'blue'
-      case 'Closed': return 'green'
-      case 'Shipped': return 'orange'
-      case 'Draft': return 'default'
-      case 'Voided': return 'red'
-      default: return 'default'
-    }
-  }
 
   const handleFieldChange = (field: string, value: any) => {
     setFormData(prev => {
@@ -529,79 +518,82 @@ export const SalesOrderDetail = () => {
   ]
 
   return (
-    <div style={{ padding: '24px', background: '#F8F8F9', minHeight: '100vh' }}>
-              {/* Header Section */}
-              <div style={{ 
-                background: '#fff', 
-                borderRadius: '8px', 
-                padding: '12px 24px', 
-                marginBottom: '12px',
-                border: '1px solid rgba(7, 20, 41, 0.1)',
-                position: 'fixed',
-                top: '76px',
-                left: '240px',
-                right: '24px',
-                zIndex: 100
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  {/* Left Side */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <Button 
-                      type="text" 
-                      icon={<ArrowLeft size={20} />} 
-                      onClick={handleBack}
-                      style={{ color: '#6b7280' }}
-                    />
-                    <h1 style={{ margin: 0, fontSize: '24px', fontWeight: '600', color: '#1f2937' }}>
-                      Sales Order #{soData?.soNumber || params?.id || 'Loading...'}
-                    </h1>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <Tag color={getStatusColor(status)}>{status}</Tag>
-                      <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        gap: '8px',
-                        padding: '4px 8px',
-                        background: '#f8f9fa',
-                        borderRadius: '4px',
-                        border: '1px solid #e5e7eb'
-                      }}>
-                        <Progress 
-                          percent={49} 
-                          size="small" 
-                          strokeColor="#facc15"
-                          showInfo={false}
-                          style={{ width: '60px' }}
-                        />
-                        <span style={{ fontSize: '12px', color: '#4b5563', fontWeight: '500' }}>49% fulfilled</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Side */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    {(() => {
-                      const actions = getStatusActions(status)
-                      return (
-                        <>
-                          {actions.primaryActions}
-                          {actions.moreActions.length > 0 && (
-                            <Dropdown
-                              menu={{ 
-                                items: actions.moreActions,
-                                style: { borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }
-                              }}
-                              trigger={['click']}
-                              placement="bottomRight"
-                            >
-                              <Button icon={<MoreHorizontal size={16} />} />
-                            </Dropdown>
-                          )}
-                        </>
-                      )
-                    })()}
-                  </div>
+    <div style={{ 
+      padding: '24px', 
+      background: '#F8F8F9', 
+      minHeight: '100vh',
+      width: '100%'
+    }}>
+      {/* Header with Tabs */}
+      <div style={{
+        background: '#fff',
+        border: '1px solid #e5e7eb',
+        borderRadius: '6px',
+        marginBottom: '12px'
+      }}>
+        <div style={{ padding: '24px 24px 0 24px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <Button
+                icon={<ArrowLeft size={16} />}
+                onClick={handleBack}
+              />
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 'bold' }}>
+                    Sales Order #{soData?.soNumber || params?.id || 'Loading...'}
+                  </h1>
+                  <Tag
+                    style={{
+                      backgroundColor: status === 'Open' ? '#dbeafe' : 
+                                     status === 'Closed' ? '#dcfce7' : 
+                                     status === 'Shipped' ? '#fed7aa' : 
+                                     status === 'Draft' ? '#f3f4f6' : '#fecaca',
+                      color: status === 'Open' ? '#1d4ed8' : 
+                             status === 'Closed' ? '#16a34a' : 
+                             status === 'Shipped' ? '#ea580c' : 
+                             status === 'Draft' ? '#6b7280' : '#dc2626',
+                      border: 'none',
+                      borderRadius: '4px',
+                      padding: '4px 8px',
+                      fontSize: '12px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {status}
+                  </Tag>
                 </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                  <span style={{ color: '#6b7280', fontSize: '14px' }}>
+                    Created on {soData?.startDate ? new Date(soData.startDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Loading...'} by {soData?.accountRep || 'Loading...'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {(() => {
+                const actions = getStatusActions(status)
+                return (
+                  <>
+                    {actions.primaryActions}
+                    {actions.moreActions.length > 0 && (
+                      <Dropdown
+                        menu={{ 
+                          items: actions.moreActions,
+                          style: { borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }
+                        }}
+                        trigger={['click']}
+                        placement="bottomRight"
+                      >
+                        <Button icon={<MoreHorizontal size={16} />} />
+                      </Dropdown>
+                    )}
+                  </>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
 
         {/* Tabs Section */}
         <Tabs
@@ -610,92 +602,42 @@ export const SalesOrderDetail = () => {
           items={[
             {
               key: 'contract',
-              label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Contract Info
-                </div>
-              ),
+              label: 'Contract Info',
             },
             {
               key: 'materials',
               label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Materials
-                  <span style={{
-                    background: materialsCount === 0 ? '#f97316' : '#6b7280',
-                    color: '#fff',
-                    borderRadius: '10px',
-                    padding: '2px 6px',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    minWidth: '16px',
-                    textAlign: 'center'
-                  }}>
-                    {materialsCount}
-                  </span>
-                </div>
+                <span>
+                  Materials <Tag style={{ marginLeft: '8px', fontSize: '10px' }}>{materialsCount}</Tag>
+                </span>
               ),
             },
             {
               key: 'customer',
-              label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Customer
-                </div>
-              ),
+              label: 'Customer',
             },
             {
               key: 'loads',
               label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Loads
-                  <span style={{
-                    background: loadsCount === 0 ? '#f97316' : '#6b7280',
-                    color: '#fff',
-                    borderRadius: '10px',
-                    padding: '2px 6px',
-                    fontSize: '12px',
-                    fontWeight: '500',
-                    minWidth: '16px',
-                    textAlign: 'center'
-                  }}>
-                    {loadsCount}
-                  </span>
-                </div>
+                <span>
+                  Loads <Tag style={{ marginLeft: '8px', fontSize: '10px' }}>{loadsCount}</Tag>
+                </span>
               ),
             },
             {
               key: 'documents',
-              label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Documents
-                </div>
-              ),
+              label: 'Documents',
             },
             {
               key: 'notes',
-              label: (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  Notes
-                </div>
-              ),
+              label: 'Notes',
             },
           ]}
-          style={{ 
-            padding: '0 24px 0 24px',
-            marginBottom: 0
-          }}
-          tabBarStyle={{ 
-            marginBottom: 0,
-            paddingBottom: 0,
-            marginTop: 0
-          }}
-          className="custom-tabs"
+          style={{ padding: '0 24px', marginTop: '16px' }}
+          tabBarStyle={{ marginBottom: 0, borderBottom: 'none' }}
         />
               </div>
 
-      {/* Spacer for fixed header */}
-      <div style={{ height: '120px' }}></div>
 
       {/* Main Content Section */}
       <div style={{ 
