@@ -1,0 +1,132 @@
+/* Global CSS overrides for disabled input fields */
+
+/* Target disabled inputs that have content (filled state) */
+.ant-input[disabled]:not(:placeholder-shown),
+.ant-input.ant-input-disabled:not(:placeholder-shown),
+.ant-input-number[disabled] .ant-input-number-input:not(:placeholder-shown),
+.ant-input-number.ant-input-number-disabled .ant-input-number-input:not(:placeholder-shown) {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Target all possible input elements with disabled state */
+input:disabled,
+input[disabled],
+.ant-input:disabled,
+.ant-input[disabled],
+.ant-input-number:disabled,
+.ant-input-number[disabled],
+.ant-input-number-input:disabled,
+.ant-input-number-input[disabled],
+.ant-input.ant-input-disabled,
+.ant-input-number.ant-input-number-disabled,
+.ant-input-number-input.ant-input-number-input-disabled {
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  outline: none !important;
+  outline-width: 0 !important;
+  outline-style: none !important;
+  outline-color: transparent !important;
+  box-shadow: none !important;
+  -webkit-box-shadow: none !important;
+  -moz-box-shadow: none !important;
+  -ms-box-shadow: none !important;
+  -o-box-shadow: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  appearance: none !important;
+}
+
+/* Target all child elements of disabled inputs */
+.ant-input:disabled *,
+.ant-input[disabled] *,
+.ant-input-number:disabled *,
+.ant-input-number[disabled] *,
+.ant-input.ant-input-disabled *,
+.ant-input-number.ant-input-number-disabled * {
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Specific targeting for Ant Design input components - filled state */
+.ant-input[disabled]:not(:placeholder-shown),
+.ant-input.ant-input-disabled:not(:placeholder-shown) {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.ant-input-number[disabled] .ant-input-number-input:not(:placeholder-shown),
+.ant-input-number.ant-input-number-disabled .ant-input-number-input:not(:placeholder-shown) {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+  border-width: 0 !important;
+  border-style: none !important;
+  border-color: transparent !important;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Fallback for all disabled inputs */
+.ant-input:disabled,
+.ant-input[disabled] {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+}
+
+.ant-input-number:disabled,
+.ant-input-number[disabled] {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+}
+
+.ant-input-number:disabled .ant-input-number-input,
+.ant-input-number[disabled] .ant-input-number-input {
+  background-color: #F4F4F4 !important;
+  color: #1A1A1A !important;
+  border: none !important;
+}

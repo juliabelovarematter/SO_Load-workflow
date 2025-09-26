@@ -4,90 +4,34 @@ import { useState, useMemo } from 'react'
 import { FileText, Ship, CheckCircle, RotateCcw, Printer, Trash2 } from 'lucide-react'
 import { useLocation } from 'wouter'
 import dayjs from 'dayjs'
+import { generateAllLoadsData } from '../../utils/mockData'
 
 export const Loads = () => {
-  // Simple seeded random number generator for consistent data
-  class SeededRandom {
-    private seed: number
-
-    constructor(seed: number) {
-      this.seed = seed
-    }
-
-    next(): number {
-      this.seed = (this.seed * 9301 + 49297) % 233280
-      return this.seed / 233280
-    }
-
-    nextInt(max: number): number {
-      return Math.floor(this.next() * max)
-    }
-  }
-
-  // Generate 50 consistent loads using seeded random
-  const generateLoadData = () => {
-    const facilities = [
-      'ReMatter Headquarters', 'ReMatter Ohio', 'ReMatter San Diego', 
-      'ReMatter Los Angeles', 'ReMatter Texas', 'ReMatter Newport Beach',
-      'ReMatter SantaMonica', 'ReMatter Lake Tahoe', 'ReMatter Denver'
-    ]
-    
-    const carriers = [
-      'ShipSmart Headquarters', 'ShipSmart Ontario', 'ShipSmart Puerto Rico',
-      'ShipSmart Stanford', 'ShipSmart Texas', 'ShipSmart California',
-      'ShipSmart Nevada', 'ShipSmart Colorado', 'ShipSmart Florida'
-    ]
-    
-    const customers = [
-      'EcoRevive Metals', 'EcoHarmony Metals', 'NatureCycle Metals',
-      'RecycleHub Yard', 'Alpha Whisky', 'GreenTech Scrap',
-      'MetalWorks Inc', 'ScrapMaster Pro', 'EcoMetal Solutions',
-      'Sustainable Scrap', 'GreenCycle Metals', 'MetalRecycle Co'
-    ]
-    
-    const statuses = ['Unassigned', 'Open', 'Shipped', 'Pending Reconciliation', 'Reconciled', 'Closed', 'Voided']
-    const createdBy = ['John Smith', 'Jane Doe', 'Mike Johnson', 'Sarah Wilson', 'Tom Brown', 'Lisa Davis', 'Chris Miller', 'Amy Taylor']
-    
-    const data = []
-    
-    for (let i = 1; i <= 50; i++) {
-      // Use load number as seed for consistent data
-      const rng = new SeededRandom(860000 + i)
-      
-      const orderNum = String(860000 + i).padStart(6, '0')
-      const salesNum = String(2000 + i).padStart(6, '0')
-      const bookingNum = String(300000 + i).padStart(6, '0')
-      const containerNum = String(400000 + i).padStart(6, '0')
-      const releaseNum = String(500000 + i).padStart(6, '0')
-      
-      // Generate consistent dates based on seed
-      const shipDate = new Date(2025, 5, rng.nextInt(30) + 1)
-      const createdDate = new Date(2025, rng.nextInt(6), rng.nextInt(28) + 1)
-      
-      data.push({
-        key: String(i),
-        expectedShipDate: shipDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-        orderNumber: `#${orderNum}`,
-        salesNumber: `#${salesNum}`,
-        bookingNumber: `#${bookingNum}`,
-        containerNumber: `#${containerNum}`,
-        releaseNumber: `#${releaseNum}`,
-        shippingCarrier: carriers[rng.nextInt(carriers.length)],
-        customer: customers[rng.nextInt(customers.length)],
-        facility: facilities[rng.nextInt(facilities.length)],
-        materialsCount: rng.nextInt(20) + 1,
-        netWeight: rng.nextInt(2000) + 100,
-        status: statuses[rng.nextInt(statuses.length)],
-        createdOn: createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
-        createdBy: createdBy[rng.nextInt(createdBy.length)]
-      })
-    }
-    
-    return data
-  }
   
   // Generate 50 fixed loads using memoized data generation
-  const allData = useMemo(() => generateLoadData(), [])
+  const allData = useMemo(() => {
+    const sharedData = generateAllLoadsData()
+    // Transform shared data to match table structure
+    return sharedData.map((load, index) => ({
+      key: String(index),
+      orderNumber: load.loadNumber,
+      expectedShipDate: new Date(load.expectedShipDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      facility: load.facility,
+      relatedSO: load.relatedSO || '',
+      bookingNumber: load.bookingNumber || '',
+      shippingCarrier: load.shippingCarrier,
+      customer: load.customer,
+      materialsCount: load.materialsCount,
+      netWeight: load.netWeight,
+      status: load.status,
+      createdOn: load.createdOn,
+      createdBy: load.createdBy,
+      // Add missing fields for table compatibility
+      salesNumber: load.relatedSO || `#${String(2000 + index).padStart(6, '0')}`,
+      containerNumber: `#${String(400000 + index).padStart(6, '0')}`,
+      releaseNumber: `#${String(500000 + index).padStart(6, '0')}`
+    }))
+  }, [])
   
   // Filter states
   const [searchText, setSearchText] = useState('')

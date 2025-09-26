@@ -16,7 +16,9 @@ export const SideBar = ({ collapsed }: SideBarProps) => {
   const [openKeys, setOpenKeys] = useState<string[]>([])
 
   useEffect(() => {
-    if (location.startsWith('/sales-orders') || location.startsWith('/bookings') || location.startsWith('/loads')) {
+    if (location.startsWith('/sales-orders') || location.startsWith('/sales-order/') || 
+        location.startsWith('/bookings') || location.startsWith('/booking/') ||
+        location.startsWith('/loads') || location.startsWith('/load/')) {
       setOpenKeys(['trade'])
     } else {
       setOpenKeys([])
@@ -49,9 +51,9 @@ export const SideBar = ({ collapsed }: SideBarProps) => {
   ]
 
   const getSelectedKey = () => {
-    if (location === '/sales-orders') return ['/sales-orders']
-    if (location === '/bookings') return ['/bookings']
-    if (location === '/loads') return ['/loads']
+    if (location === '/sales-orders' || location.startsWith('/sales-order/')) return ['/sales-orders']
+    if (location === '/bookings' || location.startsWith('/booking/')) return ['/bookings']
+    if (location === '/loads' || location.startsWith('/load/')) return ['/loads']
     if (location === '/analytics') return ['/analytics']
     if (location === '/settings') return ['/settings']
     return ['/']

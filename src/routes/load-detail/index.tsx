@@ -3,10 +3,11 @@ import { useRoute } from 'wouter'
 import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber } from 'antd'
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle } from 'lucide-react'
 import dayjs from 'dayjs'
+import { generateLoadData } from '../../utils/mockData'
 
 // Material interface (same as SO Materials)
 interface Material {
-  id: number
+  id: number | string
   contractMaterial?: string
   netWeight?: number
   grossWeight?: number
@@ -77,6 +78,10 @@ export const LoadDetail = () => {
   const [selectedMaterialForWeighing, setSelectedMaterialForWeighing] = useState<Material | null>(null)
   const [materialWeight, setMaterialWeight] = useState<number | null>(null)
   const [selectedFieldForWeighing, setSelectedFieldForWeighing] = useState<'gross' | 'tare' | null>(null)
+
+  // Determine if load is editable based on status
+  const isEditable = loadData?.status && ['Unassigned', 'Open', 'Pending Shipment'].includes(loadData.status)
+
 
   // Material weighing functions
   const handleSelectMaterialForWeighing = (material: Material) => {
@@ -301,14 +306,14 @@ export const LoadDetail = () => {
         let pricePerPound = typeof material.unitPrice === 'number' ? material.unitPrice : 0
         if (material.pricingUnit && material.pricingUnit !== 'lb') {
           // Convert price from per-pricing-unit to per-pound
-          // If price is $9.00 per NT, and 1 NT = 2000 lb, then price per lb = $9.00 / 2000 = $0.0045
+          // If price is $14.00 per MT, and 1 MT = 2204.62 lb, then price per lb = $14.00 / 2204.62 = $0.00635
           const poundsPerPricingUnit = convertWeight(1, material.pricingUnit, 'lb')
           pricePerPound = pricePerPound / poundsPerPricingUnit
           
           // Debug logging
-          console.log(`Calculation: ${material.unitPrice} per ${material.pricingUnit} = ${pricePerPound} per lb`)
+          console.log(`Calculation: $${material.unitPrice} per ${material.pricingUnit} = $${pricePerPound.toFixed(6)} per lb`)
           console.log(`Weight: ${weightInPounds} lb`)
-          console.log(`Total: ${weightInPounds} × ${pricePerPound} = ${weightInPounds * pricePerPound}`)
+          console.log(`Total: ${weightInPounds} × $${pricePerPound.toFixed(6)} = $${(weightInPounds * pricePerPound).toFixed(2)}`)
         }
         
         updatedMaterials[index].estimatedTotal = Math.round((weightInPounds * pricePerPound) * 100) / 100
@@ -338,73 +343,6 @@ export const LoadDetail = () => {
     setHasChanges(true)
   }, [weightMode])
 
-  // Generate consistent load data using seeded random (same as Loads table)
-  const generateLoadData = (loadId: string) => {
-    const facilities = [
-      'ReMatter Headquarters', 'ReMatter Ohio', 'ReMatter San Diego', 
-      'ReMatter Los Angeles', 'ReMatter Texas', 'ReMatter Newport Beach',
-      'ReMatter SantaMonica', 'ReMatter Lake Tahoe', 'ReMatter Denver'
-    ]
-    
-    const carriers = [
-      'ShipSmart Headquarters', 'ShipSmart Ontario', 'ShipSmart Puerto Rico',
-      'ShipSmart Stanford', 'ShipSmart Texas', 'ShipSmart California',
-      'ShipSmart Nevada', 'ShipSmart Colorado', 'ShipSmart Florida'
-    ]
-    
-    const customers = [
-      'EcoRevive Metals', 'EcoHarmony Metals', 'NatureCycle Metals',
-      'RecycleHub Yard', 'Alpha Whisky', 'GreenTech Scrap',
-      'MetalWorks Inc', 'ScrapMaster Pro', 'EcoMetal Solutions',
-      'Sustainable Scrap', 'GreenCycle Metals', 'MetalRecycle Co'
-    ]
-    
-    const statuses = ['Unassigned', 'Open', 'Shipped', 'Pending Reconciliation', 'Reconciled', 'Closed', 'Voided']
-    const createdBy = ['John Smith', 'Jane Doe', 'Mike Johnson', 'Sarah Wilson', 'Tom Brown', 'Lisa Davis', 'Chris Miller', 'Amy Taylor']
-    
-    // Use load number as seed for consistent data
-    const loadNumber = parseInt(loadId.replace('#', ''))
-    const seed = loadNumber
-    const rng = new (class {
-      private seed: number
-      constructor(seed: number) { this.seed = seed }
-      next(): number {
-        this.seed = (this.seed * 9301 + 49297) % 233280
-        return this.seed / 233280
-      }
-      nextInt(max: number): number { return Math.floor(this.next() * max) }
-    })(seed)
-    
-    const shipDate = new Date(2025, 5, rng.nextInt(30) + 1)
-    const createdDate = new Date(2025, rng.nextInt(6), rng.nextInt(28) + 1)
-    
-    return {
-      loadNumber: `#${loadId}`,
-      expectedShipDate: shipDate,
-      facility: facilities[rng.nextInt(facilities.length)],
-      shippingCarrier: carriers[rng.nextInt(carriers.length)],
-      customer: customers[rng.nextInt(customers.length)],
-      status: statuses[rng.nextInt(statuses.length)],
-      materialsCount: rng.nextInt(20) + 1,
-      photosCount: rng.nextInt(10),
-      createdOn: createdDate,
-      createdBy: createdBy[rng.nextInt(createdBy.length)],
-      relatedSO: rng.nextInt(2) > 0 ? `#${String(2000 + rng.nextInt(100)).padStart(6, '0')}` : null,
-      bookingNumber: rng.nextInt(2) > 0 ? `#${String(300000 + rng.nextInt(100)).padStart(6, '0')}` : null,
-      scac: '',
-      freightForwarder: '',
-      truckFreight: null,
-      deliveryNumber: '',
-      releaseNumber: '',
-      bookingNumber2: '',
-      driverName: '',
-      truckNumber: '',
-      trailerNumber: '',
-      containerNumber: '',
-      sealNumber: '',
-      notes: ''
-    }
-  }
 
   useEffect(() => {
     if (params?.id) {
@@ -442,11 +380,16 @@ export const LoadDetail = () => {
         }
       } else {
         // Existing load from table - generate consistent data
-        data = generateLoadData(params.id)
+        data = generateLoadData(`#${params.id}`)
       }
       
       setLoadData(data)
       setMaterialsCount(data.materialsCount || 0)
+      
+      // Set materials from the generated data
+      if (data.materials && data.materials.length > 0) {
+        setMaterials(data.materials as Material[])
+      }
       
       // Load saved materials if they exist
       const storedMaterials = localStorage.getItem(`load-materials-${params.id}`)
@@ -464,17 +407,17 @@ export const LoadDetail = () => {
         expectedShipDate: data.expectedShipDate ? dayjs(data.expectedShipDate) : null,
         facility: data.facility,
         shippingCarrier: data.shippingCarrier || '',
-        scac: data.scac || '',
-        freightForwarder: data.freightForwarder || '',
-        truckFreight: data.truckFreight || null,
-        deliveryNumber: data.deliveryNumber || '',
-        releaseNumber: data.releaseNumber || '',
-        bookingNumber2: data.bookingNumber2 || '',
-        driverName: data.driverName || '',
-        truckNumber: data.truckNumber || '',
-        trailerNumber: data.trailerNumber || '',
-        containerNumber: data.containerNumber || '',
-        sealNumber: data.sealNumber || '',
+        scac: (data as any).scac || '',
+        freightForwarder: (data as any).freightForwarder || '',
+        truckFreight: (data as any).truckFreight || null,
+        deliveryNumber: (data as any).deliveryNumber || '',
+        releaseNumber: (data as any).releaseNumber || '',
+        bookingNumber2: (data as any).bookingNumber2 || '',
+        driverName: (data as any).driverName || '',
+        truckNumber: (data as any).truckNumber || '',
+        trailerNumber: (data as any).trailerNumber || '',
+        containerNumber: (data as any).containerNumber || '',
+        sealNumber: (data as any).sealNumber || '',
         notes: data.notes || ''
       }
       
@@ -494,7 +437,7 @@ export const LoadDetail = () => {
     console.log('Save Load:', values)
     
     // Save materials to localStorage
-    localStorage.setItem(`load-materials-${params.id}`, JSON.stringify(materials))
+    localStorage.setItem(`load-materials-${params?.id}`, JSON.stringify(materials))
     
     // Update saved materials and count
     // setSavedMaterials([...materials])
@@ -503,9 +446,9 @@ export const LoadDetail = () => {
     // Update loadData materials count
     const updatedLoadData = { ...loadData, materialsCount: materials.length }
     setLoadData(updatedLoadData)
-    localStorage.setItem(`load-form-data-${params.id}`, JSON.stringify(updatedLoadData))
+    localStorage.setItem(`load-form-data-${params?.id}`, JSON.stringify(updatedLoadData))
     
-    console.log(`Saved ${materials.length} materials for load ${params.id}`)
+    console.log(`Saved ${materials.length} materials for load ${params?.id}`)
     
     setHasChanges(false)
     setOriginalFormData(values)
@@ -562,13 +505,314 @@ export const LoadDetail = () => {
   const statusColors = getStatusColor(loadData.status)
 
   return (
-    <>
+    <div>
       <style>
         {`
           @keyframes pulse {
             0% { opacity: 1; }
             50% { opacity: 0.5; }
             100% { opacity: 1; }
+          }
+          
+          /* Global override for ALL disabled inputs - highest priority */
+          input:disabled,
+          input[disabled],
+          .ant-input:disabled,
+          .ant-input[disabled],
+          .ant-input-number:disabled,
+          .ant-input-number[disabled],
+          .ant-input-number-input:disabled,
+          .ant-input-number-input[disabled] {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            box-shadow: none !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+          }
+          
+          /* Target all possible Ant Design input classes */
+          .ant-input.ant-input-disabled,
+          .ant-input-number.ant-input-number-disabled,
+          .ant-input-number-input.ant-input-number-input-disabled {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Disabled field styling */
+          .ant-input:disabled,
+          .ant-input-number:disabled,
+          .ant-select:disabled,
+          .ant-picker:disabled {
+            background-color: #f8f9fa !important;
+            border: none !important;
+            color: #495057 !important;
+          }
+          
+          .ant-input:disabled .ant-input,
+          .ant-input-number:disabled .ant-input-number-input,
+          .ant-select:disabled .ant-select-selector,
+          .ant-picker:disabled .ant-picker-input input {
+            background-color: #f8f9fa !important;
+            border: none !important;
+            color: #495057 !important;
+          }
+          
+          /* Override all possible border styles for disabled inputs */
+          .ant-input.ant-input-disabled,
+          .ant-input[disabled],
+          .ant-input:disabled,
+          .ant-input-number.ant-input-number-disabled,
+          .ant-input-number[disabled],
+          .ant-input-number:disabled {
+            border: none !important;
+            border-color: transparent !important;
+            border-width: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Override input wrapper borders */
+          .ant-input.ant-input-disabled .ant-input,
+          .ant-input[disabled] .ant-input,
+          .ant-input:disabled .ant-input,
+          .ant-input-number.ant-input-number-disabled .ant-input-number-input,
+          .ant-input-number[disabled] .ant-input-number-input,
+          .ant-input-number:disabled .ant-input-number-input {
+            border: none !important;
+            border-color: transparent !important;
+            border-width: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Override focus and hover states for disabled inputs */
+          .ant-input.ant-input-disabled:hover,
+          .ant-input[disabled]:hover,
+          .ant-input:disabled:hover,
+          .ant-input-number.ant-input-number-disabled:hover,
+          .ant-input-number[disabled]:hover,
+          .ant-input-number:disabled:hover {
+            border: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+          }
+          
+          .ant-input.ant-input-disabled:focus,
+          .ant-input[disabled]:focus,
+          .ant-input:disabled:focus,
+          .ant-input-number.ant-input-number-disabled:focus,
+          .ant-input-number[disabled]:focus,
+          .ant-input-number:disabled:focus {
+            border: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+          }
+          
+          /* Force remove all borders from disabled InputNumber components */
+          .ant-input-number:disabled,
+          .ant-input-number.ant-input-number-disabled,
+          .ant-input-number[disabled] {
+            border: 0 !important;
+            border-style: none !important;
+            border-width: 0 !important;
+            border-color: transparent !important;
+            border-image: none !important;
+            outline: 0 !important;
+            outline-offset: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+          }
+          
+          /* Target the actual input element inside InputNumber */
+          .ant-input-number:disabled .ant-input-number-input,
+          .ant-input-number.ant-input-number-disabled .ant-input-number-input,
+          .ant-input-number[disabled] .ant-input-number-input {
+            border: 0 !important;
+            border-style: none !important;
+            border-width: 0 !important;
+            border-color: transparent !important;
+            border-image: none !important;
+            outline: 0 !important;
+            outline-offset: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+          }
+          
+          /* Force remove all borders from disabled Input components */
+          .ant-input:disabled,
+          .ant-input.ant-input-disabled,
+          .ant-input[disabled] {
+            border: 0 !important;
+            border-style: none !important;
+            border-width: 0 !important;
+            border-color: transparent !important;
+            border-image: none !important;
+            outline: 0 !important;
+            outline-offset: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+          }
+          
+          /* Target all possible input elements */
+          .ant-input:disabled,
+          .ant-input.ant-input-disabled,
+          .ant-input[disabled],
+          .ant-input:disabled input,
+          .ant-input.ant-input-disabled input,
+          .ant-input[disabled] input {
+            border: 0 !important;
+            border-style: none !important;
+            border-width: 0 !important;
+            border-color: transparent !important;
+            border-image: none !important;
+            outline: 0 !important;
+            outline-offset: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+          }
+          
+          /* Nuclear approach - target every possible border property */
+          .ant-input:disabled,
+          .ant-input.ant-input-disabled,
+          .ant-input[disabled],
+          .ant-input-number:disabled,
+          .ant-input-number.ant-input-number-disabled,
+          .ant-input-number[disabled] {
+            border: none !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            border-radius: 0 !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+            -ms-box-shadow: none !important;
+            -o-box-shadow: none !important;
+          }
+          
+          /* Target all child elements */
+          .ant-input:disabled *,
+          .ant-input.ant-input-disabled *,
+          .ant-input[disabled] *,
+          .ant-input-number:disabled *,
+          .ant-input-number.ant-input-number-disabled *,
+          .ant-input-number[disabled] * {
+            border: none !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            -moz-box-shadow: none !important;
+            -ms-box-shadow: none !important;
+            -o-box-shadow: none !important;
+          }
+          
+          /* Specific styling for disabled select fields */
+          .ant-select:disabled .ant-select-selector {
+            background-color: #f8f9fa !important;
+            border: none !important;
+            color: #495057 !important;
+            box-shadow: none !important;
+          }
+          
+          .ant-select:disabled .ant-select-selection-item {
+            color: #495057 !important;
+          }
+          
+          /* Override text color for disabled select fields */
+          .ant-select.ant-select-disabled .ant-select-selection-item,
+          .ant-select[disabled] .ant-select-selection-item,
+          .ant-select:disabled .ant-select-selection-item,
+          .ant-select.ant-select-disabled .ant-select-selection-placeholder,
+          .ant-select[disabled] .ant-select-selection-placeholder,
+          .ant-select:disabled .ant-select-selection-placeholder {
+            color: #495057 !important;
+          }
+          
+          /* Override all text elements in disabled select */
+          .ant-select.ant-select-disabled .ant-select-selector *,
+          .ant-select[disabled] .ant-select-selector *,
+          .ant-select:disabled .ant-select-selector * {
+            color: #495057 !important;
+          }
+          
+          .ant-select:disabled .ant-select-arrow {
+            color: #6b7280 !important;
+          }
+          
+          /* Hide chevron icon for disabled select fields */
+          .ant-select.ant-select-disabled .ant-select-arrow,
+          .ant-select[disabled] .ant-select-arrow,
+          .ant-select:disabled .ant-select-arrow {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* Hide all arrow elements in disabled selects */
+          .ant-select.ant-select-disabled .ant-select-selector .ant-select-arrow,
+          .ant-select[disabled] .ant-select-selector .ant-select-arrow,
+          .ant-select:disabled .ant-select-selector .ant-select-arrow {
+            display: none !important;
+            visibility: hidden !important;
+            opacity: 0 !important;
+          }
+          
+          /* Override all possible border styles for disabled selects */
+          .ant-select.ant-select-disabled .ant-select-selector,
+          .ant-select[disabled] .ant-select-selector,
+          .ant-select:disabled .ant-select-selector {
+            border: none !important;
+            border-color: transparent !important;
+            border-width: 0 !important;
+            outline: none !important;
+            box-shadow: none !important;
+          }
+          
+          /* Override focus and hover states for disabled selects */
+          .ant-select.ant-select-disabled .ant-select-selector:hover,
+          .ant-select[disabled] .ant-select-selector:hover,
+          .ant-select:disabled .ant-select-selector:hover {
+            border: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
+          }
+          
+          .ant-select.ant-select-disabled .ant-select-selector:focus,
+          .ant-select[disabled] .ant-select-selector:focus,
+          .ant-select:disabled .ant-select-selector:focus {
+            border: none !important;
+            border-color: transparent !important;
+            box-shadow: none !important;
           }
         `}
       </style>
@@ -688,9 +932,16 @@ export const LoadDetail = () => {
                 <Form.Item
                   label="Related Sales Order #"
                   name="relatedSO"
-                  allowClear
                 >
-                  <Select placeholder="Select SO">
+                  <Select 
+                    placeholder="Select SO"
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  >
                     <Select.Option value="#002001">#002001</Select.Option>
                     <Select.Option value="#002002">#002002</Select.Option>
                     <Select.Option value="#002003">#002003</Select.Option>
@@ -699,9 +950,16 @@ export const LoadDetail = () => {
                 <Form.Item
                   label="Booking #"
                   name="bookingNumber"
-                  allowClear
                 >
-                  <Select placeholder="Select Booking">
+                  <Select 
+                    placeholder="Select Booking"
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  >
                     <Select.Option value="#300001">#300001</Select.Option>
                     <Select.Option value="#300002">#300002</Select.Option>
                     <Select.Option value="#300003">#300003</Select.Option>
@@ -713,7 +971,17 @@ export const LoadDetail = () => {
                   required={false}
                   rules={[{ required: true }]}
                 >
-                  <DatePicker style={{ width: '100%' }} />
+                  <DatePicker 
+                    style={{ 
+                      width: '100%',
+                      ...(isEditable ? {} : {
+                        backgroundColor: '#f8f9fa',
+                        border: 'none',
+                        color: '#495057'
+                      })
+                    }} 
+                    disabled={!isEditable}
+                  />
                 </Form.Item>
                 <Form.Item
                   label={<span>Facility <span style={{ color: 'red' }}>*</span></span>}
@@ -721,7 +989,15 @@ export const LoadDetail = () => {
                   required={false}
                   rules={[{ required: true }]}
                 >
-                  <Select placeholder="Select Facility">
+                  <Select 
+                    placeholder="Select Facility"
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  >
                     <Select.Option value="ReMatter Headquarters">ReMatter Headquarters</Select.Option>
                     <Select.Option value="ReMatter Ohio">ReMatter Ohio</Select.Option>
                     <Select.Option value="ReMatter San Diego">ReMatter San Diego</Select.Option>
@@ -741,40 +1017,139 @@ export const LoadDetail = () => {
               <h3 style={{ marginBottom: '16px', fontSize: '16px', fontWeight: '600' }}>Shipping Carrier Information</h3>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '0px 12px' }}>
                 <Form.Item label="Shipping Carrier" name="shippingCarrier">
-                  <Input placeholder="Enter carrier name" />
+                  <Input 
+                    placeholder="Enter carrier name" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="SCAC" name="scac">
-                  <Input placeholder="Enter SCAC code" />
+                  <Input 
+                    placeholder="Enter SCAC code" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Freight Forwarder" name="freightForwarder">
-                  <Input placeholder="Enter forwarder name" />
+                  <Input 
+                    placeholder="Enter forwarder name" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Truck Freight" name="truckFreight">
-                  <InputNumber style={{ width: '100%' }} placeholder="Enter amount" />
+                  <InputNumber 
+                    style={{ 
+                      width: '100%',
+                      ...(isEditable ? {} : {
+                        backgroundColor: '#f8f9fa',
+                        border: 'none',
+                        color: '#495057'
+                      })
+                    }} 
+                    placeholder="Enter amount" 
+                    disabled={!isEditable}
+                  />
                 </Form.Item>
                 <Form.Item label="Delivery Number" name="deliveryNumber">
-                  <Input placeholder="Enter delivery number" />
+                  <Input 
+                    placeholder="Enter delivery number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Release Number" name="releaseNumber">
-                  <Input placeholder="Enter release number" />
+                  <Input 
+                    placeholder="Enter release number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Booking Number" name="bookingNumber2">
-                  <Input placeholder="Enter booking number" />
+                  <Input 
+                    placeholder="Enter booking number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Driver Name" name="driverName">
-                  <Input placeholder="Enter driver name" />
+                  <Input 
+                    placeholder="Enter driver name" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Truck Number" name="truckNumber">
-                  <Input placeholder="Enter truck number" />
+                  <Input 
+                    placeholder="Enter truck number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Trailer Number" name="trailerNumber">
-                  <Input placeholder="Enter trailer number" />
+                  <Input 
+                    placeholder="Enter trailer number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Container Number" name="containerNumber">
-                  <Input placeholder="Enter container number" />
+                  <Input 
+                    placeholder="Enter container number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
                 <Form.Item label="Seal Number" name="sealNumber">
-                  <Input placeholder="Enter seal number" />
+                  <Input 
+                    placeholder="Enter seal number" 
+                    disabled={!isEditable}
+                    style={isEditable ? {} : {
+                      backgroundColor: '#f8f9fa',
+                      border: 'none',
+                      color: '#495057'
+                    }}
+                  />
                 </Form.Item>
               </div>
             </div>
@@ -792,6 +1167,7 @@ export const LoadDetail = () => {
                   type="primary" 
                   icon={<Plus size={16} />}
                   onClick={() => setMaterials([{ id: 1 }])}
+                  disabled={!isEditable}
                 >
                   Add Material
                 </Button>
@@ -864,19 +1240,21 @@ export const LoadDetail = () => {
                       }}>
                         <button
                           onClick={() => setRequestMode('request')}
+                          disabled={!isEditable}
                           style={{
                             padding: '8px 16px',
                             borderRadius: '6px',
                             border: 'none',
                             background: requestMode === 'request' ? '#3b82f6' : 'transparent',
-                            color: requestMode === 'request' ? '#fff' : '#374151',
+                            color: !isEditable ? '#9ca3af' : (requestMode === 'request' ? '#fff' : '#374151'),
                             fontWeight: '500',
                             fontSize: '14px',
-                            cursor: 'pointer',
+                            cursor: !isEditable ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px'
+                            gap: '6px',
+                            opacity: !isEditable ? 0.5 : 1
                           }}
                         >
                           <Monitor size={16} />
@@ -884,19 +1262,21 @@ export const LoadDetail = () => {
                         </button>
                         <button
                           onClick={() => setRequestMode('staged')}
+                          disabled={!isEditable}
                           style={{
                             padding: '8px 16px',
                             borderRadius: '6px',
                             border: 'none',
                             background: requestMode === 'staged' ? '#3b82f6' : 'transparent',
-                            color: requestMode === 'staged' ? '#fff' : '#374151',
+                            color: !isEditable ? '#9ca3af' : (requestMode === 'staged' ? '#fff' : '#374151'),
                             fontWeight: '500',
                             fontSize: '14px',
-                            cursor: 'pointer',
+                            cursor: !isEditable ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '6px'
+                            gap: '6px',
+                            opacity: !isEditable ? 0.5 : 1
                           }}
                         >
                           <Weight size={16} />
@@ -919,16 +1299,17 @@ export const LoadDetail = () => {
                       }}>
                         <button
                           onClick={() => requestMode === 'staged' && setShowScales(!showScales)}
-                          disabled={requestMode === 'request'}
+                          disabled={requestMode === 'request' || !isEditable}
                           style={{
                             width: '40px',
                             height: '20px',
                             borderRadius: '10px',
                             border: 'none',
                             background: showScales ? '#3b82f6' : '#d1d5db',
-                            cursor: requestMode === 'request' ? 'not-allowed' : 'pointer',
+                            cursor: (requestMode === 'request' || !isEditable) ? 'not-allowed' : 'pointer',
                             position: 'relative',
-                            transition: 'background-color 0.2s'
+                            transition: 'background-color 0.2s',
+                            opacity: (!isEditable) ? 0.5 : 1
                           }}
                         >
                           <div
@@ -995,12 +1376,21 @@ export const LoadDetail = () => {
                               <td style={{ padding: '6px' }} onClick={(e) => e.stopPropagation()}>
                                 <Select
                                   placeholder="Select Material"
-                                  style={{ width: '100%', height: '40px' }}
+                                  style={{ 
+                                    width: '100%', 
+                                    height: '40px',
+                                    ...(isEditable ? {} : {
+                                      backgroundColor: '#f8f9fa',
+                                      border: 'none',
+                                      color: '#495057'
+                                    })
+                                  }}
                                   value={material.contractMaterial}
+                                  disabled={!isEditable}
                                   onChange={(value) => updateMaterial(index, 'contractMaterial', value)}
                                   showSearch
                                   filterOption={(input, option) =>
-                                    (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
                                   }
                                 >
                                   {availableMaterials.map((mat) => (
@@ -1027,7 +1417,13 @@ export const LoadDetail = () => {
                                       <InputNumber
                                         value={material.netWeight || 0}
                                         onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
-                                        style={{ 
+                                        disabled={!isEditable}
+                                        style={{
+                                          ...(isEditable ? {} : {
+                                            backgroundColor: '#f8f9fa',
+                                            border: 'none',
+                                            color: '#495057'
+                                          }), 
                                           flex: 1,
                                           border: 'none',
                                           background: 'transparent',
@@ -1063,20 +1459,24 @@ export const LoadDetail = () => {
                                         <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
                                           <InputNumber
                                             value={displayWeight}
-                                            onChange={(val) => {
-                                              // Always store weight in pounds internally
-                                              const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, material.pricingUnit || 'lb', 'lb')
-                                              updateMaterial(index, 'netWeight', newWeight)
-                                            }}
-                                            style={{ 
+                                            disabled={!isEditable}
+                                            style={{
+                                              ...(isEditable ? {} : {
+                                                backgroundColor: '#f8f9fa',
+                                                border: 'none',
+                                                color: '#495057'
+                                              }),
                                               flex: 1,
                                               border: 'none',
                                               background: 'transparent',
                                               textAlign: 'right',
                                               boxShadow: 'none',
-                                              padding: 0,
-                                              color: '#071429',
-                                              fontWeight: '500'
+                                              paddingRight: '6px'
+                                            }}
+                                            onChange={(val) => {
+                                              // Always store weight in pounds internally
+                                              const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, material.pricingUnit || 'lb', 'lb')
+                                              updateMaterial(index, 'netWeight', newWeight)
                                             }}
                                             min={0}
                                             precision={2}
@@ -1110,32 +1510,36 @@ export const LoadDetail = () => {
                                   }}>
                                     <button
                                       onClick={() => updateMaterial(index, 'isFormula', false)}
+                                      disabled={!isEditable}
                                       style={{
                                         padding: '4px 8px',
                                         borderRadius: '3px',
                                         border: 'none',
                                         background: !material.isFormula ? '#3b82f6' : 'transparent',
-                                        color: !material.isFormula ? '#fff' : '#374151',
+                                        color: !isEditable ? '#9ca3af' : (!material.isFormula ? '#fff' : '#374151'),
                                         fontWeight: '500',
                                         fontSize: '12px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
+                                        cursor: !isEditable ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.2s',
+                                        opacity: !isEditable ? 0.5 : 1
                                       }}
                                     >
                                       $
                                     </button>
                                     <button
                                       onClick={() => updateMaterial(index, 'isFormula', true)}
+                                      disabled={!isEditable}
                                       style={{
                                         padding: '4px 8px',
                                         borderRadius: '3px',
                                         border: 'none',
                                         background: material.isFormula ? '#3b82f6' : 'transparent',
-                                        color: material.isFormula ? '#fff' : '#374151',
+                                        color: !isEditable ? '#9ca3af' : (material.isFormula ? '#fff' : '#374151'),
                                         fontWeight: '500',
                                         fontSize: '12px',
-                                        cursor: 'pointer',
-                                        transition: 'all 0.2s'
+                                        cursor: !isEditable ? 'not-allowed' : 'pointer',
+                                        transition: 'all 0.2s',
+                                        opacity: !isEditable ? 0.5 : 1
                                       }}
                                     >
                                       fx
@@ -1146,7 +1550,7 @@ export const LoadDetail = () => {
                                   {material.isFormula ? (
                                     <div style={{ position: 'relative', flex: 1 }} className="formula-input">
                                       <Input
-                                        ref={(el) => { inputRefs.current[index] = el }}
+                                        ref={(el) => { inputRefs.current[index] = el as any }}
                                         value={typeof material.unitPrice === 'string' ? material.unitPrice : ''}
                                         onChange={(e) => {
                                           const newValue = e.target.value
@@ -1260,7 +1664,13 @@ export const LoadDetail = () => {
                                     <InputNumber
                                       value={typeof material.unitPrice === 'number' ? material.unitPrice : 0}
                                       onChange={(val) => updateMaterial(index, 'unitPrice', val || 0)}
-                                      style={{ 
+                                      disabled={!isEditable}
+                                      style={{
+                                        ...(isEditable ? {} : {
+                                          backgroundColor: '#f8f9fa',
+                                          border: 'none',
+                                          color: '#495057'
+                                        }), 
                                         flex: 1,
                                         border: 'none',
                                         background: 'transparent',
@@ -1278,8 +1688,16 @@ export const LoadDetail = () => {
                                 <Select
                                   value={material.pricingUnit || 'lb'}
                                   onChange={(value) => updateMaterial(index, 'pricingUnit', value)}
-                                  style={{ width: '80px', height: '40px' }}
-                                  disabled={(() => {
+                                  style={{ 
+                                    width: '80px', 
+                                    height: '40px',
+                                    ...(isEditable ? {} : {
+                                      backgroundColor: '#f8f9fa',
+                                      border: 'none',
+                                      color: '#495057'
+                                    })
+                                  }}
+                                  disabled={!isEditable || (() => {
                                     // Only disable for inherently "each" materials, not user-selected "each"
                                     const selectedMaterial = availableMaterials.find(am => am.name === material.contractMaterial)
                                     return selectedMaterial?.isEachMaterial || false
@@ -1296,12 +1714,21 @@ export const LoadDetail = () => {
                                 <Select
                                   mode="multiple"
                                   placeholder="Select Tags"
-                                  style={{ width: '120px', height: '40px' }}
+                                  style={{ 
+                                    width: '120px', 
+                                    height: '40px',
+                                    ...(isEditable ? {} : {
+                                      backgroundColor: '#f8f9fa',
+                                      border: 'none',
+                                      color: '#495057'
+                                    })
+                                  }}
                                   value={material.inventoryTags || []}
                                   onChange={(value) => updateMaterial(index, 'inventoryTags', value)}
+                                  disabled={!isEditable}
                                   maxTagCount={1}
                                   maxTagTextLength={6}
-                                  tagRender={(props) => {
+                                  tagRender={(props: any) => {
                                     const { label, closable, onClose } = props;
                                     const tags = material.inventoryTags || [];
                                     
@@ -1353,7 +1780,7 @@ export const LoadDetail = () => {
                                         );
                                       }
                                     }
-                                    return null;
+                                    return <span></span>;
                                   }}
                                 >
                                   <Select.Option value="TAG001">TAG001</Select.Option>
@@ -1384,6 +1811,7 @@ export const LoadDetail = () => {
                                   danger
                                   icon={<Trash2 size={16} />}
                                   style={{ width: '40px', height: '40px' }}
+                                  disabled={!isEditable}
                                   onClick={() => {
                                     const newMaterials = materials.filter((_, i) => i !== index)
                                     setMaterials(newMaterials)
@@ -1399,6 +1827,7 @@ export const LoadDetail = () => {
                                   placeholder="Select Material"
                                   style={{ width: '100%', height: '40px' }}
                                   value={material.contractMaterial}
+                                  disabled={!isEditable}
                                   onChange={(value) => {
                                     // Check if it's a tagged material and prefill weights
                                     const selectedTaggedMaterial = availableTaggedMaterials.find(atm => atm.name === value)
@@ -1433,7 +1862,7 @@ export const LoadDetail = () => {
                                   }}
                                   showSearch
                                   filterOption={(input, option) =>
-                                    (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+                                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
                                   }
                                 >
                                   {(material.isTaggedMaterial ? availableTaggedMaterials : availableMaterials).map((mat) => (
@@ -1470,6 +1899,7 @@ export const LoadDetail = () => {
                                         <InputNumber
                                           value={material.grossWeight || 0}
                                           onChange={(val) => updateMaterial(index, 'grossWeight', val || 0)}
+                                          disabled={!isEditable}
                                           style={{ 
                                             flex: 1,
                                             border: 'none',
@@ -1531,6 +1961,7 @@ export const LoadDetail = () => {
                                             <InputNumber
                                               value={material.tareWeight || 0}
                                               onChange={(val) => updateMaterial(index, 'tareWeight', val || 0)}
+                                              disabled={!isEditable}
                                               style={{ 
                                                 flex: 1,
                                                 border: 'none',
@@ -1587,6 +2018,7 @@ export const LoadDetail = () => {
                                     danger
                                     icon={<Trash2 size={16} />}
                                     style={{ width: '40px', height: '40px' }}
+                                    disabled={!isEditable}
                                     onClick={() => {
                                       const newMaterials = materials.filter((_, i) => i !== index)
                                       setMaterials(newMaterials)
@@ -1712,8 +2144,16 @@ export const LoadDetail = () => {
                         <Select
                           value={selectedScale}
                           onChange={setSelectedScale}
-                          style={{ width: '80px' }}
+                          style={{ 
+                            width: '80px',
+                            ...(isEditable ? {} : {
+                              backgroundColor: '#f8f9fa',
+                              border: 'none',
+                              color: '#495057'
+                            })
+                          }}
                           size="small"
+                          disabled={!isEditable}
                         >
                           <Select.Option value="FS1">FS1</Select.Option>
                           <Select.Option value="FS2">FS2</Select.Option>
@@ -1923,13 +2363,14 @@ export const LoadDetail = () => {
                         isFormula: false,
                         selectedExchange: 'COMEX',
                         isTaggedMaterial: false,
-                        tagNumber: ''
+                        tagNumber: '',
                       }
                       const newMaterials = [...materials, newMaterial]
                       setMaterials(newMaterials)
                       setHasChanges(true)
                     }}
                     style={{ height: '40px' }}
+                    disabled={!isEditable}
                   >
                     Add Material
                   </Button>
@@ -1937,6 +2378,7 @@ export const LoadDetail = () => {
                   {requestMode === 'staged' && (
                     <Button
                       icon={<Plus size={16} />}
+                      disabled={!isEditable}
                       onClick={() => {
                         const newMaterial: Material = {
                           id: Date.now(),
@@ -1952,7 +2394,7 @@ export const LoadDetail = () => {
                           grossWeight: 0,
                           tareWeight: 0,
                           isTaggedMaterial: true,
-                          tagNumber: ''
+                          tagNumber: '',
                         }
                         const newMaterials = [...materials, newMaterial]
                         setMaterials(newMaterials)
@@ -2011,6 +2453,7 @@ export const LoadDetail = () => {
           </div>
         )}
       </div>
+      </div>
 
       {/* Fixed Bottom Action Bar */}
       {hasChanges && (
@@ -2027,11 +2470,10 @@ export const LoadDetail = () => {
           gap: '12px',
           zIndex: 1000
         }}>
-          <Button onClick={handleDiscard}>Discard</Button>
-          <Button type="primary" onClick={handleSave}>Save updates</Button>
+          <Button onClick={handleDiscard} disabled={!isEditable}>Discard</Button>
+          <Button type="primary" onClick={handleSave} disabled={!isEditable}>Save updates</Button>
         </div>
       )}
-      </div>
-    </>
+    </div>
   )
 }

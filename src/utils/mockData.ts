@@ -41,6 +41,14 @@ export const paymentTerms = ['No Contact', 'Net 30', 'Net 60', 'Net 90', 'Cash o
 export const freightTerms = ['No Contact', 'FOB Origin', 'FOB Destination', 'CIF', 'EXW']
 export const statuses = ['Open', 'Closed', 'Draft', 'Shipped', 'Voided']
 
+// Load-specific data
+export const loadStatuses = ['Unassigned', 'Open', 'Pending Shipment', 'Pending Reconciliation', 'Reconciled', 'Closed', 'Voided']
+export const shippingCarriers = [
+  'ShipSmart Headquarters', 'ShipSmart Ontario', 'ShipSmart Puerto Rico',
+  'ShipSmart Stanford', 'ShipSmart Texas', 'ShipSmart California',
+  'ShipSmart Nevada', 'ShipSmart Colorado', 'ShipSmart Florida'
+]
+
 // Available materials for SO generation
 export const availableMaterials = [
   { id: '101', name: '101 - Aluminum Cans', unit: 'lb', isEachMaterial: false },
@@ -170,4 +178,81 @@ export const generateSOData = (soNumber: string) => {
     status,
     materials
   }
+}
+
+// Generate consistent data for a specific Load number
+export const generateLoadData = (loadNumber: string) => {
+  const seed = parseInt(loadNumber.replace('#', ''))
+  const rng = new SeededRandom(seed)
+  
+  const facility = facilities[rng.nextInt(facilities.length)]
+  const customer = customers[rng.nextInt(customers.length)]
+  const shippingCarrier = shippingCarriers[rng.nextInt(shippingCarriers.length)]
+  const status = loadStatuses[rng.nextInt(loadStatuses.length)]
+  
+  // Generate dates based on load number
+  const baseDate = new Date('2024-08-20')
+  const daysOffset = rng.nextInt(10)
+  const shipDate = new Date(baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000)
+  const createdDate = new Date(shipDate.getTime() - 2 * 24 * 60 * 60 * 1000)
+  
+  // Generate materials count (1-20 materials)
+  const materialsCount = rng.nextInt(20) + 1
+  
+  // Generate materials for this load
+  const materials = []
+  for (let i = 0; i < materialsCount; i++) {
+    const material = availableMaterials[rng.nextInt(availableMaterials.length)]
+    const netWeight = material.isEachMaterial 
+      ? rng.nextInt(50) + 1  // 1-50 for "ea" materials
+      : rng.nextInt(5000) + 100  // 100-5100 for "lb" materials
+    
+    const unitPrice = rng.nextInt(20) + 1  // $1-$20 per unit
+    const pricingUnit = material.isEachMaterial ? 'ea' : 'lb'
+    const estimatedTotal = netWeight * unitPrice
+    
+    materials.push({
+      id: `${loadNumber}-${i + 1}`,
+      contractMaterial: material.name,
+      netWeight,
+      unitPrice,
+      pricingUnit,
+      estimatedTotal,
+      isFormula: false,
+      isEachMaterial: material.isEachMaterial,
+      selectedExchange: 'COMEX'
+    })
+  }
+  
+  return {
+    loadNumber,
+    expectedShipDate: shipDate.toISOString().split('T')[0],
+    facility,
+    relatedSO: rng.nextInt(3) === 0 ? `#${String(seed + 1000).padStart(6, '0')}` : '',
+    bookingNumber: rng.nextInt(3) === 0 ? `#${String(seed + 2000).padStart(6, '0')}` : '',
+    shippingCarrier,
+    customer,
+    status,
+    materialsCount,
+    netWeight: rng.nextInt(2000) + 100,
+    createdOn: createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    createdBy: accountReps[rng.nextInt(accountReps.length)],
+    materials,
+    // Shipping details
+    containerNumber: '',
+    sealNumber: '',
+    truckFreight: '',
+    notes: '',
+    photosCount: 0
+  }
+}
+
+// Generate all 50 loads for the table
+export const generateAllLoadsData = () => {
+  const data = []
+  for (let i = 0; i < 50; i++) {
+    const loadNumber = `#${String(860000 + i).padStart(6, '0')}`
+    data.push(generateLoadData(loadNumber))
+  }
+  return data
 }
