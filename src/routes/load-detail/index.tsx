@@ -1286,6 +1286,10 @@ export const LoadDetail = () => {
                     placeholder={loadData?.status === 'Unassigned' ? 'No SO (Unassigned Load)' : 'Select SO'}
                     disabled={!isEditable}
                     allowClear
+                    showSearch
+filterOption={(input, option) =>
+  (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
+}
                     onChange={handleSOSelection}
                     value={loadData?.status === 'Unassigned' ? null : loadData?.relatedSO}
                     style={isEditable ? {} : {
@@ -1348,6 +1352,10 @@ export const LoadDetail = () => {
                   <Select 
                     placeholder="Select Facility"
                     disabled={!isEditable}
+                    showSearch
+filterOption={(input, option) =>
+  (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
+}
                     style={isEditable ? {} : {
                       backgroundColor: '#f8f9fa',
                       border: 'none',
@@ -2352,9 +2360,9 @@ export const LoadDetail = () => {
                                   disabled={!isEditable}
                                   onChange={(value) => updateMaterial(index, 'contractMaterial', value)}
                                   showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                                  }
+filterOption={(input, option) =>
+  (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
+}
                                 >
                                   {availableMaterials.map((mat) => (
                                     <Select.Option key={mat.name} value={mat.name}>
@@ -2824,9 +2832,9 @@ export const LoadDetail = () => {
                                     }
                                   }}
                                   showSearch
-                                  filterOption={(input, option) =>
-                                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                                  }
+filterOption={(input, option) =>
+  (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
+}
                                 >
                                   {(material.isTaggedMaterial ? availableTaggedMaterials : availableMaterials).map((mat) => (
                                     <Select.Option key={mat.name} value={mat.name}>
