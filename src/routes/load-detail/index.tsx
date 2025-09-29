@@ -2874,7 +2874,7 @@ export const LoadDetail = () => {
                                 })
                                 
                                 const lbNetTotal = lbMaterials.reduce((sum, m) => sum + ((m.grossWeight || 0) - (m.tareWeight || 0)), 0)
-                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.grossWeight || 0), 0)
                                 
                                 return (
                                   <>
