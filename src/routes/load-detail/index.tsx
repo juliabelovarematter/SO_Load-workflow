@@ -1640,7 +1640,6 @@ export const LoadDetail = () => {
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
                           gap: '1px',
                           padding: '12px 16px',
-                          borderBottom: '1px solid #f1f5f9',
                           alignItems: 'center'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
@@ -1721,7 +1720,6 @@ export const LoadDetail = () => {
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
                           gap: '1px',
                           padding: '12px 16px',
-                          borderBottom: '1px solid #f1f5f9',
                           alignItems: 'center'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
@@ -1802,7 +1800,6 @@ export const LoadDetail = () => {
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
                           gap: '1px',
                           padding: '12px 16px',
-                          borderBottom: '1px solid #f1f5f9',
                           alignItems: 'center'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
@@ -1883,7 +1880,6 @@ export const LoadDetail = () => {
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
                           gap: '1px',
                           padding: '12px 16px',
-                          borderBottom: '1px solid #f1f5f9',
                           alignItems: 'center'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
