@@ -1606,16 +1606,20 @@ export const LoadDetail = () => {
                       border: '1px solid #e5e7eb',
                       borderRadius: '8px',
                       backgroundColor: '#fff',
-                      overflow: 'hidden'
+                      overflow: 'auto',
+                      minWidth: '100%',
+                      width: '100%'
                     }}>
                       {/* Table Headers */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                        gap: '1px',
+                        gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                        gap: '8px',
                         backgroundColor: '#f8f9fa',
                         padding: '12px 16px',
-                        borderBottom: '1px solid #e5e7eb'
+                        borderBottom: '1px solid #e5e7eb',
+                        overflowX: 'auto',
+                        minWidth: '100%'
                       }}>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Materials</div>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Unit Price</div>
@@ -1637,11 +1641,13 @@ export const LoadDetail = () => {
                         {/* 101 - Aluminum Cans */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '12px',
+                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                          gap: '8px',
                           padding: '16px 20px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          overflowX: 'auto',
+                          minWidth: '100%'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             101 - Aluminum Cans
@@ -1727,11 +1733,13 @@ export const LoadDetail = () => {
                         {/* 100 - Aluminum Radiator */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '12px',
+                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                          gap: '8px',
                           padding: '16px 20px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          overflowX: 'auto',
+                          minWidth: '100%'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             100 - Aluminum Radiator...
@@ -1817,11 +1825,13 @@ export const LoadDetail = () => {
                         {/* 300 - Copper */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '12px',
+                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                          gap: '8px',
                           padding: '16px 20px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          overflowX: 'auto',
+                          minWidth: '100%'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             300 - Copper
@@ -1907,11 +1917,13 @@ export const LoadDetail = () => {
                         {/* 302 - Copper no. 2 */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '12px',
+                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                          gap: '8px',
                           padding: '16px 20px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          overflowX: 'auto',
+                          minWidth: '100%'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             302 - Copper no. 2
@@ -1997,11 +2009,13 @@ export const LoadDetail = () => {
                         {/* 303 - Copper no. 1 */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '12px',
+                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                          gap: '8px',
                           padding: '16px 20px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '8px',
+                          overflowX: 'auto',
+                          minWidth: '100%'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             303 - Copper no. 1
@@ -2088,12 +2102,14 @@ export const LoadDetail = () => {
                       {/* Summary Row */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                        gap: '1px',
+                        gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
+                        gap: '8px',
                         padding: '12px 16px',
                         backgroundColor: '#f8f9fa',
                         borderTop: '1px solid #e5e7eb',
-                        fontWeight: '600'
+                        fontWeight: '600',
+                        overflowX: 'auto',
+                        minWidth: '100%'
                       }}>
                         <div style={{ fontSize: '14px', color: '#374151' }}>
                           5 Materials
