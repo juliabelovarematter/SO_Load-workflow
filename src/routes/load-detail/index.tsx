@@ -1608,15 +1608,15 @@ export const LoadDetail = () => {
                       backgroundColor: '#fff',
                       overflow: 'auto',
                       width: '100%',
-                      minWidth: '900px'
+                      minWidth: '700px'
                     }}>
                       {/* Table Headers */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                        gap: '8px',
+                        gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                        gap: '6px',
                         backgroundColor: '#f8f9fa',
-                        padding: '12px 16px',
+                        padding: '8px 12px',
                         borderBottom: '1px solid #e5e7eb'
                       }}>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Materials</div>
@@ -1639,11 +1639,11 @@ export const LoadDetail = () => {
                         {/* 101 - Aluminum Cans */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                          gap: '8px',
-                          padding: '16px 20px',
+                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gap: '6px',
+                          padding: '12px 16px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '6px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             101 - Aluminum Cans
@@ -1697,7 +1697,7 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
+                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
@@ -1729,11 +1729,11 @@ export const LoadDetail = () => {
                         {/* 100 - Aluminum Radiator */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                          gap: '8px',
-                          padding: '16px 20px',
+                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gap: '6px',
+                          padding: '12px 16px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '6px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             100 - Aluminum Radiator...
@@ -1787,7 +1787,7 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
+                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
@@ -1819,11 +1819,11 @@ export const LoadDetail = () => {
                         {/* 300 - Copper */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                          gap: '8px',
-                          padding: '16px 20px',
+                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gap: '6px',
+                          padding: '12px 16px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '6px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             300 - Copper
@@ -1877,7 +1877,7 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
+                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
@@ -1909,11 +1909,11 @@ export const LoadDetail = () => {
                         {/* 302 - Copper no. 2 */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                          gap: '8px',
-                          padding: '16px 20px',
+                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gap: '6px',
+                          padding: '12px 16px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '6px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             302 - Copper no. 2
@@ -1967,7 +1967,7 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="3"
                               suffix="NT"
-                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
+                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
@@ -1999,11 +1999,11 @@ export const LoadDetail = () => {
                         {/* 303 - Copper no. 1 */}
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                          gap: '8px',
-                          padding: '16px 20px',
+                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gap: '6px',
+                          padding: '12px 16px',
                           alignItems: 'center',
-                          marginBottom: '8px'
+                          marginBottom: '6px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             303 - Copper no. 1
@@ -2057,7 +2057,7 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="4"
                               suffix="ea"
-                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
+                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
@@ -2090,9 +2090,9 @@ export const LoadDetail = () => {
                       {/* Summary Row */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'minmax(180px, 1fr) minmax(100px, 120px) minmax(100px, 120px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) minmax(120px, 140px) 40px',
-                        gap: '8px',
-                        padding: '12px 16px',
+                        gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                        gap: '6px',
+                        padding: '8px 12px',
                         backgroundColor: '#f8f9fa',
                         borderTop: '1px solid #e5e7eb',
                         fontWeight: '600'
