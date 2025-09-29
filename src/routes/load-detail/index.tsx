@@ -1654,7 +1654,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             500 lb
                           </div>
@@ -1664,7 +1668,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             450 lb
                           </div>
@@ -1703,7 +1711,8 @@ export const LoadDetail = () => {
                             backgroundColor: '#f8f9fa',
                             borderRadius: '6px',
                             fontSize: '14px',
-                            color: '#374151'
+                            color: '#374151',
+                            height: '40px'
                           }}>
                             <span style={{ color: '#6b7280' }}>$</span>
                             <span>1,230.90</span>
@@ -1734,7 +1743,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             500 lb
                           </div>
@@ -1744,7 +1757,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             450 lb
                           </div>
@@ -1783,7 +1800,8 @@ export const LoadDetail = () => {
                             backgroundColor: '#f8f9fa',
                             borderRadius: '6px',
                             fontSize: '14px',
-                            color: '#374151'
+                            color: '#374151',
+                            height: '40px'
                           }}>
                             <span style={{ color: '#6b7280' }}>$</span>
                             <span>5,000.50</span>
@@ -1814,7 +1832,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             500 lb
                           </div>
@@ -1824,7 +1846,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             450 lb
                           </div>
@@ -1863,7 +1889,8 @@ export const LoadDetail = () => {
                             backgroundColor: '#f8f9fa',
                             borderRadius: '6px',
                             fontSize: '14px',
-                            color: '#374151'
+                            color: '#374151',
+                            height: '40px'
                           }}>
                             <span style={{ color: '#6b7280' }}>$</span>
                             <span>910.00</span>
@@ -1894,7 +1921,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             12 NT
                           </div>
@@ -1904,7 +1935,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             10 NT
                           </div>
@@ -1943,7 +1978,8 @@ export const LoadDetail = () => {
                             backgroundColor: '#f8f9fa',
                             borderRadius: '6px',
                             fontSize: '14px',
-                            color: '#374151'
+                            color: '#374151',
+                            height: '40px'
                           }}>
                             <span style={{ color: '#6b7280' }}>$</span>
                             <span>18,865.50</span>
@@ -1974,7 +2010,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             10 ea
                           </div>
@@ -1984,7 +2024,11 @@ export const LoadDetail = () => {
                             borderRadius: '6px',
                             fontSize: '14px',
                             color: '#374151',
-                            textAlign: 'center'
+                            textAlign: 'center',
+                            height: '40px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
                           }}>
                             4 ea
                           </div>
@@ -2023,7 +2067,8 @@ export const LoadDetail = () => {
                             backgroundColor: '#f8f9fa',
                             borderRadius: '6px',
                             fontSize: '14px',
-                            color: '#374151'
+                            color: '#374151',
+                            height: '40px'
                           }}>
                             <span style={{ color: '#6b7280' }}>$</span>
                             <span>1,005.00</span>
