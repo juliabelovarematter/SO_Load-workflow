@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoute } from 'wouter'
-import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber } from 'antd'
+import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popconfirm, Dropdown } from 'antd'
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
@@ -445,6 +445,100 @@ export const LoadDetail = () => {
       form.setFieldValue('relatedSO', null)
     }
     setHasChanges(true)
+  }
+
+  // Delete SO Material function
+  const handleDeleteSOMaterial = (materialId: string) => {
+    const updatedSOmaterials = soMaterials.filter(material => material.id !== materialId)
+    setSoMaterials(updatedSOmaterials)
+    console.log(`🗑️ SO Material ${materialId} removed from load`)
+    setHasChanges(true)
+  }
+
+  // Add SO Material function
+  const handleAddSOMaterial = (materialId: string) => {
+    // All available SO materials
+    const availableSOMaterials = [
+      {
+        id: 'so-1',
+        contractMaterial: '101 - Aluminum Cans',
+        unitPrice: 0.12,
+        pricingUnit: 'lb',
+        soWeight: 500,
+        soRemainingWeight: 450,
+        requestedWeight: 450,
+        estimatedTotal: 1230.90,
+        source: 'so'
+      },
+      {
+        id: 'so-2', 
+        contractMaterial: '100 - Aluminum Radiator',
+        unitPrice: 0.12,
+        pricingUnit: 'lb',
+        soWeight: 500,
+        soRemainingWeight: 450,
+        requestedWeight: 450,
+        estimatedTotal: 5000.50,
+        source: 'so'
+      },
+      {
+        id: 'so-3',
+        contractMaterial: '300 - Copper',
+        unitPrice: 0.12,
+        pricingUnit: 'lb',
+        soWeight: 500,
+        soRemainingWeight: 450,
+        requestedWeight: 450,
+        estimatedTotal: 910.00,
+        source: 'so'
+      },
+      {
+        id: 'so-4',
+        contractMaterial: '302 - Copper no. 2',
+        unitPrice: 0.12,
+        pricingUnit: 'NT',
+        soWeight: 12,
+        soRemainingWeight: 10,
+        requestedWeight: 3,
+        estimatedTotal: 18865.50,
+        source: 'so'
+      },
+      {
+        id: 'so-5',
+        contractMaterial: '303 - Copper no. 1',
+        unitPrice: 3.00,
+        pricingUnit: 'ea',
+        soWeight: 10,
+        soRemainingWeight: 4,
+        requestedWeight: 4,
+        estimatedTotal: 1005.00,
+        source: 'so'
+      }
+    ]
+
+    // Find the specific material to add
+    const materialToAdd = availableSOMaterials.find(material => material.id === materialId)
+
+    if (materialToAdd) {
+      setSoMaterials(prev => [...prev, materialToAdd])
+      console.log(`➕ SO Material ${materialToAdd.id} added back to load`)
+      setHasChanges(true)
+    }
+  }
+
+  // Get available SO materials that can be added back (not currently in load)
+  const getAvailableSOMaterials = () => {
+    const allSOMaterials = [
+      { id: 'so-1', contractMaterial: '101 - Aluminum Cans' },
+      { id: 'so-2', contractMaterial: '100 - Aluminum Radiator' },
+      { id: 'so-3', contractMaterial: '300 - Copper' },
+      { id: 'so-4', contractMaterial: '302 - Copper no. 2' },
+      { id: 'so-5', contractMaterial: '303 - Copper no. 1' }
+    ]
+
+    return allSOMaterials.filter(material => 
+      !soMaterials.some(existing => existing.id === material.id)
+    )
   }
 
   // Update materials count whenever materials or soMaterials arrays change
@@ -1528,7 +1622,10 @@ export const LoadDetail = () => {
                           Request
                         </button>
                         <button
-                          onClick={() => setRequestMode('staged')}
+                          onClick={() => {
+                            setRequestMode('staged')
+                            setWeightMode('scale') // Auto-switch to Scale Unit Weight when Stage is enabled
+                          }}
                           disabled={!isEditable}
                           style={{
                             padding: '8px 16px',
@@ -1599,8 +1696,8 @@ export const LoadDetail = () => {
                   </div>
                 </div>
 
-                {/* SO Materials Table - Show for loads with SO (not Unassigned) */}
-                {loadData?.relatedSO && loadData?.status !== 'Unassigned' && (
+                {/* SO Materials Table - Show for loads with SO (not Unassigned) and not in stage mode */}
+                {loadData?.relatedSO && loadData?.status !== 'Unassigned' && requestMode !== 'staged' && (
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{
                       border: '1px solid #e5e7eb',
@@ -1613,7 +1710,7 @@ export const LoadDetail = () => {
                       {/* Table Headers */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                        gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                         gap: '6px',
                         backgroundColor: '#f8f9fa',
                         padding: '8px 12px',
@@ -1637,9 +1734,10 @@ export const LoadDetail = () => {
                       {/* SO Materials Rows - Exact data from screenshot */}
                       <div style={{ padding: '0' }}>
                         {/* 101 - Aluminum Cans */}
+                        {soMaterials.find(m => m.id === 'so-1') && (
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
                           padding: '12px 16px',
                           alignItems: 'center',
@@ -1722,14 +1820,24 @@ export const LoadDetail = () => {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
-                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            <Popconfirm
+                              title="Remove SO from the Load?"
+                              description="Material will be removed from the load, but still will be kept on the Sales Order. Do you want to proceed?"
+                              onConfirm={() => handleDeleteSOMaterial('so-1')}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            </Popconfirm>
                           </div>
                         </div>
+                        )}
 
                         {/* 100 - Aluminum Radiator */}
+                        {soMaterials.find(m => m.id === 'so-2') && (
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
                           padding: '12px 16px',
                           alignItems: 'center',
@@ -1812,14 +1920,24 @@ export const LoadDetail = () => {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
-                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            <Popconfirm
+                              title="Remove SO from the Load?"
+                              description="Material will be removed from the load, but still will be kept on the Sales Order. Do you want to proceed?"
+                              onConfirm={() => handleDeleteSOMaterial('so-2')}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            </Popconfirm>
                           </div>
                         </div>
+                        )}
 
                         {/* 300 - Copper */}
+                        {soMaterials.find(m => m.id === 'so-3') && (
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
                           padding: '12px 16px',
                           alignItems: 'center',
@@ -1902,14 +2020,24 @@ export const LoadDetail = () => {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
-                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            <Popconfirm
+                              title="Remove SO from the Load?"
+                              description="Material will be removed from the load, but still will be kept on the Sales Order. Do you want to proceed?"
+                              onConfirm={() => handleDeleteSOMaterial('so-3')}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            </Popconfirm>
                           </div>
                         </div>
+                        )}
 
                         {/* 302 - Copper no. 2 */}
+                        {soMaterials.find(m => m.id === 'so-4') && (
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
                           padding: '12px 16px',
                           alignItems: 'center',
@@ -1992,14 +2120,24 @@ export const LoadDetail = () => {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
-                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            <Popconfirm
+                              title="Remove SO from the Load?"
+                              description="Material will be removed from the load, but still will be kept on the Sales Order. Do you want to proceed?"
+                              onConfirm={() => handleDeleteSOMaterial('so-4')}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            </Popconfirm>
                           </div>
                         </div>
+                        )}
 
                         {/* 303 - Copper no. 1 */}
+                        {soMaterials.find(m => m.id === 'so-5') && (
                         <div style={{
                           display: 'grid',
-                          gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                          gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
                           padding: '12px 16px',
                           alignItems: 'center',
@@ -2082,15 +2220,24 @@ export const LoadDetail = () => {
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
-                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            <Popconfirm
+                              title="Remove SO from the Load?"
+                              description="Material will be removed from the load, but still will be kept on the Sales Order. Do you want to proceed?"
+                              onConfirm={() => handleDeleteSOMaterial('so-5')}
+                              okText="Yes"
+                              cancelText="No"
+                            >
+                              <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
+                            </Popconfirm>
                           </div>
                         </div>
+                        )}
                       </div>
 
                       {/* Summary Row */}
                       <div style={{
                         display: 'grid',
-                        gridTemplateColumns: 'minmax(140px, 1fr) minmax(80px, 100px) minmax(80px, 100px) minmax(90px, 110px) minmax(90px, 110px) minmax(90px, 110px) minmax(100px, 120px) 40px',
+                        gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                         gap: '6px',
                         padding: '8px 12px',
                         backgroundColor: '#f8f9fa',
@@ -2123,18 +2270,26 @@ export const LoadDetail = () => {
                         <div></div>
                       </div>
 
-                      {/* Add SO Material Button */}
+                      {/* Add SO Material Dropdown */}
                       <div style={{ padding: '16px' }}>
-                        <Button
-                          icon={<Plus size={16} />}
-                          style={{ 
-                            border: '1px dashed #d1d5db',
-                            backgroundColor: 'transparent',
-                            color: '#6b7280'
+                        <Dropdown
+                          menu={{
+                            items: getAvailableSOMaterials().map(material => ({
+                              key: material.id,
+                              label: material.contractMaterial,
+                              onClick: () => handleAddSOMaterial(material.id)
+                            }))
                           }}
+                          disabled={!isEditable || getAvailableSOMaterials().length === 0}
+                          trigger={['click']}
                         >
-                          Add SO Material
-                        </Button>
+                          <Button
+                            icon={<Plus size={16} />}
+                            style={{ height: '40px' }}
+                          >
+                            Add SO Material {getAvailableSOMaterials().length > 0 && `(${getAvailableSOMaterials().length})`}
+                          </Button>
+                        </Dropdown>
                       </div>
                     </div>
                   </div>
