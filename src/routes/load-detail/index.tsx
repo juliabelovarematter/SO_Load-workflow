@@ -328,9 +328,10 @@ export const LoadDetail = () => {
     setHasChanges(true)
   }
 
-  // Handle SO selection - ONLY change status if load is editable (Unassigned/Open)
+  // Handle SO selection - Changes load from Unassigned to Open
   const handleSOSelection = (soNumber: string) => {
     if (soNumber) {
+      // BUSINESS RULE: Selecting SO changes status from Unassigned to Open
       // Add the exact SO materials from the screenshot
       const soMaterialsData = [
         {
@@ -392,12 +393,19 @@ export const LoadDetail = () => {
       
       setSoMaterials(soMaterialsData)
       
-      // ONLY change status if load is editable (Unassigned/Open)
-      if (isEditable) {
+      // BUSINESS RULE: Selecting SO changes load from Unassigned to Open
+      // Only Unassigned loads can have SO selected (becomes Open)
+      if (loadData?.status === 'Unassigned') {
         setLoadData((prev: any) => {
           return { ...prev, status: 'Open', relatedSO: soNumber }
         })
-        console.log('SO selected:', soNumber, '- Status changed to Open (editable load)')
+        console.log('✅ SO selected:', soNumber, '- Status changed from Unassigned to Open')
+      } else if (isEditable) {
+        // For already Open loads, just update the SO
+        setLoadData((prev: any) => {
+          return { ...prev, relatedSO: soNumber }
+        })
+        console.log('✅ SO updated:', soNumber, '- Load remains Open')
       } else {
         // For read-only loads, just update the relatedSO without changing status
         setLoadData((prev: any) => {
@@ -412,12 +420,19 @@ export const LoadDetail = () => {
       // Clear SO materials when no SO is selected
       setSoMaterials([])
       
-      // ONLY change status if load is editable (Unassigned/Open)
-      if (isEditable) {
+      // BUSINESS RULE: Clearing SO changes load from Open back to Unassigned
+      // Only Open loads can have SO cleared (becomes Unassigned)
+      if (loadData?.status === 'Open') {
         setLoadData((prev: any) => {
           return { ...prev, status: 'Unassigned', relatedSO: null }
         })
-        console.log('SO cleared - Status changed to Unassigned (editable load)')
+        console.log('✅ SO cleared - Status changed from Open to Unassigned')
+      } else if (isEditable) {
+        // For other editable loads, just clear the SO
+        setLoadData((prev: any) => {
+          return { ...prev, relatedSO: null }
+        })
+        console.log('✅ SO cleared - Load remains', loadData?.status)
       } else {
         // For read-only loads, just clear the relatedSO without changing status
         setLoadData((prev: any) => {
@@ -493,8 +508,19 @@ export const LoadDetail = () => {
         } else {
           // Existing load from table - generate consistent data
           data = generateLoadData(`#${params.id}`)
-          // PRESERVE THE EXACT STATUS from generated data - DO NOT OVERRIDE!
-          console.log('🔍 Load from table - preserving exact status:', data.status)
+          
+          // ENFORCE BUSINESS RULE: Unassigned loads cannot have SOs
+          if (data.status === 'Unassigned' && data.relatedSO) {
+            // CRITICAL: Unassigned loads CANNOT have SOs - remove the SO
+            data.relatedSO = ''
+            console.log('🔧 Fixed: Removed SO from Unassigned load (Unassigned = no SO allowed)')
+          } else if (data.status === 'Open' && !data.relatedSO) {
+            // Open loads should have SOs - change to Unassigned
+            data.status = 'Unassigned'
+            console.log('🔧 Fixed: Open load with no SO changed to Unassigned')
+          }
+          
+          console.log('🔍 Load from table - status:', data.status, '| SO:', data.relatedSO)
         }
       } catch (error) {
         console.error('Error loading load data for', params.id, error)

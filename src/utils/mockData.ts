@@ -198,14 +198,14 @@ export const generateLoadData = (loadNumber: string) => {
   // Generate status first to determine if we need relatedSO
   const status = loadStatuses[rng.nextInt(loadStatuses.length)]
   
-  // Generate relatedSO based on status - some statuses require SO, others don't
+  // BUSINESS RULE: Generate relatedSO based on status
   let relatedSO = ''
-  if (['Open', 'Pending Shipment', 'Shipped', 'Pending Reconciliation', 'Reconciled', 'Closed'].includes(status)) {
-    // These statuses typically have related SOs
-    relatedSO = `#${String(seed + 1000).padStart(6, '0')}`
-  } else if (status === 'Unassigned' || status === 'Voided') {
-    // These statuses typically don't have related SOs
+  if (status === 'Unassigned' || status === 'Voided') {
+    // UNASSIGNED and VOIDED loads NEVER have SOs
     relatedSO = ''
+  } else {
+    // All other statuses (Open, Pending Shipment, etc.) MUST have SOs
+    relatedSO = `#${String(seed + 1000).padStart(6, '0')}`
   }
   
   // Generate materials count (1-20 materials)
