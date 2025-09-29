@@ -2828,19 +2828,36 @@ export const LoadDetail = () => {
                             </div>
                           </td>
                           <td style={{ padding: '6px', textAlign: 'left' }}>
-                            <span style={{ fontSize: '14px', color: '#071429' }}>
-                              <strong>
-                                {(() => {
-                                  const lbMaterials = materials.filter(m => {
-                                    const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
-                                                          availableMaterials.find(am => am.name === m.contractMaterial)
-                                    return !selectedMaterial?.isEachMaterial
-                                  })
-                                  const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.tareWeight || 0), 0)
-                                  return lbTotal > 0 ? `${lbTotal.toFixed(2)} lb` : '0.00 lb'
-                                })()}
-                              </strong>
-                            </span>
+                            <div style={{ fontSize: '14px', color: '#071429' }}>
+                              {(() => {
+                                const lbMaterials = materials.filter(m => {
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                        availableMaterials.find(am => am.name === m.contractMaterial)
+                                  return !selectedMaterial?.isEachMaterial
+                                })
+                                const eaMaterials = materials.filter(m => {
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                        availableMaterials.find(am => am.name === m.contractMaterial)
+                                  return selectedMaterial?.isEachMaterial
+                                })
+                                
+                                const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.tareWeight || 0), 0)
+                                const eaTotal = eaMaterials.length // Count of ea materials (they don't have tare)
+                                
+                                return (
+                                  <>
+                                    <div style={{ fontWeight: 'bold' }}>
+                                      <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                    </div>
+                                    {eaTotal > 0 && (
+                                      <div style={{ fontWeight: 'bold' }}>
+                                        <strong>0</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
+                                      </div>
+                                    )}
+                                  </>
+                                )
+                              })()}
+                            </div>
                           </td>
                           <td style={{ padding: '6px', textAlign: 'left' }}>
                             <div style={{ fontSize: '14px', color: '#071429' }}>
