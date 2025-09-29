@@ -1638,9 +1638,10 @@ export const LoadDetail = () => {
                         <div style={{
                           display: 'grid',
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '1px',
-                          padding: '12px 16px',
-                          alignItems: 'center'
+                          gap: '12px',
+                          padding: '16px 20px',
+                          alignItems: 'center',
+                          marginBottom: '8px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             101 - Aluminum Cans
@@ -1727,9 +1728,10 @@ export const LoadDetail = () => {
                         <div style={{
                           display: 'grid',
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '1px',
-                          padding: '12px 16px',
-                          alignItems: 'center'
+                          gap: '12px',
+                          padding: '16px 20px',
+                          alignItems: 'center',
+                          marginBottom: '8px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             100 - Aluminum Radiator...
@@ -1816,9 +1818,10 @@ export const LoadDetail = () => {
                         <div style={{
                           display: 'grid',
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '1px',
-                          padding: '12px 16px',
-                          alignItems: 'center'
+                          gap: '12px',
+                          padding: '16px 20px',
+                          alignItems: 'center',
+                          marginBottom: '8px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             300 - Copper
@@ -1905,9 +1908,10 @@ export const LoadDetail = () => {
                         <div style={{
                           display: 'grid',
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '1px',
-                          padding: '12px 16px',
-                          alignItems: 'center'
+                          gap: '12px',
+                          padding: '16px 20px',
+                          alignItems: 'center',
+                          marginBottom: '8px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             302 - Copper no. 2
@@ -1994,9 +1998,10 @@ export const LoadDetail = () => {
                         <div style={{
                           display: 'grid',
                           gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
-                          gap: '1px',
-                          padding: '12px 16px',
-                          alignItems: 'center'
+                          gap: '12px',
+                          padding: '16px 20px',
+                          alignItems: 'center',
+                          marginBottom: '8px'
                         }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             303 - Copper no. 1
