@@ -1447,7 +1447,7 @@ export const LoadDetail = () => {
                     marginBottom: '24px'
                   }}>
                     <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
-                      {soMaterials.length > 0 ? `Other Materials (${materials.length})` : `Load Materials (${materials.length})`}
+                      Load Materials ({materials.length})
                     </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {/* Weight Mode Toggle - Same as SO Materials */}
