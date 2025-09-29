@@ -35,7 +35,7 @@ export const Loads = () => {
         orderNumber: finalLoadData.loadNumber,
         expectedShipDate: new Date(finalLoadData.expectedShipDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
         facility: finalLoadData.facility,
-        relatedSO: finalLoadData.relatedSO || '',
+        relatedSO: finalLoadData.status === 'Unassigned' ? '' : (finalLoadData.relatedSO || ''),
         bookingNumber: finalLoadData.bookingNumber || '',
         shippingCarrier: finalLoadData.shippingCarrier,
         customer: finalLoadData.customer,
@@ -156,7 +156,13 @@ export const Loads = () => {
       title: 'SO #',
       dataIndex: 'relatedSO',
       key: 'relatedSO',
-      render: (value: string) => value || '-',
+      render: (value: string, record: any) => {
+        // Hide SO# for Unassigned loads
+        if (record.status === 'Unassigned') {
+          return '-'
+        }
+        return value || '-'
+      },
     },
     {
       title: 'Booking #',

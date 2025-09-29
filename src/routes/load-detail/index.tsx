@@ -574,7 +574,7 @@ export const LoadDetail = () => {
       
       // Set form values
       const formValues = {
-        relatedSO: data.relatedSO,
+        relatedSO: data.status === 'Unassigned' ? null : data.relatedSO,
         bookingNumber: data.bookingNumber,
         expectedShipDate: data.expectedShipDate ? dayjs(data.expectedShipDate) : null,
         facility: data.facility,
@@ -596,8 +596,8 @@ export const LoadDetail = () => {
       form.setFieldsValue(formValues)
       setOriginalFormData(formValues)
       
-      // Load SO materials if this load has a related SO (regardless of status)
-      if (data.relatedSO) {
+      // Load SO materials only if this load has a related SO AND is not Unassigned
+      if (data.relatedSO && data.status !== 'Unassigned') {
         console.log('🔍 Load has related SO:', data.relatedSO, 'Status:', data.status)
         
         // Use the exact SO materials data for consistency
@@ -662,7 +662,7 @@ export const LoadDetail = () => {
         setSoMaterials(soMaterialsData)
         console.log('🔍 SO Materials loaded:', soMaterialsData.length)
       } else {
-        console.log('🔍 No related SO, clearing SO materials')
+        console.log('🔍 No SO materials - Load is Unassigned or has no SO')
         setSoMaterials([])
       }
     }
@@ -1189,10 +1189,11 @@ export const LoadDetail = () => {
                   name="relatedSO"
                 >
                   <Select 
-                    placeholder="Select SO"
+                    placeholder={loadData?.status === 'Unassigned' ? 'No SO (Unassigned Load)' : 'Select SO'}
                     disabled={!isEditable}
                     allowClear
                     onChange={handleSOSelection}
+                    value={loadData?.status === 'Unassigned' ? null : loadData?.relatedSO}
                     style={isEditable ? {} : {
                       backgroundColor: '#f8f9fa',
                       border: 'none',
@@ -1598,8 +1599,8 @@ export const LoadDetail = () => {
                   </div>
                 </div>
 
-                {/* SO Materials Table - Show for any load with assigned SO */}
-                {loadData?.relatedSO && (
+                {/* SO Materials Table - Show for loads with SO (not Unassigned) */}
+                {loadData?.relatedSO && loadData?.status !== 'Unassigned' && (
                   <div style={{ marginBottom: '24px' }}>
                     <div style={{
                       border: '1px solid #e5e7eb',
