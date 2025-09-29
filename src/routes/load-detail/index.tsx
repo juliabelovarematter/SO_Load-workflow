@@ -2808,23 +2808,16 @@ export const LoadDetail = () => {
                                 })
                                 
                                 const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.grossWeight || 0), 0)
-                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.grossWeight || 0), 0)
+                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
                                 
                                 return (
                                   <>
-                                    {lbTotal > 0 && (
-                                      <div style={{ fontWeight: 'bold' }}>
-                                        <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
-                                      </div>
-                                    )}
+                                    <div style={{ fontWeight: 'bold' }}>
+                                      <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                    </div>
                                     {eaTotal > 0 && (
                                       <div style={{ fontWeight: 'bold' }}>
                                         <strong>{eaTotal.toFixed(0)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
-                                      </div>
-                                    )}
-                                    {lbTotal === 0 && eaTotal === 0 && (
-                                      <div style={{ fontWeight: 'bold' }}>
-                                        <strong>0.00</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
                                       </div>
                                     )}
                                   </>
@@ -2859,23 +2852,16 @@ export const LoadDetail = () => {
                                 })
                                 
                                 const lbNetTotal = lbMaterials.reduce((sum, m) => sum + ((m.grossWeight || 0) - (m.tareWeight || 0)), 0)
-                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.grossWeight || 0), 0)
+                                const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
                                 
                                 return (
                                   <>
-                                    {lbNetTotal > 0 && (
-                                      <div style={{ fontWeight: 'bold' }}>
-                                        <strong>{lbNetTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
-                                      </div>
-                                    )}
+                                    <div style={{ fontWeight: 'bold' }}>
+                                      <strong>{lbNetTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                    </div>
                                     {eaTotal > 0 && (
                                       <div style={{ fontWeight: 'bold' }}>
                                         <strong>{eaTotal.toFixed(0)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
-                                      </div>
-                                    )}
-                                    {lbNetTotal === 0 && eaTotal === 0 && (
-                                      <div style={{ fontWeight: 'bold' }}>
-                                        <strong>0.00</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
                                       </div>
                                     )}
                                   </>
