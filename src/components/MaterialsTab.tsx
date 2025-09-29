@@ -234,9 +234,31 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           // For each materials, no conversion needed
           updatedMaterials[index].estimatedTotal = material.netWeight * (typeof material.unitPrice === 'number' ? material.unitPrice : 0)
         } else {
-          // Convert weight to pounds for calculation if needed
-          const weightForCalculation = convertWeight(material.netWeight, weightMode === 'scale' ? 'lb' : material.pricingUnit, 'lb')
-          updatedMaterials[index].estimatedTotal = weightForCalculation * (typeof material.unitPrice === 'number' ? material.unitPrice : 0)
+          // Calculate estimated total with proper unit conversion
+          let weightInPricingUnit = material.netWeight
+          
+          // If weight mode is 'scale' (pounds) but pricing unit is different, convert weight to pricing unit
+          if (weightMode === 'scale' && material.pricingUnit !== 'lb') {
+            switch (material.pricingUnit) {
+              case 'NT': // Net Ton = 2000 lbs
+                weightInPricingUnit = material.netWeight / 2000
+                break
+              case 'kg': // Kilogram = 2.20462 lbs
+                weightInPricingUnit = material.netWeight / 2.20462
+                break
+              case 'MT': // Metric Ton = 2204.62 lbs
+                weightInPricingUnit = material.netWeight / 2204.62
+                break
+              default:
+                weightInPricingUnit = material.netWeight
+            }
+          }
+          // If weight mode is 'price' (pricing unit), no conversion needed
+          else if (weightMode === 'price') {
+            weightInPricingUnit = material.netWeight
+          }
+          
+          updatedMaterials[index].estimatedTotal = weightInPricingUnit * (typeof material.unitPrice === 'number' ? material.unitPrice : 0)
         }
       }
     } else {

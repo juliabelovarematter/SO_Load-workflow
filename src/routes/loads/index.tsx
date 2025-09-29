@@ -11,32 +11,54 @@ export const Loads = () => {
   // Generate 50 fixed loads using memoized data generation
   const allData = useMemo(() => {
     const sharedData = generateAllLoadsData()
-    // Transform shared data to match table structure
-    return sharedData.map((load, index) => ({
-      key: String(index),
-      orderNumber: load.loadNumber,
-      expectedShipDate: new Date(load.expectedShipDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-      facility: load.facility,
-      relatedSO: load.relatedSO || '',
-      bookingNumber: load.bookingNumber || '',
-      shippingCarrier: load.shippingCarrier,
-      customer: load.customer,
-      materialsCount: load.materialsCount,
-      netWeight: load.netWeight,
-      status: load.status,
-      createdOn: load.createdOn,
-      createdBy: load.createdBy,
-      // Add missing fields for table compatibility
-      salesNumber: load.relatedSO || `#${String(2000 + index).padStart(6, '0')}`,
-      containerNumber: `#${String(400000 + index).padStart(6, '0')}`,
-      releaseNumber: `#${String(500000 + index).padStart(6, '0')}`
-    }))
+    // Transform shared data to match table structure and check for saved updates
+    return sharedData.map((load, index) => {
+      const loadId = load.loadNumber.replace('#', '')
+      const savedData = localStorage.getItem(`load-form-data-${loadId}`)
+      
+      // If there's saved data, use it to override the generated data
+      let finalLoadData = load
+      if (savedData) {
+        try {
+          const parsedSavedData = JSON.parse(savedData)
+          finalLoadData = { ...load, ...parsedSavedData }
+        } catch (e) {
+          console.warn(`Failed to parse saved data for load ${loadId}:`, e)
+        }
+      }
+      
+      // Keep the generated status - don't override it
+      // The mockData now generates all possible statuses correctly
+      
+      return {
+        key: String(index),
+        orderNumber: finalLoadData.loadNumber,
+        expectedShipDate: new Date(finalLoadData.expectedShipDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+        facility: finalLoadData.facility,
+        relatedSO: finalLoadData.relatedSO || '',
+        bookingNumber: finalLoadData.bookingNumber || '',
+        shippingCarrier: finalLoadData.shippingCarrier,
+        customer: finalLoadData.customer,
+        materialsCount: finalLoadData.materialsCount,
+        netWeight: finalLoadData.netWeight,
+        status: finalLoadData.status,
+        createdOn: finalLoadData.createdOn,
+        createdBy: finalLoadData.createdBy,
+        // Add missing fields for table compatibility
+        salesNumber: finalLoadData.relatedSO || `#${String(2000 + index).padStart(6, '0')}`,
+        containerNumber: `#${String(400000 + index).padStart(6, '0')}`,
+        releaseNumber: `#${String(500000 + index).padStart(6, '0')}`
+      }
+    })
   }, [])
   
   // Filter states
   const [searchText, setSearchText] = useState('')
   const [selectedFacility, setSelectedFacility] = useState<string | undefined>()
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>()
+  
+  // Table data state for updates
+  const [data, setData] = useState(allData)
   
   // Modal states
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
@@ -45,7 +67,7 @@ export const Loads = () => {
   
   // Filter the data based on search and filters (memoized)
   const filteredData = useMemo(() => {
-    return allData.filter(load => {
+    return data.filter(load => {
       const matchesSearch = !searchText || 
         load.orderNumber.toLowerCase().includes(searchText.toLowerCase()) ||
         load.salesNumber.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -57,7 +79,7 @@ export const Loads = () => {
       
       return matchesSearch && matchesFacility && matchesStatus
     })
-  }, [allData, searchText, selectedFacility, selectedStatus])
+  }, [data, searchText, selectedFacility, selectedStatus])
   
   // Handle row click to navigate to Load detail page
   const handleRowClick = (record: any) => {
@@ -131,9 +153,10 @@ export const Loads = () => {
       key: 'orderNumber',
     },
     {
-      title: 'Sales #',
-      dataIndex: 'salesNumber',
-      key: 'salesNumber',
+      title: 'SO #',
+      dataIndex: 'relatedSO',
+      key: 'relatedSO',
+      render: (value: string) => value || '-',
     },
     {
       title: 'Booking #',
@@ -191,9 +214,18 @@ export const Loads = () => {
         } else if (status === 'Open') {
           color = '#1d4ed8'
           bgColor = '#dbeafe'
+        } else if (status === 'Pending Shipment') {
+          color = '#1d4ed8'
+          bgColor = '#dbeafe'
         } else if (status === 'Shipped') {
           color = '#ea580c'
           bgColor = '#fed7aa'
+        } else if (status === 'Pending Reconciliation') {
+          color = '#ea580c'
+          bgColor = '#fed7aa'
+        } else if (status === 'Reconciled') {
+          color = '#16a34a'
+          bgColor = '#dcfce7'
         } else if (status === 'Closed') {
           color = '#16a34a'
           bgColor = '#dcfce7'
@@ -557,6 +589,7 @@ export const Loads = () => {
               { value: 'all', label: 'All Statuses' },
               { value: 'Unassigned', label: 'Unassigned' },
               { value: 'Open', label: 'Open' },
+              { value: 'Pending Shipment', label: 'Pending Shipment' },
               { value: 'Shipped', label: 'Shipped' },
               { value: 'Pending Reconciliation', label: 'Pending Reconciliation' },
               { value: 'Reconciled', label: 'Reconciled' },

@@ -3,7 +3,7 @@ import { useRoute } from 'wouter'
 import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber } from 'antd'
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle } from 'lucide-react'
 import dayjs from 'dayjs'
-import { generateLoadData } from '../../utils/mockData'
+import { generateLoadData, generateSOData } from '../../utils/mockData'
 
 // Material interface (same as SO Materials)
 interface Material {
@@ -70,6 +70,7 @@ export const LoadDetail = () => {
   const [originalFormData, setOriginalFormData] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('load-info')
   const [materials, setMaterials] = useState<Material[]>([])
+  const [soMaterials, setSoMaterials] = useState<Material[]>([])
   const [materialsCount, setMaterialsCount] = useState(0)
   const [weightMode, setWeightMode] = useState<'scale' | 'price'>('scale')
   const [requestMode, setRequestMode] = useState<'request' | 'staged'>('request')
@@ -79,8 +80,8 @@ export const LoadDetail = () => {
   const [materialWeight, setMaterialWeight] = useState<number | null>(null)
   const [selectedFieldForWeighing, setSelectedFieldForWeighing] = useState<'gross' | 'tare' | null>(null)
 
-  // Determine if load is editable based on status
-  const isEditable = loadData?.status && ['Unassigned', 'Open', 'Pending Shipment'].includes(loadData.status)
+  // Determine if load is editable based on status - ONLY Unassigned and Open can be edited
+  const isEditable = loadData?.status && ['Unassigned', 'Open'].includes(loadData.status)
 
 
   // Material weighing functions
@@ -327,6 +328,115 @@ export const LoadDetail = () => {
     setHasChanges(true)
   }
 
+  // Handle SO selection - ONLY change status if load is editable (Unassigned/Open)
+  const handleSOSelection = (soNumber: string) => {
+    if (soNumber) {
+      // Add the exact SO materials from the screenshot
+      const soMaterialsData = [
+        {
+          id: 'so-1',
+          contractMaterial: '101 - Aluminum Cans',
+          unitPrice: 0.12,
+          pricingUnit: 'lb',
+          soWeight: 500,
+          soRemainingWeight: 450,
+          requestedWeight: 450,
+          estimatedTotal: 1230.90,
+          source: 'so'
+        },
+        {
+          id: 'so-2', 
+          contractMaterial: '100 - Aluminum Radiator',
+          unitPrice: 0.12,
+          pricingUnit: 'lb',
+          soWeight: 500,
+          soRemainingWeight: 450,
+          requestedWeight: 450,
+          estimatedTotal: 5000.50,
+          source: 'so'
+        },
+        {
+          id: 'so-3',
+          contractMaterial: '300 - Copper',
+          unitPrice: 0.12,
+          pricingUnit: 'lb',
+          soWeight: 500,
+          soRemainingWeight: 450,
+          requestedWeight: 450,
+          estimatedTotal: 910.00,
+          source: 'so'
+        },
+        {
+          id: 'so-4',
+          contractMaterial: '302 - Copper no. 2',
+          unitPrice: 0.12,
+          pricingUnit: 'NT',
+          soWeight: 12,
+          soRemainingWeight: 10,
+          requestedWeight: 3,
+          estimatedTotal: 18865.50,
+          source: 'so'
+        },
+        {
+          id: 'so-5',
+          contractMaterial: '303 - Copper no. 1',
+          unitPrice: 3.00,
+          pricingUnit: 'ea',
+          soWeight: 10,
+          soRemainingWeight: 4,
+          requestedWeight: 4,
+          estimatedTotal: 1005.00,
+          source: 'so'
+        }
+      ]
+      
+      setSoMaterials(soMaterialsData)
+      
+      // ONLY change status if load is editable (Unassigned/Open)
+      if (isEditable) {
+        setLoadData((prev: any) => {
+          return { ...prev, status: 'Open', relatedSO: soNumber }
+        })
+        console.log('SO selected:', soNumber, '- Status changed to Open (editable load)')
+      } else {
+        // For read-only loads, just update the relatedSO without changing status
+        setLoadData((prev: any) => {
+          return { ...prev, relatedSO: soNumber }
+        })
+        console.log('SO selected:', soNumber, '- Status preserved (read-only load):', loadData?.status)
+      }
+      
+      // Update form field value
+      form.setFieldValue('relatedSO', soNumber)
+    } else {
+      // Clear SO materials when no SO is selected
+      setSoMaterials([])
+      
+      // ONLY change status if load is editable (Unassigned/Open)
+      if (isEditable) {
+        setLoadData((prev: any) => {
+          return { ...prev, status: 'Unassigned', relatedSO: null }
+        })
+        console.log('SO cleared - Status changed to Unassigned (editable load)')
+      } else {
+        // For read-only loads, just clear the relatedSO without changing status
+        setLoadData((prev: any) => {
+          return { ...prev, relatedSO: null }
+        })
+        console.log('SO cleared - Status preserved (read-only load):', loadData?.status)
+      }
+      
+      // Clear form field value
+      form.setFieldValue('relatedSO', null)
+    }
+    setHasChanges(true)
+  }
+
+  // Update materials count whenever materials or soMaterials arrays change
+  useEffect(() => {
+    setMaterialsCount(soMaterials.length + materials.length)
+  }, [materials, soMaterials])
+
   // Weight mode conversion logic (same as SO Materials)
   useEffect(() => {
     if (materials.length === 0) return
@@ -346,49 +456,78 @@ export const LoadDetail = () => {
 
   useEffect(() => {
     if (params?.id) {
-      // First try to load from localStorage (for new loads created via modal)
-      const storedData = localStorage.getItem(`load-form-data-${params.id}`)
       let data
       
-      if (storedData) {
-        // New load created via modal
-        const formData = JSON.parse(storedData)
+      try {
+        // First try to load from localStorage (for new loads created via modal)
+        const storedData = localStorage.getItem(`load-form-data-${params.id}`)
+        
+        if (storedData) {
+          // New load created via modal
+          const formData = JSON.parse(storedData)
+          data = {
+            loadNumber: formData.loadNumber,
+            expectedShipDate: formData.expectedShipDate,
+            facility: formData.facility,
+            relatedSO: formData.relatedSO,
+            bookingNumber: formData.bookingNumber,
+            status: formData.status || (formData.relatedSO ? 'Open' : 'Unassigned'), // Use stored status if available
+            materialsCount: 0,
+            photosCount: 0,
+            createdOn: new Date(),
+            createdBy: 'Current User',
+            shippingCarrier: '',
+            scac: '',
+            freightForwarder: '',
+            truckFreight: null,
+            deliveryNumber: '',
+            releaseNumber: '',
+            bookingNumber2: '',
+            driverName: '',
+            truckNumber: '',
+            trailerNumber: '',
+            containerNumber: '',
+            sealNumber: '',
+            notes: ''
+          }
+        } else {
+          // Existing load from table - generate consistent data
+          data = generateLoadData(`#${params.id}`)
+          // PRESERVE THE EXACT STATUS from generated data - DO NOT OVERRIDE!
+          console.log('🔍 Load from table - preserving exact status:', data.status)
+        }
+      } catch (error) {
+        console.error('Error loading load data for', params.id, error)
+        // Use fallback data
         data = {
-          loadNumber: formData.loadNumber,
-          expectedShipDate: formData.expectedShipDate,
-          facility: formData.facility,
-          relatedSO: formData.relatedSO,
-          bookingNumber: formData.bookingNumber,
-          status: formData.relatedSO ? 'Open' : 'Unassigned',
+          loadNumber: `#${params.id}`,
+          expectedShipDate: '2024-08-22',
+          facility: 'ReMatter Headquarters',
+          relatedSO: '',
+          bookingNumber: '',
+          status: 'Unassigned',
           materialsCount: 0,
           photosCount: 0,
-          createdOn: new Date(),
+          createdOn: 'August 20, 2024',
           createdBy: 'Current User',
-          shippingCarrier: '',
-          scac: '',
-          freightForwarder: '',
-          truckFreight: null,
-          deliveryNumber: '',
-          releaseNumber: '',
-          bookingNumber2: '',
-          driverName: '',
-          truckNumber: '',
-          trailerNumber: '',
+          shippingCarrier: 'FedEx',
+          customer: 'EcoScrap Industries',
+          materials: [],
           containerNumber: '',
           sealNumber: '',
+          truckFreight: '',
           notes: ''
         }
-      } else {
-        // Existing load from table - generate consistent data
-        data = generateLoadData(`#${params.id}`)
       }
       
       setLoadData(data)
-      setMaterialsCount(data.materialsCount || 0)
       
       // Set materials from the generated data
-      if (data.materials && data.materials.length > 0) {
+      if (data && data.materials && data.materials.length > 0) {
         setMaterials(data.materials as Material[])
+        setMaterialsCount(data.materials.length)
+      } else {
+        setMaterialsCount(0)
       }
       
       // Load saved materials if they exist
@@ -396,8 +535,15 @@ export const LoadDetail = () => {
       if (storedMaterials) {
         const materials = JSON.parse(storedMaterials)
         console.log('Loaded saved materials:', materials)
-        // setSavedMaterials(materials)
         setMaterials(materials)
+      }
+      
+      // Load saved SO materials if they exist
+      const storedSOmaterials = localStorage.getItem(`load-so-materials-${params.id}`)
+      if (storedSOmaterials) {
+        const soMaterials = JSON.parse(storedSOmaterials)
+        console.log('Loaded saved SO materials:', soMaterials)
+        setSoMaterials(soMaterials)
       }
       
       // Set form values
@@ -423,6 +569,76 @@ export const LoadDetail = () => {
       
       form.setFieldsValue(formValues)
       setOriginalFormData(formValues)
+      
+      // Load SO materials if this load has a related SO (regardless of status)
+      if (data.relatedSO) {
+        console.log('🔍 Load has related SO:', data.relatedSO, 'Status:', data.status)
+        
+        // Use the exact SO materials data for consistency
+        const soMaterialsData = [
+          {
+            id: 'so-1',
+            contractMaterial: '101 - Aluminum Cans',
+            unitPrice: 0.12,
+            pricingUnit: 'lb',
+            soWeight: 500,
+            soRemainingWeight: 450,
+            requestedWeight: 450,
+            estimatedTotal: 1230.90,
+            source: 'so'
+          },
+          {
+            id: 'so-2', 
+            contractMaterial: '100 - Aluminum Radiator',
+            unitPrice: 0.12,
+            pricingUnit: 'lb',
+            soWeight: 500,
+            soRemainingWeight: 450,
+            requestedWeight: 450,
+            estimatedTotal: 5000.50,
+            source: 'so'
+          },
+          {
+            id: 'so-3',
+            contractMaterial: '300 - Copper',
+            unitPrice: 0.12,
+            pricingUnit: 'lb',
+            soWeight: 500,
+            soRemainingWeight: 450,
+            requestedWeight: 450,
+            estimatedTotal: 910.00,
+            source: 'so'
+          },
+          {
+            id: 'so-4',
+            contractMaterial: '302 - Copper no. 2',
+            unitPrice: 0.12,
+            pricingUnit: 'NT',
+            soWeight: 12,
+            soRemainingWeight: 10,
+            requestedWeight: 3,
+            estimatedTotal: 18865.50,
+            source: 'so'
+          },
+          {
+            id: 'so-5',
+            contractMaterial: '303 - Copper no. 1',
+            unitPrice: 3.00,
+            pricingUnit: 'ea',
+            soWeight: 10,
+            soRemainingWeight: 4,
+            requestedWeight: 4,
+            estimatedTotal: 1005.00,
+            source: 'so'
+          }
+        ]
+        
+        setSoMaterials(soMaterialsData)
+        console.log('🔍 SO Materials loaded:', soMaterialsData.length)
+      } else {
+        console.log('🔍 No related SO, clearing SO materials')
+        setSoMaterials([])
+      }
     }
   }, [params?.id, form])
 
@@ -439,16 +655,29 @@ export const LoadDetail = () => {
     // Save materials to localStorage
     localStorage.setItem(`load-materials-${params?.id}`, JSON.stringify(materials))
     
-    // Update saved materials and count
-    // setSavedMaterials([...materials])
-    setMaterialsCount(materials.length)
+    // Save SO materials to localStorage
+    if (soMaterials.length > 0) {
+      localStorage.setItem(`load-so-materials-${params?.id}`, JSON.stringify(soMaterials))
+      console.log('Saved SO materials:', soMaterials.length)
+    } else {
+      localStorage.removeItem(`load-so-materials-${params?.id}`)
+      console.log('Removed SO materials from storage')
+    }
     
-    // Update loadData materials count
-    const updatedLoadData = { ...loadData, materialsCount: materials.length }
+    // Update loadData with form values including SO selection and status
+    const updatedLoadData = { 
+      ...loadData, 
+      ...values,
+      expectedShipDate: values.expectedShipDate ? values.expectedShipDate.toISOString() : null,
+      materialsCount: soMaterials.length + materials.length,
+      status: loadData.status // Keep the current status (updated by handleSOSelection)
+    }
     setLoadData(updatedLoadData)
     localStorage.setItem(`load-form-data-${params?.id}`, JSON.stringify(updatedLoadData))
     
-    console.log(`Saved ${materials.length} materials for load ${params?.id}`)
+    console.log(`Saved load data for ${params?.id}:`, updatedLoadData)
+    console.log(`Status: ${updatedLoadData.status}, Related SO: ${updatedLoadData.relatedSO}`)
+    console.log(`SO Materials: ${soMaterials.length}, Load Materials: ${materials.length}`)
     
     setHasChanges(false)
     setOriginalFormData(values)
@@ -502,7 +731,7 @@ export const LoadDetail = () => {
     )
   }
 
-  const statusColors = getStatusColor(loadData.status)
+  const statusColors = getStatusColor(loadData?.status || 'Unassigned')
 
   return (
     <div>
@@ -936,15 +1165,21 @@ export const LoadDetail = () => {
                   <Select 
                     placeholder="Select SO"
                     disabled={!isEditable}
+                    allowClear
+                    onChange={handleSOSelection}
                     style={isEditable ? {} : {
                       backgroundColor: '#f8f9fa',
                       border: 'none',
                       color: '#495057'
                     }}
                   >
-                    <Select.Option value="#002001">#002001</Select.Option>
-                    <Select.Option value="#002002">#002002</Select.Option>
-                    <Select.Option value="#002003">#002003</Select.Option>
+                    <Select.Option value="#002001">#002001 - Brass Rod Contract</Select.Option>
+                    <Select.Option value="#002002">#002002 - Copper Wire Contract</Select.Option>
+                    <Select.Option value="#002003">#002003 - Aluminum Sheet Contract</Select.Option>
+                    <Select.Option value="#002004">#002004 - Steel Scrap Contract</Select.Option>
+                    <Select.Option value="#002005">#002005 - Lead Pipe Contract</Select.Option>
+                    <Select.Option value="#002006">#002006 - Zinc Fittings Contract</Select.Option>
+                    <Select.Option value="#002007">#002007 - Stainless Steel Contract</Select.Option>
                   </Select>
                 </Form.Item>
                 <Form.Item
@@ -1158,11 +1393,11 @@ export const LoadDetail = () => {
         
         {activeTab === 'materials' && (
           <div style={{ padding: '24px' }}>
-            {materials.length === 0 ? (
+            {soMaterials.length === 0 && materials.length === 0 ? (
               <div style={{ textAlign: 'center' }}>
                 <FileText size={48} style={{ color: '#d1d5db', marginBottom: '16px' }} />
                 <h3 style={{ marginBottom: '8px', color: '#6b7280' }}>No materials added yet</h3>
-                <p style={{ color: '#9ca3af', marginBottom: '24px' }}>Add materials to this load to get started.</p>
+                <p style={{ color: '#9ca3af', marginBottom: '24px' }}>Select a Sales Order or add materials to this load to get started.</p>
                 <Button 
                   type="primary" 
                   icon={<Plus size={16} />}
@@ -1174,14 +1409,19 @@ export const LoadDetail = () => {
               </div>
             ) : (
               <div>
-                {/* Header with title and toggles */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'space-between',
-                  marginBottom: '24px'
-                }}>
-                  <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '600' }}>Load Materials</h3>
+
+                {/* Other Materials Section */}
+                <div>
+                  {/* Header with title and toggles */}
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    justifyContent: 'space-between',
+                    marginBottom: '24px'
+                  }}>
+                    <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '600', color: '#1f2937' }}>
+                      {soMaterials.length > 0 ? `Other Materials (${materials.length})` : `Load Materials (${materials.length})`}
+                    </h3>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     {/* Weight Mode Toggle - Same as SO Materials */}
                     {materials.length > 0 && (
@@ -1331,6 +1571,499 @@ export const LoadDetail = () => {
                     )}
                   </div>
                 </div>
+
+                {/* SO Materials Table - Show for any load with assigned SO */}
+                {loadData?.relatedSO && (
+                  <div style={{ marginBottom: '24px' }}>
+                    <div style={{
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '8px',
+                      backgroundColor: '#fff',
+                      overflow: 'hidden'
+                    }}>
+                      {/* Table Headers */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                        gap: '1px',
+                        backgroundColor: '#f8f9fa',
+                        padding: '12px 16px',
+                        borderBottom: '1px solid #e5e7eb'
+                      }}>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Materials</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Unit Price</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Weight</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Remaining Weight</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
+                          <div>Requested Weight</div>
+                          <div style={{ fontSize: '12px', fontWeight: '400', color: '#3b82f6', marginTop: '2px' }}>
+                            Use remaining we...
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Inventory Tags</div>
+                        <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>Estimated Total</div>
+                        <div></div>
+                      </div>
+
+                      {/* SO Materials Rows - Exact data from screenshot */}
+                      <div style={{ padding: '0' }}>
+                        {/* 101 - Aluminum Cans */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                          gap: '1px',
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f1f5f9',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                            101 - Aluminum Cans
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            $ 0.12 /lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            500 lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            450 lb
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              style={{
+                                padding: '6px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#6b7280'
+                              }}
+                            >
+                              →
+                            </button>
+                            <Input
+                              defaultValue="450"
+                              suffix="lb"
+                              style={{ width: '80px', textAlign: 'right' }}
+                            />
+                          </div>
+                          <div>
+                            <Select
+                              placeholder="Select..."
+                              style={{ width: '100%' }}
+                              size="small"
+                            />
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151'
+                          }}>
+                            <span style={{ color: '#6b7280' }}>$</span>
+                            <span>1,230.90</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                          </div>
+                        </div>
+
+                        {/* 100 - Aluminum Radiator */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                          gap: '1px',
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f1f5f9',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                            100 - Aluminum Radiator...
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            $ 0.12 /lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            500 lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            450 lb
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              style={{
+                                padding: '6px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#6b7280'
+                              }}
+                            >
+                              →
+                            </button>
+                            <Input
+                              defaultValue="450"
+                              suffix="lb"
+                              style={{ width: '80px', textAlign: 'right' }}
+                            />
+                          </div>
+                          <div>
+                            <Select
+                              placeholder="Select..."
+                              style={{ width: '100%' }}
+                              size="small"
+                            />
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151'
+                          }}>
+                            <span style={{ color: '#6b7280' }}>$</span>
+                            <span>5,000.50</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                          </div>
+                        </div>
+
+                        {/* 300 - Copper */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                          gap: '1px',
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f1f5f9',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                            300 - Copper
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            $ 0.12 /lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            500 lb
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            450 lb
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              style={{
+                                padding: '6px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#6b7280'
+                              }}
+                            >
+                              →
+                            </button>
+                            <Input
+                              defaultValue="450"
+                              suffix="lb"
+                              style={{ width: '80px', textAlign: 'right' }}
+                            />
+                          </div>
+                          <div>
+                            <Select
+                              placeholder="Select..."
+                              style={{ width: '100%' }}
+                              size="small"
+                            />
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151'
+                          }}>
+                            <span style={{ color: '#6b7280' }}>$</span>
+                            <span>910.00</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                          </div>
+                        </div>
+
+                        {/* 302 - Copper no. 2 */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                          gap: '1px',
+                          padding: '12px 16px',
+                          borderBottom: '1px solid #f1f5f9',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                            302 - Copper no. 2
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            $ 0.12 /NT
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            12 NT
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            10 NT
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              style={{
+                                padding: '6px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#6b7280'
+                              }}
+                            >
+                              →
+                            </button>
+                            <Input
+                              defaultValue="3"
+                              suffix="NT"
+                              style={{ width: '80px', textAlign: 'right' }}
+                            />
+                          </div>
+                          <div>
+                            <Select
+                              placeholder="Select..."
+                              style={{ width: '100%' }}
+                              size="small"
+                            />
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151'
+                          }}>
+                            <span style={{ color: '#6b7280' }}>$</span>
+                            <span>18,865.50</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                          </div>
+                        </div>
+
+                        {/* 303 - Copper no. 1 */}
+                        <div style={{
+                          display: 'grid',
+                          gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                          gap: '1px',
+                          padding: '12px 16px',
+                          alignItems: 'center'
+                        }}>
+                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                            303 - Copper no. 1
+                          </div>
+                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            $ 3.00 /ea
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            10 ea
+                          </div>
+                          <div style={{
+                            padding: '8px 12px',
+                            backgroundColor: '#f1f5f9',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151',
+                            textAlign: 'center'
+                          }}>
+                            4 ea
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <button
+                              style={{
+                                padding: '6px 8px',
+                                backgroundColor: '#f8f9fa',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                color: '#6b7280'
+                              }}
+                            >
+                              →
+                            </button>
+                            <Input
+                              defaultValue="4"
+                              suffix="ea"
+                              style={{ width: '80px', textAlign: 'right' }}
+                            />
+                          </div>
+                          <div>
+                            <Select
+                              placeholder="Select..."
+                              style={{ width: '100%' }}
+                              size="small"
+                            />
+                          </div>
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            padding: '8px 12px',
+                            backgroundColor: '#f8f9fa',
+                            borderRadius: '6px',
+                            fontSize: '14px',
+                            color: '#374151'
+                          }}>
+                            <span style={{ color: '#6b7280' }}>$</span>
+                            <span>1,005.00</span>
+                          </div>
+                          <div style={{ display: 'flex', gap: '4px' }}>
+                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Summary Row */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: '200px 120px 120px 140px 140px 140px 140px 40px',
+                        gap: '1px',
+                        padding: '12px 16px',
+                        backgroundColor: '#f8f9fa',
+                        borderTop: '1px solid #e5e7eb',
+                        fontWeight: '600'
+                      }}>
+                        <div style={{ fontSize: '14px', color: '#374151' }}>
+                          5 Materials
+                        </div>
+                        <div></div>
+                        <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
+                          25,500 lb
+                          <br />
+                          10 ea
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
+                          21,350 lb
+                          <br />
+                          4 ea
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
+                          7,350 lb
+                          <br />
+                          4 ea
+                        </div>
+                        <div></div>
+                        <div style={{ fontSize: '14px', color: '#374151', textAlign: 'right' }}>
+                          $ 27,011.90
+                        </div>
+                        <div></div>
+                      </div>
+
+                      {/* Add SO Material Button */}
+                      <div style={{ padding: '16px' }}>
+                        <Button
+                          icon={<Plus size={16} />}
+                          style={{ 
+                            border: '1px dashed #d1d5db',
+                            backgroundColor: 'transparent',
+                            color: '#6b7280'
+                          }}
+                        >
+                          Add SO Material
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
 
                 {/* Materials Table and Scales Section */}
                 <div style={{ display: 'flex', gap: '24px' }}>
@@ -2312,11 +3045,27 @@ export const LoadDetail = () => {
                     {/* Net Weight column summary */}
                     <div style={{ width: '120px', textAlign: 'right' }}>
                       <span style={{ fontSize: '14px', color: '#071429' }}>
-                        <strong>{materials.reduce((sum, m) => {
-                          if (m.isEachMaterial) return sum
-                          const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
-                          return sum + weightInPounds
-                        }, 0).toFixed(2)} lb</strong>
+                        <strong>
+                          {(() => {
+                            // Calculate separate totals for weight materials and each materials
+                            const weightMaterials = materials.filter(m => !m.isEachMaterial)
+                            const eachMaterials = materials.filter(m => m.isEachMaterial)
+                            
+                            const weightTotal = weightMaterials.reduce((sum, m) => {
+                              const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
+                              return sum + weightInPounds
+                            }, 0)
+                            
+                            const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                            
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
+                                {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
+                              </div>
+                            )
+                          })()}
+                        </strong>
                       </span>
                     </div>
                     
@@ -2405,6 +3154,7 @@ export const LoadDetail = () => {
                       Add Tagged Material
                     </Button>
                   )}
+                </div>
                 </div>
               </div>
             )}

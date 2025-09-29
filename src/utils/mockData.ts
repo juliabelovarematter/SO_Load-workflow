@@ -126,8 +126,8 @@ export const generateSOData = (soNumber: string) => {
   const freightTerm = freightTerms[rng.nextInt(freightTerms.length)]
   const status = statuses[rng.nextInt(statuses.length)]
   
-  // Generate dates based on SO number
-  const baseDate = new Date('2024-08-20')
+  // Generate dates based on SO number - use safe date generation
+  const baseDate = new Date(2024, 7, 20) // August 20, 2024 (month is 0-indexed)
   const daysOffset = rng.nextInt(10)
   const startDate = new Date(baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000)
   const endDate = new Date(startDate.getTime() + 3 * 24 * 60 * 60 * 1000)
@@ -162,8 +162,8 @@ export const generateSOData = (soNumber: string) => {
   return {
     soNumber,
     facility,
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
+    startDate: startDate && !isNaN(startDate.getTime()) ? startDate.toISOString().split('T')[0] : '2024-08-20',
+    endDate: endDate && !isNaN(endDate.getTime()) ? endDate.toISOString().split('T')[0] : '2024-08-23',
     accountRep,
     counterpartPO: `#${String(seed).padStart(6, '0')}`,
     customerName: customer,
@@ -182,19 +182,31 @@ export const generateSOData = (soNumber: string) => {
 
 // Generate consistent data for a specific Load number
 export const generateLoadData = (loadNumber: string) => {
-  const seed = parseInt(loadNumber.replace('#', ''))
+  const seed = parseInt(loadNumber.replace('#', '')) || 860000 // Fallback to default seed
   const rng = new SeededRandom(seed)
   
   const facility = facilities[rng.nextInt(facilities.length)]
   const customer = customers[rng.nextInt(customers.length)]
   const shippingCarrier = shippingCarriers[rng.nextInt(shippingCarriers.length)]
-  const status = loadStatuses[rng.nextInt(loadStatuses.length)]
   
-  // Generate dates based on load number
-  const baseDate = new Date('2024-08-20')
+  // Generate dates based on load number - use safe date generation
+  const baseDate = new Date(2024, 7, 20) // August 20, 2024 (month is 0-indexed)
   const daysOffset = rng.nextInt(10)
   const shipDate = new Date(baseDate.getTime() + daysOffset * 24 * 60 * 60 * 1000)
   const createdDate = new Date(shipDate.getTime() - 2 * 24 * 60 * 60 * 1000)
+  
+  // Generate status first to determine if we need relatedSO
+  const status = loadStatuses[rng.nextInt(loadStatuses.length)]
+  
+  // Generate relatedSO based on status - some statuses require SO, others don't
+  let relatedSO = ''
+  if (['Open', 'Pending Shipment', 'Shipped', 'Pending Reconciliation', 'Reconciled', 'Closed'].includes(status)) {
+    // These statuses typically have related SOs
+    relatedSO = `#${String(seed + 1000).padStart(6, '0')}`
+  } else if (status === 'Unassigned' || status === 'Voided') {
+    // These statuses typically don't have related SOs
+    relatedSO = ''
+  }
   
   // Generate materials count (1-20 materials)
   const materialsCount = rng.nextInt(20) + 1
@@ -226,16 +238,16 @@ export const generateLoadData = (loadNumber: string) => {
   
   return {
     loadNumber,
-    expectedShipDate: shipDate.toISOString().split('T')[0],
+    expectedShipDate: shipDate && !isNaN(shipDate.getTime()) ? shipDate.toISOString().split('T')[0] : '2024-08-22',
     facility,
-    relatedSO: rng.nextInt(3) === 0 ? `#${String(seed + 1000).padStart(6, '0')}` : '',
+    relatedSO,
     bookingNumber: rng.nextInt(3) === 0 ? `#${String(seed + 2000).padStart(6, '0')}` : '',
     shippingCarrier,
     customer,
     status,
     materialsCount,
     netWeight: rng.nextInt(2000) + 100,
-    createdOn: createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+    createdOn: createdDate && !isNaN(createdDate.getTime()) ? createdDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'August 20, 2024',
     createdBy: accountReps[rng.nextInt(accountReps.length)],
     materials,
     // Shipping details
