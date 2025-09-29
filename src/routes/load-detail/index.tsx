@@ -2799,11 +2799,13 @@ export const LoadDetail = () => {
                             <div style={{ fontSize: '14px', color: '#071429' }}>
                               {(() => {
                                 const lbMaterials = materials.filter(m => {
-                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial)
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                          availableMaterials.find(am => am.name === m.contractMaterial)
                                   return !selectedMaterial?.isEachMaterial
                                 })
                                 const eaMaterials = materials.filter(m => {
-                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial)
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                          availableMaterials.find(am => am.name === m.contractMaterial)
                                   return selectedMaterial?.isEachMaterial
                                 })
                                 
@@ -2830,7 +2832,8 @@ export const LoadDetail = () => {
                               <strong>
                                 {(() => {
                                   const lbMaterials = materials.filter(m => {
-                                    const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial)
+                                    const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                          availableMaterials.find(am => am.name === m.contractMaterial)
                                     return !selectedMaterial?.isEachMaterial
                                   })
                                   const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.tareWeight || 0), 0)
@@ -2843,11 +2846,13 @@ export const LoadDetail = () => {
                             <div style={{ fontSize: '14px', color: '#071429' }}>
                               {(() => {
                                 const lbMaterials = materials.filter(m => {
-                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial)
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                          availableMaterials.find(am => am.name === m.contractMaterial)
                                   return !selectedMaterial?.isEachMaterial
                                 })
                                 const eaMaterials = materials.filter(m => {
-                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial)
+                                  const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
+                                                          availableMaterials.find(am => am.name === m.contractMaterial)
                                   return selectedMaterial?.isEachMaterial
                                 })
                                 
