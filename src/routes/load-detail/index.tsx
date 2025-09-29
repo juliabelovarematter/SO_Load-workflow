@@ -1719,7 +1719,7 @@ export const LoadDetail = () => {
                             <span>1,230.90</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
@@ -1809,7 +1809,7 @@ export const LoadDetail = () => {
                             <span>5,000.50</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
@@ -1899,7 +1899,7 @@ export const LoadDetail = () => {
                             <span>910.00</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
@@ -1989,7 +1989,7 @@ export const LoadDetail = () => {
                             <span>18,865.50</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
@@ -2079,7 +2079,7 @@ export const LoadDetail = () => {
                             <span>1,005.00</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
