@@ -2845,16 +2845,9 @@ export const LoadDetail = () => {
                                 const eaTotal = eaMaterials.length // Count of ea materials (they don't have tare)
                                 
                                 return (
-                                  <>
-                                    <div style={{ fontWeight: 'bold' }}>
-                                      <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
-                                    </div>
-                                    {eaTotal > 0 && (
-                                      <div style={{ fontWeight: 'bold' }}>
-                                        <strong>0</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
-                                      </div>
-                                    )}
-                                  </>
+                                  <div style={{ fontWeight: 'bold' }}>
+                                    <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                  </div>
                                 )
                               })()}
                             </div>
