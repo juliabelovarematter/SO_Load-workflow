@@ -396,86 +396,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       )
     },
     {
-      title: 'Net Weight',
-      dataIndex: 'netWeight',
-      key: 'netWeight',
-      width: 150,
-      align: 'right' as const,
-      render: (value: number, record: Material, index: number) => {
-        // Handle each materials - always show in 'ea' unit
-        if (record.isEachMaterial) {
-          return (
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              background: '#fff',
-              border: '1px solid #d1d5db',
-              borderRadius: '6px',
-              padding: '8px 12px',
-              height: '40px'
-            }}>
-              <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
-              <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
-                <InputNumber
-                  value={value}
-                  onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
-                  style={{ 
-                    flex: 1,
-                    border: 'none',
-                    background: 'transparent',
-                    textAlign: 'right',
-                    boxShadow: 'none',
-                    padding: 0
-                  }}
-                  min={0}
-                  precision={0}
-                />
-                <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>ea</span>
-              </div>
-            </div>
-          )
-        }
-        
-        // Convert weight based on mode for regular materials
-        const displayWeight = weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit)
-        const displayUnit = weightMode === 'scale' ? 'lb' : record.pricingUnit
-        
-        return (
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            background: '#fff',
-            border: '1px solid #d1d5db',
-            borderRadius: '6px',
-            padding: '8px 12px',
-            height: '40px'
-          }}>
-            <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
-            <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
-              <InputNumber
-                value={displayWeight}
-                onChange={(val) => {
-                  const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
-                  updateMaterial(index, 'netWeight', newWeight)
-                }}
-                style={{ 
-                  flex: 1,
-                  border: 'none',
-                  background: 'transparent',
-                  textAlign: 'right',
-                  boxShadow: 'none',
-                  padding: 0
-                }}
-                min={0}
-                precision={2}
-              />
-              <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>{displayUnit}</span>
-            </div>
-          </div>
-        )
-      }
-    },
-    {
       title: 'Unit Price',
       dataIndex: 'unitPrice',
       key: 'unitPrice',
@@ -744,6 +664,86 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       )
     },
     {
+      title: 'Net Weight',
+      dataIndex: 'netWeight',
+      key: 'netWeight',
+      width: 150,
+      align: 'right' as const,
+      render: (value: number, record: Material, index: number) => {
+        // Handle each materials - always show in 'ea' unit
+        if (record.isEachMaterial) {
+          return (
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              background: '#fff',
+              border: '1px solid #d1d5db',
+              borderRadius: '6px',
+              padding: '8px 12px',
+              height: '40px'
+            }}>
+              <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
+              <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
+                <InputNumber
+                  value={value}
+                  onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
+                  style={{ 
+                    flex: 1,
+                    border: 'none',
+                    background: 'transparent',
+                    textAlign: 'right',
+                    boxShadow: 'none',
+                    padding: 0
+                  }}
+                  min={0}
+                  precision={0}
+                />
+                <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>ea</span>
+              </div>
+            </div>
+          )
+        }
+        
+        // Convert weight based on mode for regular materials
+        const displayWeight = weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit)
+        const displayUnit = weightMode === 'scale' ? 'lb' : record.pricingUnit
+        
+        return (
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            background: '#fff',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            height: '40px'
+          }}>
+            <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
+            <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
+              <InputNumber
+                value={displayWeight}
+                onChange={(val) => {
+                  const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
+                  updateMaterial(index, 'netWeight', newWeight)
+                }}
+                style={{ 
+                  flex: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'right',
+                  boxShadow: 'none',
+                  padding: 0
+                }}
+                min={0}
+                precision={2}
+              />
+              <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>{displayUnit}</span>
+            </div>
+          </div>
+        )
+      }
+    },
+    {
       title: 'Estimated Total',
       dataIndex: 'estimatedTotal',
       key: 'estimatedTotal',
@@ -781,7 +781,12 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   }, 0)
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+    <div style={{ 
+      display: 'flex', 
+      flexDirection: 'column', 
+      height: '100%',
+      paddingBottom: materials.length > 0 && hasChanges ? '80px' : '0' // Add space for fixed buttons
+    }}>
       {/* Header Section */}
       <div style={{ marginBottom: '16px' }}>
         <div style={{ 
@@ -916,12 +921,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={1}>
                         <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
-                          N {totalWeightInPounds.toLocaleString()} lb
-                          {totalEachCount > 0 && (
-                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
-                              N {totalEachCount.toLocaleString()} ea
-                            </div>
-                          )}
                         </div>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={2}>
@@ -930,6 +929,12 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={3}>
                         <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
+                          N {totalWeightInPounds.toLocaleString()} lb
+                          {totalEachCount > 0 && (
+                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
+                              N {totalEachCount.toLocaleString()} ea
+                            </div>
+                          )}
                         </div>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={4}>
@@ -965,6 +970,10 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                   <div style={{ width: '200px', fontWeight: '600' }}>
                     {materials.length} Materials
                   </div>
+                  <div style={{ width: '200px', textAlign: 'right', fontWeight: '600' }}>
+                  </div>
+                  <div style={{ width: '120px', textAlign: 'right', fontWeight: '600' }}>
+                  </div>
                   <div style={{ width: '150px', textAlign: 'right', fontWeight: '600' }}>
                     {totalWeightInPounds.toLocaleString()} lb
                     {totalEachCount > 0 && (
@@ -972,10 +981,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                         + {totalEachCount.toLocaleString()} ea
                       </div>
                     )}
-                  </div>
-                  <div style={{ width: '200px', textAlign: 'right', fontWeight: '600' }}>
-                  </div>
-                  <div style={{ width: '120px', textAlign: 'right', fontWeight: '600' }}>
                   </div>
                   <div style={{ width: '120px', textAlign: 'right', fontWeight: '600' }}>
                     ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
@@ -1006,22 +1011,49 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </div>
           )}
 
-          {/* Save/Discard Buttons */}
+          {/* Fixed Save/Discard Buttons */}
           {materials.length > 0 && hasChanges && (
             <div style={{ 
+              position: 'fixed',
+              bottom: 0,
+              left: 0, // Start from viewport edge
+              right: 0,
+              zIndex: 1000,
               display: 'flex', 
               justifyContent: 'flex-end', 
+              alignItems: 'center',
               gap: '12px', 
-              marginTop: '16px',
-              padding: '16px',
+              padding: '16px 24px 16px 0',
               background: '#fff',
-              borderRadius: '8px',
-              border: '1px solid rgba(7, 20, 41, 0.1)'
+              borderTop: '1px solid #e5e7eb'
             }}>
-              <Button onClick={handleDiscard} type="default">
+              <Button 
+                onClick={handleDiscard} 
+                type="default"
+                style={{
+                  height: '40px',
+                  padding: '0 20px',
+                  borderRadius: '6px',
+                  border: '1px solid #d1d5db',
+                  background: '#fff',
+                  color: '#374151',
+                  fontWeight: '500'
+                }}
+              >
                 Discard
               </Button>
-              <Button onClick={handleSave} type="primary" style={{ background: '#3b82f6', border: 'none' }}>
+              <Button 
+                onClick={handleSave} 
+                type="primary" 
+                style={{ 
+                  height: '40px',
+                  padding: '0 20px',
+                  borderRadius: '6px',
+                  background: '#3b82f6', 
+                  border: 'none',
+                  fontWeight: '500'
+                }}
+              >
                 Save updates
               </Button>
             </div>

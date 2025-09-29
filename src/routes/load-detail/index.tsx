@@ -81,6 +81,7 @@ export const LoadDetail = () => {
   const [selectedFieldForWeighing, setSelectedFieldForWeighing] = useState<'gross' | 'tare' | null>(null)
 
   // Determine if load is editable based on status - ONLY Unassigned and Open can be edited
+  // Read-only statuses: Shipped, Pending Reconciliation, Reconciled, Closed, Voided
   const isEditable = loadData?.status && ['Unassigned', 'Open'].includes(loadData.status)
 
 
@@ -452,6 +453,28 @@ export const LoadDetail = () => {
     const updatedSOmaterials = soMaterials.filter(material => material.id !== materialId)
     setSoMaterials(updatedSOmaterials)
     console.log(`🗑️ SO Material ${materialId} removed from load`)
+    setHasChanges(true)
+  }
+
+  const handleUseRemainingWeight = (materialId: string) => {
+    const updatedSOmaterials = soMaterials.map(material => {
+      if (material.id === materialId) {
+        return { ...material, requestedWeight: material.soRemainingWeight }
+      }
+      return material
+    })
+    setSoMaterials(updatedSOmaterials)
+    console.log(`🔄 Used remaining weight for SO Material ${materialId}`)
+    setHasChanges(true)
+  }
+
+  const handleUseAllRemainingWeights = () => {
+    const updatedSOmaterials = soMaterials.map(material => ({
+      ...material,
+      requestedWeight: material.soRemainingWeight
+    }))
+    setSoMaterials(updatedSOmaterials)
+    console.log(`🔄 Used remaining weight for all SO Materials`)
     setHasChanges(true)
   }
 
@@ -1563,34 +1586,36 @@ filterOption={(input, option) =>
                       }}>
                         <button
                           onClick={() => setWeightMode('scale')}
+                          disabled={!isEditable}
                           style={{
                             padding: '8px 16px',
                             borderRadius: '6px',
                             border: 'none',
                             background: weightMode === 'scale' ? '#3b82f6' : 'transparent',
-                            color: weightMode === 'scale' ? '#fff' : '#374151',
+                            color: !isEditable ? '#9ca3af' : (weightMode === 'scale' ? '#fff' : '#374151'),
                             fontWeight: '500',
                             fontSize: '14px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            cursor: !isEditable ? 'not-allowed' : 'pointer',
+                            transition: 'all 0.2s',
+                            opacity: !isEditable ? 0.5 : 1
                           }}
                         >
                           Scale Unit Weight
                         </button>
                         <button
                           onClick={() => setWeightMode('price')}
-                          disabled={requestMode === 'staged'}
+                          disabled={!isEditable || requestMode === 'staged'}
                           style={{
                             padding: '8px 16px',
                             borderRadius: '6px',
                             border: 'none',
                             background: weightMode === 'price' ? '#3b82f6' : 'transparent',
-                            color: requestMode === 'staged' ? '#9ca3af' : (weightMode === 'price' ? '#fff' : '#374151'),
+                            color: (!isEditable || requestMode === 'staged') ? '#9ca3af' : (weightMode === 'price' ? '#fff' : '#374151'),
                             fontWeight: '500',
                             fontSize: '14px',
-                            cursor: requestMode === 'staged' ? 'not-allowed' : 'pointer',
+                            cursor: (!isEditable || requestMode === 'staged') ? 'not-allowed' : 'pointer',
                             transition: 'all 0.2s',
-                            opacity: requestMode === 'staged' ? 0.5 : 1
+                            opacity: (!isEditable || requestMode === 'staged') ? 0.5 : 1
                           }}
                         >
                           Price Unit Weight
@@ -1730,7 +1755,18 @@ filterOption={(input, option) =>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>SO Remaining Weight</div>
                         <div style={{ fontSize: '14px', fontWeight: '600', color: '#374151' }}>
                           <div>Requested Weight</div>
-                          <div style={{ fontSize: '12px', fontWeight: '400', color: '#3b82f6', marginTop: '2px' }}>
+                          <div 
+                            onClick={isEditable ? handleUseAllRemainingWeights : undefined}
+                            style={{ 
+                              fontSize: '12px', 
+                              fontWeight: '400', 
+                              color: isEditable ? '#3b82f6' : '#9ca3af', 
+                              marginTop: '2px',
+                              cursor: isEditable ? 'pointer' : 'not-allowed',
+                              textDecoration: isEditable ? 'underline' : 'none',
+                              opacity: isEditable ? 1 : 0.5
+                            }}
+                          >
                             Use remaining we...
                           </div>
                         </div>
@@ -1787,29 +1823,63 @@ filterOption={(input, option) =>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
+                              onClick={() => handleUseRemainingWeight('so-1')}
+                              disabled={!isEditable}
                               style={{
                                 padding: '6px 8px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isEditable ? 'pointer' : 'not-allowed',
                                 fontSize: '14px',
-                                color: '#6b7280',
-                                height: '40px'
+                                color: isEditable ? '#6b7280' : '#9ca3af',
+                                height: '40px',
+                                opacity: isEditable ? 1 : 0.5
                               }}
                             >
                               →
                             </button>
                             <Input
-                              defaultValue="450"
+                              value={soMaterials.find(m => m.id === 'so-1')?.requestedWeight || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                const updatedSOmaterials = soMaterials.map(material => {
+                                  if (material.id === 'so-1') {
+                                    return { ...material, requestedWeight: value }
+                                  }
+                                  return material
+                                })
+                                setSoMaterials(updatedSOmaterials)
+                                setHasChanges(true)
+                              }}
                               suffix="lb"
-                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '70px', 
+                                textAlign: 'right', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#495057'
+                                })
+                              }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '100%', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#374151',
+                                  borderRadius: '6px'
+                                })
+                              }}
                             />
                           </div>
                           <div style={{
@@ -1887,29 +1957,63 @@ filterOption={(input, option) =>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
+                              onClick={() => handleUseRemainingWeight('so-2')}
+                              disabled={!isEditable}
                               style={{
                                 padding: '6px 8px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isEditable ? 'pointer' : 'not-allowed',
                                 fontSize: '14px',
-                                color: '#6b7280',
-                                height: '40px'
+                                color: isEditable ? '#6b7280' : '#9ca3af',
+                                height: '40px',
+                                opacity: isEditable ? 1 : 0.5
                               }}
                             >
                               →
                             </button>
                             <Input
-                              defaultValue="450"
+                              value={soMaterials.find(m => m.id === 'so-2')?.requestedWeight || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                const updatedSOmaterials = soMaterials.map(material => {
+                                  if (material.id === 'so-2') {
+                                    return { ...material, requestedWeight: value }
+                                  }
+                                  return material
+                                })
+                                setSoMaterials(updatedSOmaterials)
+                                setHasChanges(true)
+                              }}
                               suffix="lb"
-                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '70px', 
+                                textAlign: 'right', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#495057'
+                                })
+                              }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '100%', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#374151',
+                                  borderRadius: '6px'
+                                })
+                              }}
                             />
                           </div>
                           <div style={{
@@ -1987,29 +2091,63 @@ filterOption={(input, option) =>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
+                              onClick={() => handleUseRemainingWeight('so-3')}
+                              disabled={!isEditable}
                               style={{
                                 padding: '6px 8px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isEditable ? 'pointer' : 'not-allowed',
                                 fontSize: '14px',
-                                color: '#6b7280',
-                                height: '40px'
+                                color: isEditable ? '#6b7280' : '#9ca3af',
+                                height: '40px',
+                                opacity: isEditable ? 1 : 0.5
                               }}
                             >
                               →
                             </button>
                             <Input
-                              defaultValue="450"
+                              value={soMaterials.find(m => m.id === 'so-3')?.requestedWeight || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                const updatedSOmaterials = soMaterials.map(material => {
+                                  if (material.id === 'so-3') {
+                                    return { ...material, requestedWeight: value }
+                                  }
+                                  return material
+                                })
+                                setSoMaterials(updatedSOmaterials)
+                                setHasChanges(true)
+                              }}
                               suffix="lb"
-                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '70px', 
+                                textAlign: 'right', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#495057'
+                                })
+                              }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '100%', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#374151',
+                                  borderRadius: '6px'
+                                })
+                              }}
                             />
                           </div>
                           <div style={{
@@ -2087,29 +2225,63 @@ filterOption={(input, option) =>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
+                              onClick={() => handleUseRemainingWeight('so-4')}
+                              disabled={!isEditable}
                               style={{
                                 padding: '6px 8px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isEditable ? 'pointer' : 'not-allowed',
                                 fontSize: '14px',
-                                color: '#6b7280',
-                                height: '40px'
+                                color: isEditable ? '#6b7280' : '#9ca3af',
+                                height: '40px',
+                                opacity: isEditable ? 1 : 0.5
                               }}
                             >
                               →
                             </button>
                             <Input
-                              defaultValue="3"
+                              value={soMaterials.find(m => m.id === 'so-4')?.requestedWeight || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                const updatedSOmaterials = soMaterials.map(material => {
+                                  if (material.id === 'so-4') {
+                                    return { ...material, requestedWeight: value }
+                                  }
+                                  return material
+                                })
+                                setSoMaterials(updatedSOmaterials)
+                                setHasChanges(true)
+                              }}
                               suffix="NT"
-                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '70px', 
+                                textAlign: 'right', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#495057'
+                                })
+                              }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '100%', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#374151',
+                                  borderRadius: '6px'
+                                })
+                              }}
                             />
                           </div>
                           <div style={{
@@ -2187,29 +2359,63 @@ filterOption={(input, option) =>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <button
+                              onClick={() => handleUseRemainingWeight('so-5')}
+                              disabled={!isEditable}
                               style={{
                                 padding: '6px 8px',
                                 backgroundColor: '#f8f9fa',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '4px',
-                                cursor: 'pointer',
+                                cursor: isEditable ? 'pointer' : 'not-allowed',
                                 fontSize: '14px',
-                                color: '#6b7280',
-                                height: '40px'
+                                color: isEditable ? '#6b7280' : '#9ca3af',
+                                height: '40px',
+                                opacity: isEditable ? 1 : 0.5
                               }}
                             >
                               →
                             </button>
                             <Input
-                              defaultValue="4"
+                              value={soMaterials.find(m => m.id === 'so-5')?.requestedWeight || 0}
+                              onChange={(e) => {
+                                const value = parseFloat(e.target.value) || 0
+                                const updatedSOmaterials = soMaterials.map(material => {
+                                  if (material.id === 'so-5') {
+                                    return { ...material, requestedWeight: value }
+                                  }
+                                  return material
+                                })
+                                setSoMaterials(updatedSOmaterials)
+                                setHasChanges(true)
+                              }}
                               suffix="ea"
-                              style={{ width: '70px', textAlign: 'right', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '70px', 
+                                textAlign: 'right', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#495057'
+                                })
+                              }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%', height: '40px' }}
+                              disabled={!isEditable}
+                              style={{ 
+                                width: '100%', 
+                                height: '40px',
+                                ...(isEditable ? {} : {
+                                  backgroundColor: '#f8f9fa',
+                                  border: 'none',
+                                  color: '#374151',
+                                  borderRadius: '6px'
+                                })
+                              }}
                             />
                           </div>
                           <div style={{
@@ -2253,27 +2459,72 @@ filterOption={(input, option) =>
                         fontWeight: '600'
                       }}>
                         <div style={{ fontSize: '14px', color: '#374151' }}>
-                          5 Materials
+                          {soMaterials.length} Materials
                         </div>
                         <div></div>
                         <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
-                          25,500 lb
-                          <br />
-                          10 ea
+                          {(() => {
+                            const lbMaterials = soMaterials.filter(m => m.pricingUnit === 'lb')
+                            const eaMaterials = soMaterials.filter(m => m.pricingUnit === 'ea')
+                            const ntMaterials = soMaterials.filter(m => m.pricingUnit === 'NT')
+                            
+                            // Convert NT to lb (1 NT = 2000 lb)
+                            const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.soWeight || 0), 0) +
+                                           ntMaterials.reduce((sum, m) => sum + ((m.soWeight || 0) * 2000), 0)
+                            const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.soWeight || 0), 0)
+                            
+                            return (
+                              <>
+                                {lbTotal > 0 && `${lbTotal.toLocaleString()} lb`}
+                                {lbTotal > 0 && eaTotal > 0 && <br />}
+                                {eaTotal > 0 && `${eaTotal} ea`}
+                              </>
+                            )
+                          })()}
                         </div>
                         <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
-                          21,350 lb
-                          <br />
-                          4 ea
+                          {(() => {
+                            const lbMaterials = soMaterials.filter(m => m.pricingUnit === 'lb')
+                            const eaMaterials = soMaterials.filter(m => m.pricingUnit === 'ea')
+                            const ntMaterials = soMaterials.filter(m => m.pricingUnit === 'NT')
+                            
+                            // Convert NT to lb (1 NT = 2000 lb)
+                            const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.soRemainingWeight || 0), 0) +
+                                           ntMaterials.reduce((sum, m) => sum + ((m.soRemainingWeight || 0) * 2000), 0)
+                            const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.soRemainingWeight || 0), 0)
+                            
+                            return (
+                              <>
+                                {lbTotal > 0 && `${lbTotal.toLocaleString()} lb`}
+                                {lbTotal > 0 && eaTotal > 0 && <br />}
+                                {eaTotal > 0 && `${eaTotal} ea`}
+                              </>
+                            )
+                          })()}
                         </div>
                         <div style={{ fontSize: '14px', color: '#374151', textAlign: 'center' }}>
-                          7,350 lb
-                          <br />
-                          4 ea
+                          {(() => {
+                            const lbMaterials = soMaterials.filter(m => m.pricingUnit === 'lb')
+                            const eaMaterials = soMaterials.filter(m => m.pricingUnit === 'ea')
+                            const ntMaterials = soMaterials.filter(m => m.pricingUnit === 'NT')
+                            
+                            // Convert NT to lb (1 NT = 2000 lb)
+                            const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.requestedWeight || 0), 0) +
+                                           ntMaterials.reduce((sum, m) => sum + ((m.requestedWeight || 0) * 2000), 0)
+                            const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.requestedWeight || 0), 0)
+                            
+                            return (
+                              <>
+                                {lbTotal > 0 && `${lbTotal.toLocaleString()} lb`}
+                                {lbTotal > 0 && eaTotal > 0 && <br />}
+                                {eaTotal > 0 && `${eaTotal} ea`}
+                              </>
+                            )
+                          })()}
                         </div>
                         <div></div>
                         <div style={{ fontSize: '14px', color: '#374151', textAlign: 'right' }}>
-                          $ 27,011.90
+                          $ {soMaterials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                         <div></div>
                       </div>
@@ -2313,9 +2564,9 @@ filterOption={(input, option) =>
                         {requestMode === 'request' ? (
                           <>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Material</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Net Weight</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Unit Price</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Pricing Unit</th>
+                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Requested Weight</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Inventory Tags</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Estimated Total</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}></th>
@@ -2344,6 +2595,7 @@ filterOption={(input, option) =>
                         >
                           {requestMode === 'request' ? (
                             <>
+                              {/* Material */}
                               <td style={{ padding: '6px' }} onClick={(e) => e.stopPropagation()}>
                                 <Select
                                   placeholder="Select Material"
@@ -2371,94 +2623,7 @@ filterOption={(input, option) =>
                                   ))}
                                 </Select>
                               </td>
-                              <td style={{ padding: '6px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
-                                {/* Net Weight Field - Same as SO Materials */}
-                                {material.isEachMaterial ? (
-                                  <div style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    background: '#fff',
-                                    border: '1px solid #d1d5db',
-                                    borderRadius: '6px',
-                                    padding: '8px 12px',
-                                    height: '40px'
-                                  }}>
-                                    <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
-                                    <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
-                                      <InputNumber
-                                        value={material.netWeight || 0}
-                                        onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
-                                        disabled={!isEditable}
-                                        style={{
-                                          ...(isEditable ? {} : {
-                                            backgroundColor: '#f8f9fa',
-                                            border: 'none',
-                                            color: '#495057'
-                                          }), 
-                                          flex: 1,
-                                          border: 'none',
-                                          background: 'transparent',
-                                          textAlign: 'right',
-                                          boxShadow: 'none',
-                                          padding: 0,
-                                          color: '#071429',
-                                          fontWeight: '500'
-                                        }}
-                                        min={0}
-                                        precision={0}
-                                      />
-                                      <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>ea</span>
-                                    </div>
-                                  </div>
-                                ) : (
-                                  (() => {
-                                    // Convert weight based on mode for regular materials (same as SO Materials)
-                                    const displayWeight = weightMode === 'scale' ? (material.netWeight || 0) : convertWeight(material.netWeight || 0, 'lb', material.pricingUnit || 'lb')
-                                    const displayUnit = weightMode === 'scale' ? 'lb' : (material.pricingUnit || 'lb')
-                                    
-                                    return (
-                                      <div style={{ 
-                                        display: 'flex', 
-                                        alignItems: 'center', 
-                                        background: '#fff',
-                                        border: '1px solid #d1d5db',
-                                        borderRadius: '6px',
-                                        padding: '8px 12px',
-                                        height: '40px'
-                                      }}>
-                                        <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
-                                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
-                                          <InputNumber
-                                            value={displayWeight}
-                                            disabled={!isEditable}
-                                            style={{
-                                              ...(isEditable ? {} : {
-                                                backgroundColor: '#f8f9fa',
-                                                border: 'none',
-                                                color: '#495057'
-                                              }),
-                                              flex: 1,
-                                              border: 'none',
-                                              background: 'transparent',
-                                              textAlign: 'right',
-                                              boxShadow: 'none',
-                                              paddingRight: '6px'
-                                            }}
-                                            onChange={(val) => {
-                                              // Always store weight in pounds internally
-                                              const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, material.pricingUnit || 'lb', 'lb')
-                                              updateMaterial(index, 'netWeight', newWeight)
-                                            }}
-                                            min={0}
-                                            precision={2}
-                                          />
-                                          <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>{displayUnit}</span>
-                                        </div>
-                                      </div>
-                                    )
-                                  })()
-                                )}
-                              </td>
+                              {/* Unit Price */}
                               <td style={{ padding: '6px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                                 {/* Unit Price Field - Same as SO Materials */}
                                 <div style={{ 
@@ -2655,6 +2820,7 @@ filterOption={(input, option) =>
                                   )}
                                 </div>
                               </td>
+                              {/* Pricing Unit */}
                               <td style={{ padding: '6px' }} onClick={(e) => e.stopPropagation()}>
                                 <Select
                                   value={material.pricingUnit || 'lb'}
@@ -2681,6 +2847,96 @@ filterOption={(input, option) =>
                                   <Select.Option value="ea">ea</Select.Option>
                                 </Select>
                               </td>
+                              {/* Requested Weight */}
+                              <td style={{ padding: '6px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
+                                {/* Net Weight Field - Same as SO Materials */}
+                                {material.isEachMaterial ? (
+                                  <div style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    background: '#fff',
+                                    border: '1px solid #d1d5db',
+                                    borderRadius: '6px',
+                                    padding: '8px 12px',
+                                    height: '40px'
+                                  }}>
+                                    <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
+                                      <InputNumber
+                                        value={material.netWeight || 0}
+                                        onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
+                                        disabled={!isEditable}
+                                        style={{
+                                          ...(isEditable ? {} : {
+                                            backgroundColor: '#f8f9fa',
+                                            border: 'none',
+                                            color: '#495057'
+                                          }), 
+                                          flex: 1,
+                                          border: 'none',
+                                          background: 'transparent',
+                                          textAlign: 'right',
+                                          boxShadow: 'none',
+                                          padding: 0,
+                                          color: '#071429',
+                                          fontWeight: '500'
+                                        }}
+                                        min={0}
+                                        precision={0}
+                                      />
+                                      <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>ea</span>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  (() => {
+                                    // Convert weight based on mode for regular materials (same as SO Materials)
+                                    const displayWeight = weightMode === 'scale' ? (material.netWeight || 0) : convertWeight(material.netWeight || 0, 'lb', material.pricingUnit || 'lb')
+                                    const displayUnit = weightMode === 'scale' ? 'lb' : (material.pricingUnit || 'lb')
+                                    
+                                    return (
+                                      <div style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        background: '#fff',
+                                        border: '1px solid #d1d5db',
+                                        borderRadius: '6px',
+                                        padding: '8px 12px',
+                                        height: '40px'
+                                      }}>
+                                        <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
+                                        <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
+                                          <InputNumber
+                                            value={displayWeight}
+                                            disabled={!isEditable}
+                                            style={{
+                                              ...(isEditable ? {} : {
+                                                backgroundColor: '#f8f9fa',
+                                                border: 'none',
+                                                color: '#495057'
+                                              }),
+                                              flex: 1,
+                                              border: 'none',
+                                              background: 'transparent',
+                                              textAlign: 'right',
+                                              boxShadow: 'none',
+                                              paddingRight: '6px'
+                                            }}
+                                            onChange={(val) => {
+                                              // Always store weight in pounds internally
+                                              const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, material.pricingUnit || 'lb', 'lb')
+                                              updateMaterial(index, 'netWeight', newWeight)
+                                            }}
+                                            min={0}
+                                            precision={2}
+                                          />
+                                          <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>{displayUnit}</span>
+                                        </div>
+                                      </div>
+                                    )
+                                  })()
+                                )}
+                              </td>
+                              {/* Inventory Tags */}
                               <td style={{ padding: '6px' }} onClick={(e) => e.stopPropagation()}>
                                 <Select
                                   mode="multiple"
@@ -2760,6 +3016,7 @@ filterOption={(input, option) =>
                                   <Select.Option value="TAG004">TAG004</Select.Option>
                                 </Select>
                               </td>
+                              {/* Estimated Total */}
                               <td style={{ padding: '6px', textAlign: 'right' }} onClick={(e) => e.stopPropagation()}>
                                 <div style={{
                                   backgroundColor: '#f3f4f6',
@@ -2777,6 +3034,7 @@ filterOption={(input, option) =>
                                   </span>
                                 </div>
                               </td>
+                              {/* Delete button */}
                               <td style={{ padding: '6px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                                 <Button
                                   danger
