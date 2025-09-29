@@ -1677,7 +1677,8 @@ export const LoadDetail = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                color: '#6b7280'
+                                color: '#6b7280',
+                                height: '40px'
                               }}
                             >
                               →
@@ -1685,14 +1686,13 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right' }}
+                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%' }}
-                              size="small"
+                              style={{ width: '100%', height: '40px' }}
                             />
                           </div>
                           <div style={{
@@ -1709,8 +1709,8 @@ export const LoadDetail = () => {
                             <span>1,230.90</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
-                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
 
@@ -1757,7 +1757,8 @@ export const LoadDetail = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                color: '#6b7280'
+                                color: '#6b7280',
+                                height: '40px'
                               }}
                             >
                               →
@@ -1765,14 +1766,13 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right' }}
+                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%' }}
-                              size="small"
+                              style={{ width: '100%', height: '40px' }}
                             />
                           </div>
                           <div style={{
@@ -1789,8 +1789,8 @@ export const LoadDetail = () => {
                             <span>5,000.50</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
-                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
 
@@ -1837,7 +1837,8 @@ export const LoadDetail = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                color: '#6b7280'
+                                color: '#6b7280',
+                                height: '40px'
                               }}
                             >
                               →
@@ -1845,14 +1846,13 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="450"
                               suffix="lb"
-                              style={{ width: '80px', textAlign: 'right' }}
+                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%' }}
-                              size="small"
+                              style={{ width: '100%', height: '40px' }}
                             />
                           </div>
                           <div style={{
@@ -1869,8 +1869,8 @@ export const LoadDetail = () => {
                             <span>910.00</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
-                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
 
@@ -1917,7 +1917,8 @@ export const LoadDetail = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                color: '#6b7280'
+                                color: '#6b7280',
+                                height: '40px'
                               }}
                             >
                               →
@@ -1925,14 +1926,13 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="3"
                               suffix="NT"
-                              style={{ width: '80px', textAlign: 'right' }}
+                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%' }}
-                              size="small"
+                              style={{ width: '100%', height: '40px' }}
                             />
                           </div>
                           <div style={{
@@ -1949,8 +1949,8 @@ export const LoadDetail = () => {
                             <span>18,865.50</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
-                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
 
@@ -1997,7 +1997,8 @@ export const LoadDetail = () => {
                                 borderRadius: '4px',
                                 cursor: 'pointer',
                                 fontSize: '14px',
-                                color: '#6b7280'
+                                color: '#6b7280',
+                                height: '40px'
                               }}
                             >
                               →
@@ -2005,14 +2006,13 @@ export const LoadDetail = () => {
                             <Input
                               defaultValue="4"
                               suffix="ea"
-                              style={{ width: '80px', textAlign: 'right' }}
+                              style={{ width: '80px', textAlign: 'right', height: '40px' }}
                             />
                           </div>
                           <div>
                             <Select
                               placeholder="Select..."
-                              style={{ width: '100%' }}
-                              size="small"
+                              style={{ width: '100%', height: '40px' }}
                             />
                           </div>
                           <div style={{
@@ -2029,8 +2029,8 @@ export const LoadDetail = () => {
                             <span>1,005.00</span>
                           </div>
                           <div style={{ display: 'flex', gap: '4px' }}>
-                            <Button size="small" style={{ padding: '4px', minWidth: '32px' }}>📋</Button>
-                            <Button icon={<Trash2 size={14} />} size="small" danger style={{ padding: '4px', minWidth: '32px' }} />
+                            <Button style={{ padding: '4px', minWidth: '32px', height: '40px' }}>📋</Button>
+                            <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                           </div>
                         </div>
                       </div>
