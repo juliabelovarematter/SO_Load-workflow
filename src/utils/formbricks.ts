@@ -9,10 +9,15 @@ export const initializeFormbricks = async () => {
       return true
     }
     
+    console.log('🔄 Initializing Formbricks...')
+    
     await formbricks.setup({
       environmentId: "cmfy9tv371mlnx801lfcjfy80", // your environment ID
       appUrl: "https://app.formbricks.com",
     })
+    
+    // Wait a bit for setup to complete
+    await new Promise(resolve => setTimeout(resolve, 100))
     
     // Logout any existing user first to avoid conflicts
     try {
@@ -153,6 +158,17 @@ export const testSurveyTrigger = async (surveyId: string, eventName: string) => 
     
   } catch (error) {
     console.log('⚠️ Test failed:', error)
+  }
+}
+
+// Global initialization - call this when the app starts
+export const initializeFormbricksGlobally = async () => {
+  try {
+    console.log('🚀 Initializing Formbricks globally...')
+    await initializeFormbricks()
+    console.log('✅ Formbricks global initialization complete')
+  } catch (error) {
+    console.log('⚠️ Global Formbricks initialization failed:', error)
   }
 }
 
