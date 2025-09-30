@@ -68,9 +68,9 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     // Determine event name based on context
     let eventName = "survey-triggered"
     if (context?.source === 'load-save-updates-button') {
-      eventName = "load-save-updates-clicked"
+      eventName = "load-save-updates"
     } else if (context?.source === 'so-save-updates-button') {
-      eventName = "so-save-updates-clicked"
+      eventName = "so-save-updates"
     } else if (context?.source === 'header-button') {
       eventName = "feedback-button-clicked"
     }
