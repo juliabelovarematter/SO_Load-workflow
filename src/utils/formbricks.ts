@@ -3,6 +3,12 @@ import formbricks from '@formbricks/js'
 // Initialize Formbricks (call this once in your app)
 export const initializeFormbricks = async () => {
   try {
+    // Check if already initialized
+    if (formbricks.isInitialized) {
+      console.log('ℹ️ Formbricks already initialized')
+      return true
+    }
+    
     await formbricks.setup({
       environmentId: "cmfy9tv371mlnx801lfcjfy80", // your environment ID
       appUrl: "https://app.formbricks.com",
@@ -83,15 +89,9 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     
     console.log('✅ Survey trigger event sent successfully for survey:', surveyId)
     
-    // Also try to directly open the survey if available
-    try {
-      if (formbricks.openSurvey) {
-        await formbricks.openSurvey(surveyId)
-        console.log('✅ Survey opened directly:', surveyId)
-      }
-    } catch (openError) {
-      console.log('ℹ️ Direct survey open not available:', openError)
-    }
+    // Note: Direct survey opening is not available in @formbricks/js
+    // Surveys are triggered by events and shown based on dashboard configuration
+    console.log('ℹ️ Survey trigger sent - survey will appear based on Formbricks dashboard configuration')
     
   } catch (error) {
     console.log('⚠️ Failed to trigger survey:', error)
