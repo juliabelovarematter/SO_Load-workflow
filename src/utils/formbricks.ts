@@ -31,7 +31,7 @@ export const initializeFormbricks = async () => {
 }
 
 // Reset user for production prototype (allows survey to show again)
-export const resetUserForTesting = async () => {
+export const resetUserForProduction = async () => {
   try {
     // Logout any existing user first
     try {
@@ -57,13 +57,10 @@ export const resetUserForTesting = async () => {
 // Trigger survey function
 export const triggerSurvey = async (surveyId: string, context?: Record<string, any>) => {
   try {
-    console.log('Triggering survey:', surveyId)
+    console.log('Triggering survey:', surveyId, 'with context:', context)
     
-    // Ensure Formbricks is initialized first
+    // Ensure Formbricks is initialized first (only once)
     await initializeFormbricks()
-    
-    // Reset user for testing to allow survey to show again
-    await resetUserForTesting()
     
     // Determine event name based on context
     let eventName = "survey-triggered"
@@ -75,6 +72,8 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
       eventName = "feedback-button-clicked"
     }
     
+    console.log('Using event name:', eventName)
+    
     // Track the survey trigger event
     formbricks.track(eventName, {
       surveyId,
@@ -82,9 +81,44 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
       timestamp: new Date().toISOString()
     })
     
-    console.log('✅ Survey trigger event sent successfully')
+    console.log('✅ Survey trigger event sent successfully for survey:', surveyId)
+    
+    // Also try to directly open the survey if available
+    try {
+      if (formbricks.openSurvey) {
+        await formbricks.openSurvey(surveyId)
+        console.log('✅ Survey opened directly:', surveyId)
+      }
+    } catch (openError) {
+      console.log('ℹ️ Direct survey open not available:', openError)
+    }
+    
   } catch (error) {
     console.log('⚠️ Failed to trigger survey:', error)
+  }
+}
+
+// Manual reset function for testing
+export const resetUserForTesting = async () => {
+  try {
+    // Logout any existing user first
+    try {
+      await formbricks.logout()
+      console.log('✅ Logged out existing user for testing')
+    } catch (logoutError) {
+      console.log('ℹ️ No existing user to logout during testing:', logoutError)
+    }
+    
+    // Use a unique user ID for testing
+    const userId = `test-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    await formbricks.setUserId(userId)
+    await formbricks.setAttribute("source", "prototype")
+    await formbricks.setAttribute("environment", "testing")
+    console.log('✅ User reset for testing:', userId)
+    return userId
+  } catch (error) {
+    console.log('⚠️ Failed to reset user for testing:', error)
+    return null
   }
 }
 
