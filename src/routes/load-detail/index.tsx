@@ -3527,64 +3527,57 @@ filterOption={(input, option) =>
 
                 {/* Summary Section */}
                 {requestMode === 'request' ? (
-                  <div style={{ 
-                    display: 'flex', 
-                    alignItems: 'center',
-                    padding: '0px 0'
-                  }}>
-                    {/* Material column summary */}
-                    <div style={{ width: '200px', textAlign: 'left' }}>
-                      <span style={{ fontSize: '14px', color: '#071429' }}>
-                        <strong>{materials.length} Materials</strong>
-                      </span>
-                    </div>
-                    
-                    {/* Net Weight column summary */}
-                    <div style={{ width: '120px', textAlign: 'right' }}>
-                      <span style={{ fontSize: '14px', color: '#071429' }}>
-                        <strong>
-                          {(() => {
-                            // Calculate separate totals for weight materials and each materials
-                            const weightMaterials = materials.filter(m => !m.isEachMaterial)
-                            const eachMaterials = materials.filter(m => m.isEachMaterial)
-                            
-                            const weightTotal = weightMaterials.reduce((sum, m) => {
-                              const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
-                              return sum + weightInPounds
-                            }, 0)
-                            
-                            const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
-                            
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
-                                {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
-                              </div>
-                            )
-                          })()}
-                        </strong>
-                      </span>
-                    </div>
-                    
-                    {/* Unit Price column - empty */}
-                    <div style={{ width: '120px' }}></div>
-                    
-                    {/* Pricing Unit column - empty */}
-                    <div style={{ width: '100px' }}></div>
-                    
-                    {/* Inventory Tags column - empty */}
-                    <div style={{ width: '120px' }}></div>
-                    
-                    {/* Estimated Total column summary */}
-                    <div style={{ flex: 1, textAlign: 'right' }}>
-                      <span style={{ fontSize: '14px', color: '#071429' }}>
-                        <strong>${(Math.round(materials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0) * 100) / 100).toFixed(2)}</strong>
-                      </span>
-                    </div>
-                    
-                    {/* Actions column - empty */}
-                    <div style={{ width: '80px' }}></div>
-                  </div>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <tbody>
+                      <tr>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
+                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
+                            {materials.length} Materials
+                          </span>
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
+                          {/* Unit Price column - empty */}
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
+                          {/* Pricing Unit column - empty */}
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
+                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
+                            {(() => {
+                              // Calculate separate totals for weight materials and each materials
+                              const weightMaterials = materials.filter(m => !m.isEachMaterial)
+                              const eachMaterials = materials.filter(m => m.isEachMaterial)
+                              
+                              const weightTotal = weightMaterials.reduce((sum, m) => {
+                                const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
+                                return sum + weightInPounds
+                              }, 0)
+                              
+                              const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                              
+                              return (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                  {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
+                                  {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
+                                </div>
+                              )
+                            })()}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
+                          {/* Inventory Tags column - empty */}
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
+                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
+                            ${(Math.round(materials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0) * 100) / 100).toFixed(2)}
+                          </span>
+                        </td>
+                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'center' }}>
+                          {/* Actions column - empty */}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
                 ) : null}
                 
                 {/* Add Material Buttons */}
