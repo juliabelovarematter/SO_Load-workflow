@@ -122,5 +122,37 @@ export const resetUserForTesting = async () => {
   }
 }
 
+// Test function to manually trigger surveys
+export const testSurveyTrigger = async (surveyId: string, eventName: string) => {
+  try {
+    console.log('🧪 Testing survey trigger:', surveyId, 'with event:', eventName)
+    
+    // Ensure Formbricks is initialized
+    await initializeFormbricks()
+    
+    // Track the test event
+    formbricks.track(eventName, {
+      surveyId,
+      test: true,
+      timestamp: new Date().toISOString()
+    })
+    
+    console.log('✅ Test event sent successfully')
+    
+    // Also try a generic event
+    formbricks.track("survey-triggered", {
+      surveyId,
+      eventName,
+      test: true,
+      timestamp: new Date().toISOString()
+    })
+    
+    console.log('✅ Generic survey event also sent')
+    
+  } catch (error) {
+    console.log('⚠️ Test failed:', error)
+  }
+}
+
 // Your survey ID
 export const FEEDBACK_SURVEY_ID = "cmg5eady614awyt01kqe0i5q4"
