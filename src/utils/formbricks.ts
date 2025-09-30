@@ -8,6 +8,14 @@ export const initializeFormbricks = async () => {
       appUrl: "https://app.formbricks.com",
     })
     
+    // Logout any existing user first to avoid conflicts
+    try {
+      await formbricks.logout()
+      console.log('✅ Logged out existing Formbricks user')
+    } catch (logoutError) {
+      console.log('ℹ️ No existing user to logout:', logoutError)
+    }
+    
     // Use a stable user ID for production prototype
     const userId = "prototype-user-reset"
     await formbricks.setUserId(userId)
@@ -25,6 +33,14 @@ export const initializeFormbricks = async () => {
 // Reset user for production prototype (allows survey to show again)
 export const resetUserForTesting = async () => {
   try {
+    // Logout any existing user first
+    try {
+      await formbricks.logout()
+      console.log('✅ Logged out existing user for reset')
+    } catch (logoutError) {
+      console.log('ℹ️ No existing user to logout during reset:', logoutError)
+    }
+    
     // Use a stable user ID that resets the survey state
     const userId = "prototype-user-reset"
     await formbricks.setUserId(userId)
@@ -49,8 +65,18 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     // Reset user for testing to allow survey to show again
     await resetUserForTesting()
     
+    // Determine event name based on context
+    let eventName = "survey-triggered"
+    if (context?.source === 'load-save-updates-button') {
+      eventName = "load-save-updates-clicked"
+    } else if (context?.source === 'so-materials-net-weight-field') {
+      eventName = "net-weight-field-focused"
+    } else if (context?.source === 'header-button') {
+      eventName = "feedback-button-clicked"
+    }
+    
     // Track the survey trigger event
-    formbricks.track("net-weight-field-focused", {
+    formbricks.track(eventName, {
       surveyId,
       context: context || {},
       timestamp: new Date().toISOString()
