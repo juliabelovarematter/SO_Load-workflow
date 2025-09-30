@@ -1,5 +1,5 @@
 import { Layout } from 'antd'
-import { Router, Route, Switch } from 'wouter'
+import { Router, Route, Switch, Redirect } from 'wouter'
 import { TopBar } from './components/Layout/TopBar'
 import { SideBar } from './components/Layout/SideBar'
 // import { Dashboard } from './routes/dashboard'
@@ -32,7 +32,6 @@ function App() {
               }}
             >
               <Switch>
-                <Route path="/" component={SalesOrders} />
                 <Route path="/sales-orders" component={SalesOrders} />
                 <Route path="/sales-order/:id" component={SalesOrderDetail} />
                 <Route path="/bookings" component={Bookings} />
@@ -40,11 +39,8 @@ function App() {
                 <Route path="/load/:id" component={LoadDetail} />
                 <Route path="/analytics" component={Analytics} />
                 <Route path="/settings" component={Settings} />
-                <Route>
-                  <div style={{ padding: '24px', textAlign: 'center' }}>
-                    <h2>404 - Page Not Found</h2>
-                    <p>The page you are looking for does not exist.</p>
-                  </div>
+                <Route path="/">
+                  <Redirect to="/sales-orders" />
                 </Route>
               </Switch>
             </Content>
