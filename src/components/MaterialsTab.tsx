@@ -810,6 +810,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 border: '1px solid #e5e7eb'
               }}>
                 <button
+                  className="scale-unit-weight-toggle"
                   onClick={() => setWeightMode('scale')}
                   style={{
                     padding: '8px 16px',
@@ -826,6 +827,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                   Scale Unit Weight
                 </button>
                 <button
+                  className="price-unit-weight-toggle"
                   onClick={() => setWeightMode('price')}
                   style={{
                     padding: '8px 16px',

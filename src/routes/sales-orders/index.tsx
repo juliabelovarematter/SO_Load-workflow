@@ -30,7 +30,7 @@ export const SalesOrders = () => {
   }
 
   // Generate contextual menu items based on SO status
-  const getMenuItems = (status: string) => {
+  const getMenuItems = (status: string, record: any) => {
     const baseItems = [
       {
         key: 'clone',
@@ -253,7 +253,7 @@ export const SalesOrders = () => {
       render: (_, record) => (
         <Dropdown
           menu={{ 
-            items: getMenuItems(record.status),
+            items: getMenuItems(record.status, record),
             style: { borderRadius: '8px', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)' }
           }}
           trigger={['click']}

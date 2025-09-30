@@ -4,8 +4,11 @@ import { useState, useMemo, useEffect } from 'react'
 import { FileText, Ship, CheckCircle, RotateCcw, Trash2, Plus } from 'lucide-react'
 import { generateAllBookingsData } from '../../utils/mockData'
 import dayjs from 'dayjs'
+import FeedbackButton from '../../components/FeedbackButton'
 
 export const Bookings = () => {
+  console.log('Bookings component rendering...')
+  
   // Filter states
   const [searchText, setSearchText] = useState('')
   const [selectedFacility, setSelectedFacility] = useState<string | undefined>()
@@ -22,7 +25,9 @@ export const Bookings = () => {
   // Generate 50 bookings with persistence
   const allData = useMemo(() => {
     try {
+      console.log('Generating bookings data...')
       const generatedData = generateAllBookingsData()
+      console.log('Generated data:', generatedData.length, 'bookings')
       return generatedData.map((booking, index) => ({
         key: String(index),
         ...booking
@@ -617,13 +622,16 @@ export const Bookings = () => {
           />
         </div>
         
-        <Button 
-          type="primary"
-          style={{ background: '#3b82f6', border: 'none' }}
-          onClick={() => setIsCreateModalVisible(true)}
-        >
-          Create Booking
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <FeedbackButton />
+          <Button 
+            type="primary"
+            style={{ background: '#3b82f6', border: 'none' }}
+            onClick={() => setIsCreateModalVisible(true)}
+          >
+            Create Booking
           </Button>
+        </div>
       </div>
 
       {/* Scrollable Table Container */}
