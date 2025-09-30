@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import { triggerSurvey, initializeFormbricks } from '../utils/formbricks'
+import { initializeFormbricks } from '../utils/formbricks'
 
 const { Option } = Select
 
@@ -694,12 +694,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
               <InputNumber
                 value={value}
                 onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
-                onFocus={() => triggerSurvey("g2tw76tnz8nf8gf4q4ybgbo6", {
-                  source: 'so-materials-net-weight-field',
-                  page: 'sales-order',
-                  field: 'netWeight',
-                  materialIndex: index
-                })}
                 style={{ 
                   flex: 1,
                   border: 'none',
@@ -739,14 +733,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                   const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
                   updateMaterial(index, 'netWeight', newWeight)
                 }}
-                onFocus={() => triggerSurvey("g2tw76tnz8nf8gf4q4ybgbo6", {
-                  source: 'so-materials-net-weight-field',
-                  page: 'sales-order',
-                  field: 'netWeight',
-                  materialIndex: index,
-                  weightMode: weightMode,
-                  pricingUnit: record.pricingUnit
-                })}
                 style={{ 
                   flex: 1,
                   border: 'none',
