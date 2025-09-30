@@ -1115,6 +1115,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
               <Button 
                 onClick={handleSave} 
                 type="primary" 
+                className="save-updates-button"
                 style={{ 
                   height: '40px',
                   padding: '0 20px',

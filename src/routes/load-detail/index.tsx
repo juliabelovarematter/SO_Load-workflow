@@ -4,6 +4,7 @@ import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popcon
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
+import { triggerSurvey } from '../../utils/formbricks'
 
 // Material interface (same as SO Materials)
 interface Material {
@@ -824,6 +825,14 @@ export const LoadDetail = () => {
     
     setHasChanges(false)
     setOriginalFormData(values)
+    
+    // Trigger survey when Save Updates button is clicked
+    triggerSurvey("cmg6z3ito68osvm01qbqf6n8c", {
+      source: 'load-save-updates-button',
+      page: 'load-detail',
+      loadId: params?.id,
+      action: 'save-updates'
+    })
   }
 
 
@@ -3714,7 +3723,7 @@ filterOption={(input, option) =>
           zIndex: 1000
         }}>
           <Button onClick={handleDiscard} disabled={!isEditable}>Discard</Button>
-          <Button type="primary" onClick={handleSave} disabled={!isEditable}>Save updates</Button>
+          <Button type="primary" onClick={handleSave} disabled={!isEditable} className="load-save-updates-button">Save updates</Button>
         </div>
       )}
     </div>
