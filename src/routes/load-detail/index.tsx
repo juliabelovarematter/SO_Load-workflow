@@ -1585,6 +1585,7 @@ filterOption={(input, option) =>
                         border: '1px solid #e5e7eb'
                       }}>
                         <button
+                          className="load-scale-unit-weight-toggle"
                           onClick={() => setWeightMode('scale')}
                           disabled={!isEditable}
                           style={{
@@ -1603,6 +1604,7 @@ filterOption={(input, option) =>
                           Scale Unit Weight
                         </button>
                         <button
+                          className="load-price-unit-weight-toggle"
                           onClick={() => setWeightMode('price')}
                           disabled={!isEditable || requestMode === 'staged'}
                           style={{
@@ -2798,6 +2800,7 @@ filterOption={(input, option) =>
                                     </div>
                                   ) : (
                                     <InputNumber
+                                      className="load-unit-price-input"
                                       value={typeof material.unitPrice === 'number' ? material.unitPrice : 0}
                                       onChange={(val) => updateMaterial(index, 'unitPrice', val || 0)}
                                       disabled={!isEditable}

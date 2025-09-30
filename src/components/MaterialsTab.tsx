@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { triggerSurvey } from '../utils/formbricks'
 
 const { Option } = Select
 
@@ -626,6 +627,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </div>
           ) : (
             <InputNumber
+              className="so-unit-price-input"
               value={typeof value === 'number' ? value : 0}
               onChange={(val) => updateMaterial(index, 'unitPrice', val || 0)}
               style={{ 
@@ -684,19 +686,25 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             }}>
               <span style={{ fontSize: '12px', color: '#6b7280', marginRight: '8px' }}>N</span>
               <div style={{ display: 'flex', alignItems: 'center', flex: 1, justifyContent: 'space-between' }}>
-                <InputNumber
-                  value={value}
-                  onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
-                  style={{ 
-                    flex: 1,
-                    border: 'none',
-                    background: 'transparent',
-                    textAlign: 'right',
-                    boxShadow: 'none',
-                    padding: 0
-                  }}
-                  min={0}
-                  precision={0}
+              <InputNumber
+                value={value}
+                onChange={(val) => updateMaterial(index, 'netWeight', val || 0)}
+                onFocus={() => triggerSurvey("g2tw76tnz8nf8gf4q4ybgbo6", {
+                  source: 'so-materials-net-weight-field',
+                  page: 'sales-order',
+                  field: 'netWeight',
+                  materialIndex: index
+                })}
+                style={{ 
+                  flex: 1,
+                  border: 'none',
+                  background: 'transparent',
+                  textAlign: 'right',
+                  boxShadow: 'none',
+                  padding: 0
+                }}
+                min={0}
+                precision={0}
                 />
                 <span style={{ fontSize: '12px', color: '#6b7280', marginLeft: '8px' }}>ea</span>
               </div>
@@ -726,6 +734,14 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                   const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
                   updateMaterial(index, 'netWeight', newWeight)
                 }}
+                onFocus={() => triggerSurvey("g2tw76tnz8nf8gf4q4ybgbo6", {
+                  source: 'so-materials-net-weight-field',
+                  page: 'sales-order',
+                  field: 'netWeight',
+                  materialIndex: index,
+                  weightMode: weightMode,
+                  pricingUnit: record.pricingUnit
+                })}
                 style={{ 
                   flex: 1,
                   border: 'none',
