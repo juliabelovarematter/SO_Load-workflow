@@ -80,29 +80,16 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     
     console.log('Using event name:', eventName)
     
-    // Track the survey trigger event with multiple common event names
-    const eventsToTry = [
-      eventName,
-      "survey-triggered",
-      "button-clicked",
-      "save-button-clicked",
-      "form-submitted"
-    ]
+    // Since Formbricks is configured to trigger on CSS class clicks,
+    // we just need to ensure the button has the right class and send a simple event
+    formbricks.track("button-clicked", {
+      surveyId,
+      context: context || {},
+      timestamp: new Date().toISOString()
+    })
     
-    for (const event of eventsToTry) {
-      try {
-        formbricks.track(event, {
-          surveyId,
-          context: context || {},
-          timestamp: new Date().toISOString()
-        })
-        console.log(`✅ Event "${event}" sent successfully for survey:`, surveyId)
-      } catch (error) {
-        console.log(`⚠️ Failed to send event "${event}":`, error)
-      }
-    }
-    
-    console.log('✅ All survey trigger events sent for survey:', surveyId)
+    console.log('✅ Button click event sent for survey:', surveyId)
+    console.log('ℹ️ Survey should trigger based on CSS class configuration')
     
     // Note: Direct survey opening is not available in @formbricks/js
     // Surveys are triggered by events and shown based on dashboard configuration
