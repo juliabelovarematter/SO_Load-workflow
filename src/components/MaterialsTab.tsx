@@ -801,6 +801,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     return sum
   }, 0)
 
+
   return (
     <div style={{ 
       display: 'flex', 
@@ -936,8 +937,12 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
               >
                 {materials.length > 0 && (
                   <Table.Summary fixed>
-                    <Table.Summary.Row>
-                      <Table.Summary.Cell index={0} colSpan={1}>
+                    <Table.Summary.Row style={{ 
+                      backgroundColor: '#f8f9fa',
+                      borderTop: '1px solid #e5e7eb',
+                      fontWeight: '600'
+                    }}>
+                      <Table.Summary.Cell index={0}>
                         <div style={{ fontWeight: '600', color: '#1f2937' }}>
                           Total
                         </div>
@@ -951,11 +956,11 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                         </div>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={3}>
-                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
-                          N {totalWeightInPounds.toLocaleString()} lb
+                        <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937', fontSize: '14px' }}>
+                          {totalWeightInPounds.toLocaleString()} lb
                           {totalEachCount > 0 && (
-                            <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '2px' }}>
-                              N {totalEachCount.toLocaleString()} ea
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px', fontWeight: '500' }}>
+                              {totalEachCount.toLocaleString()} ea
                             </div>
                           )}
                         </div>
@@ -974,62 +979,104 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 )}
               </Table>
               
-              {/* Summary Section */}
+              {/* Summary Row - Perfect Alignment */}
+              {materials.length > 0 && (
+                <div style={{ 
+                  display: 'table',
+                  width: '100%',
+                  backgroundColor: '#f9fafb'
+                }}>
+                  <div style={{ 
+                    display: 'table-row'
+                  }}>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '200px',
+                      padding: '12px 16px',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      fontSize: '14px',
+                      verticalAlign: 'middle'
+                    }}>
+                      Total
+                    </div>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '200px',
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      verticalAlign: 'middle'
+                    }}>
+                    </div>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '120px',
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      verticalAlign: 'middle'
+                    }}>
+                    </div>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '150px',
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      fontSize: '14px',
+                      verticalAlign: 'middle'
+                    }}>
+                      {totalWeightInPounds.toLocaleString()} lb
+                      {totalEachCount > 0 && (
+                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
+                          {totalEachCount.toLocaleString()} ea
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '120px',
+                      padding: '12px 16px',
+                      textAlign: 'right',
+                      fontWeight: '600',
+                      color: '#1f2937',
+                      fontSize: '14px',
+                      verticalAlign: 'middle'
+                    }}>
+                      ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
+                    </div>
+                    <div style={{ 
+                      display: 'table-cell',
+                      width: '80px',
+                      padding: '12px 16px',
+                      verticalAlign: 'middle'
+                    }}>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {/* Add Material Button */}
               <div style={{ 
                 padding: '16px', 
-                background: '#f8f9fa', 
-                borderTop: '1px solid #e5e7eb',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '12px'
+                display: 'flex', 
+                justifyContent: 'flex-start' 
               }}>
-                {/* Summary Row */}
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center',
-                  fontSize: '14px',
-                  color: '#374151'
-                }}>
-                  <div style={{ width: '200px', fontWeight: '600' }}>
-                    {materials.length} Materials
-                  </div>
-                  <div style={{ width: '200px', textAlign: 'right', fontWeight: '600' }}>
-                  </div>
-                  <div style={{ width: '120px', textAlign: 'right', fontWeight: '600' }}>
-                  </div>
-                  <div style={{ width: '150px', textAlign: 'right', fontWeight: '600' }}>
-                    {totalWeightInPounds.toLocaleString()} lb
-                    {totalEachCount > 0 && (
-                      <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                        + {totalEachCount.toLocaleString()} ea
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ width: '120px', textAlign: 'right', fontWeight: '600' }}>
-                    ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
-                  </div>
-                  <div style={{ width: '80px', textAlign: 'right' }}>
-                  </div>
-                </div>
-                
-                {/* Add Material Button */}
-                <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
-                  <Button 
-                    type="default"
-                    icon={<Plus size={16} />}
-                    onClick={addMaterial}
-                    style={{ 
-                      height: '40px',
-                      borderRadius: '6px',
-                      border: '1px solid #d1d5db',
-                      background: '#fff',
-                      color: '#374151',
-                      fontWeight: '500'
-                    }}
-                  >
-                    Add Material
-                  </Button>
-                </div>
+                <Button 
+                  type="default"
+                  icon={<Plus size={16} />}
+                  onClick={addMaterial}
+                  style={{ 
+                    height: '40px',
+                    borderRadius: '6px',
+                    border: '1px solid #d1d5db',
+                    background: '#fff',
+                    color: '#374151',
+                    fontWeight: '500'
+                  }}
+                >
+                  Add Material
+                </Button>
               </div>
             </div>
           )}
