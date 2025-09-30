@@ -68,26 +68,41 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     // Ensure Formbricks is initialized first (only once)
     await initializeFormbricks()
     
-    // Determine event name based on context
+    // Use generic event names that are commonly configured in Formbricks
     let eventName = "survey-triggered"
     if (context?.source === 'load-save-updates-button') {
-      eventName = "load-save-updates"
+      eventName = "survey-triggered" // Use generic event for Load Materials
     } else if (context?.source === 'so-save-updates-button') {
-      eventName = "so-save-updates"
+      eventName = "survey-triggered" // Use generic event for SO Materials
     } else if (context?.source === 'header-button') {
       eventName = "feedback-button-clicked"
     }
     
     console.log('Using event name:', eventName)
     
-    // Track the survey trigger event
-    formbricks.track(eventName, {
-      surveyId,
-      context: context || {},
-      timestamp: new Date().toISOString()
-    })
+    // Track the survey trigger event with multiple common event names
+    const eventsToTry = [
+      eventName,
+      "survey-triggered",
+      "button-clicked",
+      "save-button-clicked",
+      "form-submitted"
+    ]
     
-    console.log('✅ Survey trigger event sent successfully for survey:', surveyId)
+    for (const event of eventsToTry) {
+      try {
+        formbricks.track(event, {
+          surveyId,
+          context: context || {},
+          timestamp: new Date().toISOString()
+        })
+        console.log(`✅ Event "${event}" sent successfully for survey:`, surveyId)
+      } catch (error) {
+        console.log(`⚠️ Failed to send event "${event}":`, error)
+      }
+    }
+    
+    console.log('✅ All survey trigger events sent for survey:', surveyId)
     
     // Note: Direct survey opening is not available in @formbricks/js
     // Surveys are triggered by events and shown based on dashboard configuration
