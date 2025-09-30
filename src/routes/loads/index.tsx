@@ -619,7 +619,7 @@ export const Loads = () => {
         background: '#fff',
         border: '1px solid #d1d5db',
         borderRadius: '10px',
-        overflow: 'hidden',
+        overflow: 'auto',
         flex: 1,
         display: 'flex',
         flexDirection: 'column'

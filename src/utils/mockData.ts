@@ -43,10 +43,52 @@ export const statuses = ['Open', 'Closed', 'Draft', 'Shipped', 'Voided']
 
 // Load-specific data
 export const loadStatuses = ['Unassigned', 'Open', 'Pending Shipment', 'Pending Reconciliation', 'Reconciled', 'Closed', 'Voided']
+export const bookingStatuses = ['Draft', 'Open', 'Shipped', 'Closed', 'Voided']
 export const shippingCarriers = [
   'ShipSmart Headquarters', 'ShipSmart Ontario', 'ShipSmart Puerto Rico',
   'ShipSmart Stanford', 'ShipSmart Texas', 'ShipSmart California',
   'ShipSmart Nevada', 'ShipSmart Colorado', 'ShipSmart Florida'
+]
+
+// Booking-specific data
+export const ports = [
+  'Port of Los Angeles', 'Port of Long Beach', 'Port of Oakland', 'Port of Seattle',
+  'Port of Tacoma', 'Port of Houston', 'Port of Miami', 'Port of New York',
+  'Port of Savannah', 'Port of Charleston', 'Port of Norfolk', 'Port of Baltimore'
+]
+
+export const destinations = [
+  'Shanghai, China', 'Hamburg, Germany', 'Tokyo, Japan', 'Rotterdam, Netherlands',
+  'Busan, South Korea', 'Antwerp, Belgium', 'Singapore', 'Hong Kong, China',
+  'Dubai, UAE', 'Mumbai, India', 'Bangkok, Thailand', 'Manila, Philippines',
+  'Sydney, Australia', 'Auckland, New Zealand', 'Vancouver, Canada', 'Montreal, Canada'
+]
+
+export const vessels = [
+  'MV Ocean Star', 'MV Atlantic', 'MV Pacific', 'MV North Sea', 'MV Asia Pacific',
+  'MV European Express', 'MV Singapore Star', 'MV Shanghai Express', 'MV Hamburg Star',
+  'MV Tokyo Bay', 'MV Rotterdam Express', 'MV Busan Star', 'MV Antwerp Express',
+  'MV Dubai Star', 'MV Mumbai Express', 'MV Bangkok Star', 'MV Manila Express',
+  'MV Sydney Star', 'MV Auckland Express', 'MV Vancouver Star', 'MV Montreal Express'
+]
+
+export const bookingNotes = [
+  'Priority shipment - expedite processing',
+  'Standard processing',
+  'Fragile cargo - handle with care',
+  'Large shipment - requires special handling',
+  'Temperature controlled cargo',
+  'High value cargo - insurance required',
+  'Hazardous materials - special documentation required',
+  'Oversized cargo - crane required',
+  'Time sensitive delivery',
+  'Customer requested expedited shipping',
+  'Standard ocean freight',
+  'Consolidated shipment',
+  'Direct shipment - no transshipment',
+  'Refrigerated cargo',
+  'Dry cargo only',
+  ''
 ]
 
 // Available materials for SO generation
@@ -265,6 +307,58 @@ export const generateAllLoadsData = () => {
   for (let i = 0; i < 50; i++) {
     const loadNumber = `#${String(860000 + i).padStart(6, '0')}`
     data.push(generateLoadData(loadNumber))
+  }
+  return data
+}
+
+// Booking data generator
+export const generateBookingData = (bookingNumber: string) => {
+  const seed = parseInt(bookingNumber.replace('BK-', '').replace('-', '')) || 1 // Fallback to 1 if parsing fails
+  const rng = new SeededRandom(seed)
+  
+  const soNumber = `#${String(seed + 1000).padStart(6, '0')}`
+  const poNumber = `PO-${String(seed + 2000).padStart(6, '0')}`
+  const customer = customers[rng.nextInt(customers.length)]
+  const portOfDestination = destinations[rng.nextInt(destinations.length)]
+  const facility = ports[rng.nextInt(ports.length)]
+  const containers = rng.nextInt(25) + 1 // 1-25 containers
+  const vessel = vessels[rng.nextInt(vessels.length)]
+  const status = bookingStatuses[rng.nextInt(bookingStatuses.length)]
+  const notes = bookingNotes[rng.nextInt(bookingNotes.length)]
+  
+  // Generate dates
+  const createdDate = new Date(2024, 0, 1) // Start of 2024
+  createdDate.setDate(createdDate.getDate() + rng.nextInt(365)) // Random day in 2024
+  
+  const cutoffDate = new Date(createdDate)
+  cutoffDate.setDate(cutoffDate.getDate() + rng.nextInt(30) + 7) // 7-37 days after creation
+  
+  const earlyReturnDate = new Date(cutoffDate)
+  earlyReturnDate.setDate(earlyReturnDate.getDate() - rng.nextInt(3) + 1) // 1-3 days before cutoff
+  
+  return {
+    bookingNumber,
+    soNumber,
+    poNumber,
+    customer,
+    portOfDestination,
+    facility,
+    containers,
+    cutoffDate: cutoffDate.toISOString().split('T')[0],
+    earlyReturnDate: earlyReturnDate.toISOString().split('T')[0],
+    vessel,
+    createdOn: createdDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+    status,
+    notes
+  }
+}
+
+// Generate all 50 bookings for the table
+export const generateAllBookingsData = () => {
+  const data = []
+  for (let i = 0; i < 50; i++) {
+    const bookingNumber = `BK-2024-${String(i + 1).padStart(3, '0')}`
+    data.push(generateBookingData(bookingNumber))
   }
   return data
 }

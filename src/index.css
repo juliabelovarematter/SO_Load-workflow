@@ -105,7 +105,8 @@ body {
   margin: 2px 8px !important;
   width: calc(100% - 16px) !important;
   border-radius: 6px !important;
-  background: rgba(7, 20, 41, 0.05) !important;
+  background: #040C19 !important;
+  color: #fff !important;
   padding-left: 24px !important;
 }
 
@@ -116,16 +117,35 @@ body {
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .anticon svg circle,
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .anticon svg rect,
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .anticon svg line {
-  color: #071429 !important;
-  fill: #071429 !important;
-  stroke: #071429 !important;
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
   margin-right: 6px !important;
 }
 
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .ant-menu-title-content,
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .ant-menu-title-content a,
 .custom-sidebar-menu .ant-menu-submenu .ant-menu .ant-menu-item.ant-menu-item-selected .ant-menu-title-content span {
-  color: #071429 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+/* Selected menu item text and icon colors */
+.custom-sidebar-menu .ant-menu-item-selected .anticon,
+.custom-sidebar-menu .ant-menu-item-selected .anticon svg,
+.custom-sidebar-menu .ant-menu-item-selected .anticon svg path,
+.custom-sidebar-menu .ant-menu-item-selected .anticon svg circle,
+.custom-sidebar-menu .ant-menu-item-selected .anticon svg rect,
+.custom-sidebar-menu .ant-menu-item-selected .anticon svg line {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
+}
+
+.custom-sidebar-menu .ant-menu-item-selected .ant-menu-title-content,
+.custom-sidebar-menu .ant-menu-item-selected .ant-menu-title-content a,
+.custom-sidebar-menu .ant-menu-item-selected .ant-menu-title-content span {
+  color: #fff !important;
   font-weight: 600 !important;
 }
 
