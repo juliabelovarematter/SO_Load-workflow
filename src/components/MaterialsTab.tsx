@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import { triggerSurvey } from '../utils/formbricks'
+import { triggerSurvey, initializeFormbricks } from '../utils/formbricks'
 
 const { Option } = Select
 
@@ -134,6 +134,11 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     setMaterials(updatedMaterials)
     setHasChanges(true)
   }, [weightMode])
+
+  // Initialize Formbricks
+  useEffect(() => {
+    initializeFormbricks()
+  }, [])
 
   // Handle click outside to close dropdowns
   useEffect(() => {

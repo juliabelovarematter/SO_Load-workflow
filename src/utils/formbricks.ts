@@ -8,11 +8,11 @@ export const initializeFormbricks = async () => {
       appUrl: "https://app.formbricks.com",
     })
     
-    // Generate a unique user ID for testing (changes on each page load)
-    const userId = `test-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    // Use a stable user ID for production prototype
+    const userId = "prototype-user-reset"
     await formbricks.setUserId(userId)
     await formbricks.setAttribute("source", "prototype")
-    await formbricks.setAttribute("testMode", "true")
+    await formbricks.setAttribute("environment", "production")
     
     console.log('✅ Formbricks initialized successfully with user:', userId)
     return true
@@ -22,14 +22,15 @@ export const initializeFormbricks = async () => {
   }
 }
 
-// Reset user for testing (allows survey to show again)
+// Reset user for production prototype (allows survey to show again)
 export const resetUserForTesting = async () => {
   try {
-    const userId = `test-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    // Use a stable user ID that resets the survey state
+    const userId = "prototype-user-reset"
     await formbricks.setUserId(userId)
     await formbricks.setAttribute("source", "prototype")
-    await formbricks.setAttribute("testMode", "true")
-    console.log('✅ User reset for testing:', userId)
+    await formbricks.setAttribute("environment", "production")
+    console.log('✅ User reset for production prototype:', userId)
     return userId
   } catch (error) {
     console.log('⚠️ Failed to reset user:', error)
@@ -42,11 +43,14 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
   try {
     console.log('Triggering survey:', surveyId)
     
+    // Ensure Formbricks is initialized first
+    await initializeFormbricks()
+    
     // Reset user for testing to allow survey to show again
     await resetUserForTesting()
     
     // Track the survey trigger event
-    formbricks.track("survey-triggered", {
+    formbricks.track("net-weight-field-focused", {
       surveyId,
       context: context || {},
       timestamp: new Date().toISOString()
