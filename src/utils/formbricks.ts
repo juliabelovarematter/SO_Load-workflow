@@ -8,11 +8,13 @@ export const initializeFormbricks = async () => {
       appUrl: "https://app.formbricks.com",
     })
     
-    // Set user attributes
-    await formbricks.setUserId("anonymous-user")
+    // Generate a unique user ID for testing (changes on each page load)
+    const userId = `test-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    await formbricks.setUserId(userId)
     await formbricks.setAttribute("source", "prototype")
+    await formbricks.setAttribute("testMode", "true")
     
-    console.log('✅ Formbricks initialized successfully')
+    console.log('✅ Formbricks initialized successfully with user:', userId)
     return true
   } catch (error) {
     console.log('⚠️ Formbricks initialization failed:', error)
@@ -20,10 +22,28 @@ export const initializeFormbricks = async () => {
   }
 }
 
+// Reset user for testing (allows survey to show again)
+export const resetUserForTesting = async () => {
+  try {
+    const userId = `test-user-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    await formbricks.setUserId(userId)
+    await formbricks.setAttribute("source", "prototype")
+    await formbricks.setAttribute("testMode", "true")
+    console.log('✅ User reset for testing:', userId)
+    return userId
+  } catch (error) {
+    console.log('⚠️ Failed to reset user:', error)
+    return null
+  }
+}
+
 // Trigger survey function
-export const triggerSurvey = (surveyId: string, context?: Record<string, any>) => {
+export const triggerSurvey = async (surveyId: string, context?: Record<string, any>) => {
   try {
     console.log('Triggering survey:', surveyId)
+    
+    // Reset user for testing to allow survey to show again
+    await resetUserForTesting()
     
     // Track the survey trigger event
     formbricks.track("survey-triggered", {

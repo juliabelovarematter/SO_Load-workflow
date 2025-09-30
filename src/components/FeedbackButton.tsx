@@ -6,9 +6,9 @@ export default function FeedbackButton() {
     initializeFormbricks()
   }, [])
 
-  const handleFeedbackClick = () => {
+  const handleFeedbackClick = async () => {
     console.log('Feedback button clicked')
-    triggerSurvey(FEEDBACK_SURVEY_ID, {
+    await triggerSurvey(FEEDBACK_SURVEY_ID, {
       source: 'header-button',
       page: 'bookings'
     })
