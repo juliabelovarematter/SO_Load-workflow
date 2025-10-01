@@ -46,6 +46,36 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.2) !important;
 }
 
+/* Custom Required Field Styling - Asterisk only on the right */
+.ant-form-item-label > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::before {
+  display: none !important;
+}
+
+.ant-form-item-label > label.ant-form-item-required:not(.ant-form-item-required-mark-optional)::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+}
+
+/* Alternative selector for required fields */
+.ant-form-item-required .ant-form-item-label > label::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+}
+
+.ant-form-item-required .ant-form-item-label > label::before {
+  display: none !important;
+}
+
 /* Custom Search Field Styling */
 .custom-search {
   background: rgba(255, 255, 255, 0.1) !important;
@@ -349,4 +379,214 @@ body {
 
 .load-detail-give-feedback-button .anticon {
   color: #7757F5 !important;
+}
+
+/* Booking Detail Give Feedback Button Styling */
+.booking-detail-give-feedback-button {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+}
+
+.booking-detail-give-feedback-button:hover {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  background-color: rgba(119, 87, 245, 0.1) !important;
+}
+
+.booking-detail-give-feedback-button:focus {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  box-shadow: 0 0 0 2px rgba(119, 87, 245, 0.2) !important;
+}
+
+.booking-detail-give-feedback-button .anticon {
+  color: #7757F5 !important;
+}
+
+/* Custom Required Field Styling - Asterisk on the right */
+.custom-required-field .ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.custom-required-field .ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Ensure required field labels have proper styling */
+.custom-required-field .ant-form-item-label > label {
+  color: #1f2937 !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
+}
+
+/* More specific selectors to override Ant Design */
+.ant-form-item.custom-required-field .ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form-item.custom-required-field .ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Even more specific - target the exact structure */
+.ant-form .ant-form-item.custom-required-field .ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form .ant-form-item.custom-required-field .ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Global override for ALL required fields - nuclear option */
+.ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Additional overrides to ensure asterisks show */
+.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Target all possible required field selectors */
+.ant-form-item-label label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form-item-label label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Modal specific overrides */
+.ant-modal .ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-modal .ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Force asterisks for all required fields - maximum specificity */
+.ant-form-item[class*="required"] .ant-form-item-label > label::before,
+.ant-form-item[class*="required"] .ant-form-item-label > label.ant-form-item-required::before {
+  display: none !important;
+}
+
+.ant-form-item[class*="required"] .ant-form-item-label > label::after,
+.ant-form-item[class*="required"] .ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Override any Ant Design default asterisk positioning */
+.ant-form-item-label > label::before {
+  display: none !important;
+}
+
+.ant-form-item-label > label::after {
+  display: none !important;
+}
+
+/* Show asterisk only for required fields */
+.ant-form-item-label > label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+}
+
+/* Additional red asterisk enforcement */
+.ant-form-item-required::after {
+  color: #DF173E !important;
+}
+
+.ant-form-item-label > label.ant-form-item-required::after {
+  color: #DF173E !important;
+}
+
+/* Force red color for all asterisks */
+.ant-form-item-label label::after {
+  color: #DF173E !important;
+}
+
+/* Ensure asterisks are always red and visible */
+.ant-form-item-label > label.ant-form-item-required::after,
+.ant-form-item-required::after,
+.ant-form-item-label label.ant-form-item-required::after {
+  display: inline-block !important;
+  margin-left: 4px !important;
+  color: #DF173E !important;
+  font-size: 14px !important;
+  font-family: SimSun, sans-serif !important;
+  line-height: 1 !important;
+  content: '*' !important;
+  font-weight: normal !important;
+  opacity: 1 !important;
+  visibility: visible !important;
 }

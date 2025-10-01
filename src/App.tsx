@@ -11,6 +11,7 @@ import { Bookings } from './routes/bookings'
 import { Loads } from './routes/loads'
 import { LoadDetail } from './routes/load-detail'
 import { SalesOrderDetail } from './routes/sales-order-detail'
+import { BookingDetail } from './routes/booking-detail'
 import { useState, useEffect } from 'react'
 import React from 'react'
 
@@ -44,6 +45,7 @@ function App() {
                 <Route path="/sales-orders" component={SalesOrders} />
                 <Route path="/sales-order/:id" component={SalesOrderDetail} />
                 <Route path="/bookings" component={Bookings} />
+                <Route path="/booking/:id" component={BookingDetail} />
                 <Route path="/loads" component={Loads} />
                 <Route path="/load/:id" component={LoadDetail} />
                 <Route path="/analytics" component={Analytics} />

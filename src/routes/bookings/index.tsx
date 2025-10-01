@@ -3,10 +3,13 @@ import { MoreOutlined } from '@ant-design/icons'
 import { useState, useMemo, useEffect } from 'react'
 import { FileText, Ship, CheckCircle, RotateCcw, Trash2, Plus } from 'lucide-react'
 import { generateAllBookingsData } from '../../utils/mockData'
+import { useLocation } from 'wouter'
 import dayjs from 'dayjs'
 
 export const Bookings = () => {
   console.log('Bookings component rendering...')
+  
+  const [, setLocation] = useLocation()
   
   // Filter states
   const [searchText, setSearchText] = useState('')
@@ -62,6 +65,12 @@ export const Bookings = () => {
       localStorage.setItem('bookings-data', JSON.stringify(data))
     }
   }, [data])
+
+  // Handle row click navigation
+  const handleRowClick = (record: any) => {
+    console.log('Row clicked:', record)
+    setLocation(`/booking/${record.bookingNumber}`)
+  }
 
   // Handle create booking
   const handleCreateBooking = () => {
@@ -657,6 +666,10 @@ export const Bookings = () => {
             x: 1800,
             y: 'calc(100vh - 200px)' // Fixed height for vertical scroll
           }}
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record),
+            style: { cursor: 'pointer' }
+          })}
         />
       </div>
       
@@ -751,16 +764,13 @@ export const Bookings = () => {
             <>
               {/* Basic Info */}
               <div style={{ marginBottom: '12px' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>Basic Info</h4>
+                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>Basic Info</h4>
                 <Form.Item
-                  label={
-                    <span>
-                      Booking # <span style={{ color: 'red' }}>*</span>
-                    </span>
-                  }
+                  label="Booking #"
                   name="bookingNumber"
                   rules={[{ required: true, message: 'Please enter booking number' }]}
                   style={{ marginBottom: '6px' }}
+                  className="custom-required-field"
                 >
                   <Input placeholder="Enter booking number" />
                 </Form.Item>
@@ -768,53 +778,41 @@ export const Bookings = () => {
 
               {/* Freight Info */}
               <div style={{ marginBottom: '12px' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>Freight Info</h4>
+                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>Freight Info</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <Form.Item
-                    label={
-                      <span>
-                        Steamship Line <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Steamship Line"
                     name="steamshipLine"
                     rules={[{ required: true, message: 'Please enter steamship line' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Input placeholder="Enter steamship line" />
                   </Form.Item>
                   <Form.Item
-                    label={
-                      <span>
-                        Vessel Name <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Vessel Name"
                     name="vesselName"
                     rules={[{ required: true, message: 'Please enter vessel name' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Input placeholder="Enter vessel name" />
                   </Form.Item>
                   <Form.Item
-                    label={
-                      <span>
-                        Port of Loading <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Port of Loading"
                     name="portOfLoading"
                     rules={[{ required: true, message: 'Please enter port of loading' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Input placeholder="Enter port of loading" />
                   </Form.Item>
                   <Form.Item
-                    label={
-                      <span>
-                        Loading Terminal <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Loading Terminal"
                     name="loadingTerminal"
                     rules={[{ required: true, message: 'Please select loading terminal' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Select placeholder="Select terminal">
                       <Select.Option value="Terminal 1">Terminal 1</Select.Option>
@@ -823,26 +821,20 @@ export const Bookings = () => {
                     </Select>
                   </Form.Item>
                   <Form.Item
-                    label={
-                      <span>
-                        Port of Discharge <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Port of Discharge"
                     name="portOfDischarge"
                     rules={[{ required: true, message: 'Please enter port of discharge' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Input placeholder="Enter port of discharge" />
                   </Form.Item>
                   <Form.Item
-                    label={
-                      <span>
-                        Discharge Terminal <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label="Discharge Terminal"
                     name="dischargeTerminal"
                     rules={[{ required: true, message: 'Please select discharge terminal' }]}
                     style={{ marginBottom: '6px' }}
+                    className="custom-required-field"
                   >
                     <Select placeholder="Select terminal">
                       <Select.Option value="Taiwan">Taiwan</Select.Option>
@@ -868,7 +860,7 @@ export const Bookings = () => {
 
               {/* Shipping Dates */}
               <div style={{ marginBottom: '12px' }}>
-                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}>Shipping Dates</h4>
+                <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>Shipping Dates</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <Form.Item
                     label="Early Return Date"
@@ -945,26 +937,20 @@ export const Bookings = () => {
                     {/* First row with labels */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', marginBottom: '12px' }}>
                       <Form.Item
-                        label={
-                          <span>
-                            Container Type <span style={{ color: 'red' }}>*</span>
-                          </span>
-                        }
+                        label="Container Type"
                         name="generalContainerType"
                         rules={[{ required: true, message: 'Please select container type' }]}
                         style={{ marginBottom: 0 }}
+                        className="custom-required-field"
                       >
                         <Select placeholder="Select container type" options={containerTypes} />
                       </Form.Item>
                       <Form.Item
-                        label={
-                          <span>
-                            Container Amount <span style={{ color: 'red' }}>*</span>
-                          </span>
-                        }
+                        label="Container Amount"
                         name="generalContainerAmount"
                         rules={[{ required: true, message: 'Please enter container amount' }]}
                         style={{ marginBottom: 0 }}
+                        className="custom-required-field"
                       >
                         <InputNumber
                           style={{ width: '100%' }}
