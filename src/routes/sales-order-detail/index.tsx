@@ -338,6 +338,15 @@ export const SalesOrderDetail = () => {
       case 'Closed':
         return {
           primaryActions: [
+            <Button 
+              key="feedback" 
+              type="default" 
+              className="give-feedback-button"
+              icon={<MessageCircle size={16} />}
+              onClick={() => console.log('Give Feedback')}
+            >
+              Give Feedback
+            </Button>,
             <Button key="revert" type="default" onClick={() => console.log('Revert to Open')}>
               Revert to Open
             </Button>
@@ -352,6 +361,15 @@ export const SalesOrderDetail = () => {
       case 'Voided':
         return {
           primaryActions: [
+            <Button 
+              key="feedback" 
+              type="default" 
+              className="give-feedback-button"
+              icon={<MessageCircle size={16} />}
+              onClick={() => console.log('Give Feedback')}
+            >
+              Give Feedback
+            </Button>,
             <Button key="revert" type="default" onClick={() => console.log('Revert to Open')}>
               Revert to Open
             </Button>
