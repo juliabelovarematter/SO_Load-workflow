@@ -34,16 +34,56 @@ export const triggerSurvey = async (surveyId: string, cssSelector?: string) => {
       throw new Error('Formbricks not initialized or track method not available')
     }
     
-    // Use provided CSS selector or default to SO button
-    const selector = cssSelector || ".so-give-feedback-button"
-    
-    // Track the event with the action key that matches the dashboard
-    await formbricks.track(selector, { 
-      hiddenFields: {
-        surveyId: surveyId
-      } 
-    })
-    console.log('✅ Survey trigger event sent successfully')
+    // Try different approaches based on the survey ID
+    if (surveyId === "cmg6z3ito68osvm01qbqf6n8c") {
+      // Load page - try different action names
+      console.log('🔄 Load page detected, trying different action names')
+      
+      // Method 1: Try with "load-feedback-clicked"
+      try {
+        await formbricks.track("load-feedback-clicked")
+        console.log('✅ Load survey triggered with "load-feedback-clicked"')
+        return
+      } catch (e) {
+        console.log('⚠️ Method 1 failed, trying method 2')
+      }
+      
+      // Method 2: Try with "give-feedback-load"
+      try {
+        await formbricks.track("give-feedback-load")
+        console.log('✅ Load survey triggered with "give-feedback-load"')
+        return
+      } catch (e) {
+        console.log('⚠️ Method 2 failed, trying method 3')
+      }
+      
+      // Method 3: Try with CSS selector without dot
+      try {
+        await formbricks.track("load-detail-give-feedback-button")
+        console.log('✅ Load survey triggered with "load-detail-give-feedback-button"')
+        return
+      } catch (e) {
+        console.log('⚠️ Method 3 failed, trying method 4')
+      }
+      
+      // Method 4: Try with generic action
+      try {
+        await formbricks.track("feedback-clicked")
+        console.log('✅ Load survey triggered with "feedback-clicked"')
+        return
+      } catch (e) {
+        console.log('⚠️ All Load methods failed')
+      }
+    } else {
+      // SO page - use original approach
+      const actionName = cssSelector || ".so-give-feedback-button"
+      await formbricks.track(actionName, { 
+        hiddenFields: {
+          surveyId: surveyId
+        } 
+      })
+      console.log('✅ SO survey trigger event sent successfully with action:', actionName)
+    }
   } catch (error) {
     console.log('⚠️ Failed to trigger survey:', error)
   }
@@ -51,6 +91,9 @@ export const triggerSurvey = async (surveyId: string, cssSelector?: string) => {
 
 // Survey ID for SO Give Feedback
 export const SO_FEEDBACK_SURVEY_ID = "cmg5eady614awyt01kqe0i5q4"
+
+// Survey ID for Load Give Feedback
+export const LOAD_FEEDBACK_SURVEY_ID = "cmg6z3ito68osvm01qbqf6n8c"
 
 // Reset user to see survey again
 export const resetUserForSurvey = async () => {

@@ -4,7 +4,7 @@ import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popcon
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle, MessageCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
-import { initializeFormbricks, triggerSurvey } from '../../utils/formbricks'
+import { initializeFormbricks, triggerSurvey, LOAD_FEEDBACK_SURVEY_ID } from '../../utils/formbricks'
 
 // Material interface (same as SO Materials)
 interface Material {
@@ -844,7 +844,7 @@ export const LoadDetail = () => {
   const handleGiveFeedback = async () => {
     console.log('🔄 Give Feedback button clicked!')
     try {
-      await triggerSurvey("cmg6z3ito68osvm01qbqf6n8c", ".load-detail-give-feedback-button") // Load Materials survey ID with Load button selector
+      await triggerSurvey(LOAD_FEEDBACK_SURVEY_ID, ".load-detail-give-feedback-button") // Load Materials survey ID with Load button selector
       console.log('✅ Give Feedback clicked - survey triggered')
     } catch (error) {
       console.log('❌ Failed to trigger survey:', error)
