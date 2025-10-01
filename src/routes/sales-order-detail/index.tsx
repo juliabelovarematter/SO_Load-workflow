@@ -1,6 +1,6 @@
 import { Button, Input, Select, DatePicker, Checkbox, Tag, Dropdown, Tabs, Table } from 'antd'
 import { useLocation, useRoute } from 'wouter'
-import { ArrowLeft, Calendar, ChevronDown, MoreHorizontal, Copy, Plus, Printer, Download, RotateCcw, CheckCircle, Trash2 } from 'lucide-react'
+import { ArrowLeft, Calendar, ChevronDown, MoreHorizontal, Copy, Plus, Printer, Download, RotateCcw, CheckCircle, Trash2, MessageCircle } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import { generateSOData } from '../../utils/mockData'
@@ -263,6 +263,15 @@ export const SalesOrderDetail = () => {
       case 'Draft':
         return {
           primaryActions: [
+            <Button 
+              key="feedback" 
+              type="default" 
+              className="give-feedback-button"
+              icon={<MessageCircle size={16} />}
+              onClick={() => console.log('Give Feedback')}
+            >
+              Give Feedback
+            </Button>,
             <Button key="void" danger type="default" onClick={() => console.log('Void')}>
               Void
             </Button>
@@ -273,6 +282,15 @@ export const SalesOrderDetail = () => {
       case 'Open':
         return {
           primaryActions: [
+            <Button 
+              key="feedback" 
+              type="default" 
+              className="give-feedback-button"
+              icon={<MessageCircle size={16} />}
+              onClick={() => console.log('Give Feedback')}
+            >
+              Give Feedback
+            </Button>,
             <Button key="void" danger type="default" onClick={() => console.log('Void')}>
               Void
             </Button>,
@@ -292,6 +310,15 @@ export const SalesOrderDetail = () => {
       case 'Shipped':
         return {
           primaryActions: [
+            <Button 
+              key="feedback" 
+              type="default" 
+              className="give-feedback-button"
+              icon={<MessageCircle size={16} />}
+              onClick={() => console.log('Give Feedback')}
+            >
+              Give Feedback
+            </Button>,
             <Button key="void" danger type="default" onClick={() => console.log('Void')}>
               Void
             </Button>,

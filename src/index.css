@@ -284,3 +284,25 @@ body {
   margin-top: 0 !important;
   padding-top: 0 !important;
 }
+
+/* Give Feedback Button Styling */
+.give-feedback-button {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+}
+
+.give-feedback-button:hover {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  background-color: rgba(119, 87, 245, 0.1) !important;
+}
+
+.give-feedback-button:focus {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  box-shadow: 0 0 0 2px rgba(119, 87, 245, 0.2) !important;
+}
+
+.give-feedback-button .anticon {
+  color: #7757F5 !important;
+}
