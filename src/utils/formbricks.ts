@@ -1,9 +1,51 @@
 import formbricks from '@formbricks/js'
 
+// Clear Formbricks error state and reset
+export const clearFormbricksErrorState = () => {
+  try {
+    // Clear Formbricks-related localStorage items
+    const keysToRemove = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (key && (key.includes('formbricks') || key.includes('Formbricks'))) {
+        keysToRemove.push(key)
+      }
+    }
+    
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key)
+      console.log('🗑️ Removed localStorage key:', key)
+    })
+    
+    // Clear Formbricks-related sessionStorage items
+    const sessionKeysToRemove = []
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i)
+      if (key && (key.includes('formbricks') || key.includes('Formbricks'))) {
+        sessionKeysToRemove.push(key)
+      }
+    }
+    
+    sessionKeysToRemove.forEach(key => {
+      sessionStorage.removeItem(key)
+      console.log('🗑️ Removed sessionStorage key:', key)
+    })
+    
+    console.log('✅ Formbricks error state cleared')
+    return true
+  } catch (error) {
+    console.log('⚠️ Failed to clear Formbricks error state:', error)
+    return false
+  }
+}
+
 // Initialize Formbricks (call this once in your app)
 export const initializeFormbricks = async () => {
   try {
     console.log('🔄 Initializing Formbricks...')
+    
+    // Clear any existing error state first
+    clearFormbricksErrorState()
     
     // Setup Formbricks
     await formbricks.setup({
