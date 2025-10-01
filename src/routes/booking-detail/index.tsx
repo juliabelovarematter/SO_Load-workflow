@@ -4,7 +4,7 @@ import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Dropdo
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, MessageCircle, MoreHorizontal, CheckCircle, Ship } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateAllBookingsData } from '../../utils/mockData'
-import { initializeFormbricks, triggerSurvey } from '../../utils/formbricks'
+// Formbricks removed - no survey trigger for booking page
 
 // Container interface
 interface Container {
@@ -31,11 +31,7 @@ export const BookingDetail = () => {
   // Determine if booking is editable based on status
   const isEditable = bookingData?.status && ['Draft', 'Open'].includes(bookingData.status)
 
-  // Initialize Formbricks
-  useEffect(() => {
-    console.log('🔄 useEffect: About to initialize Formbricks')
-    initializeFormbricks()
-  }, [])
+  // Formbricks initialization removed - no survey trigger for booking page
 
   // Load booking data based on the ID from the URL
   useEffect(() => {
@@ -141,12 +137,8 @@ export const BookingDetail = () => {
   // Handle Give Feedback button click
   const handleGiveFeedback = async () => {
     console.log('🔄 Give Feedback button clicked!')
-    try {
-      await triggerSurvey("cmg6z3ito68osvm01qbqf6n8c", ".booking-detail-give-feedback-button")
-      console.log('✅ Give Feedback clicked - survey triggered')
-    } catch (error) {
-      console.log('❌ Failed to trigger survey:', error)
-    }
+    // No survey trigger for booking page
+    console.log('✅ Give Feedback clicked - no survey triggered')
   }
 
   const handleBack = () => {
