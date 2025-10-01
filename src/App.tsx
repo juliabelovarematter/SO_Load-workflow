@@ -3,6 +3,7 @@ import { Router, Route, Switch, Redirect } from 'wouter'
 import { useLocation } from 'wouter'
 import { TopBar } from './components/Layout/TopBar'
 import { SideBar } from './components/Layout/SideBar'
+import FeedbackButton from './components/FeedbackButton'
 // import { Dashboard } from './routes/dashboard'
 import { Analytics } from './routes/analytics'
 import { Settings } from './routes/settings'
@@ -38,8 +39,18 @@ function App() {
                 margin: 0,
                 minHeight: 280,
                 background: '#f0f2f5',
+                position: 'relative'
               }}
             >
+              {/* Feedback Button - positioned in top right corner */}
+              <div style={{
+                position: 'absolute',
+                top: '16px',
+                right: '16px',
+                zIndex: 1000
+              }}>
+                <FeedbackButton />
+              </div>
               <Switch>
                 <Route path="/sales-orders" component={SalesOrders} />
                 <Route path="/sales-order/:id" component={SalesOrderDetail} />
