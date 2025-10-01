@@ -1,12 +1,12 @@
 import { driver } from 'driver.js'
 import 'driver.js/dist/driver.css'
 
-// Tour configuration - click-driven, no buttons
+// Tour configuration - with user controls
 const driverConfig = {
   overlayClickNext: false,
-  allowClose: false,
+  allowClose: true, // Enable close button
   showProgress: false,
-  showButtons: [], // Disable Next/Prev/Close buttons
+  showButtons: [], // Disable Next/Prev buttons, keep close
   overlayOpacity: 0.5,
   stagePadding: 4,
   stageRadius: 4,
@@ -24,6 +24,7 @@ const driverConfig = {
 
 // Tour state management
 const STORAGE_KEY = 'salesOrderTourStep'
+const DISMISSED_KEY = 'soTourDismissed'
 
 export const getCurrentTourStep = (): string => {
   return localStorage.getItem(STORAGE_KEY) || '1'
@@ -35,6 +36,18 @@ export const setTourStep = (step: string): void => {
 
 export const clearTourStep = (): void => {
   localStorage.removeItem(STORAGE_KEY)
+}
+
+export const isTourDismissed = (): boolean => {
+  return localStorage.getItem(DISMISSED_KEY) === 'true'
+}
+
+export const setTourDismissed = (dismissed: boolean): void => {
+  if (dismissed) {
+    localStorage.setItem(DISMISSED_KEY, 'true')
+  } else {
+    localStorage.removeItem(DISMISSED_KEY)
+  }
 }
 
 // Utility to wait for element to appear
@@ -80,11 +93,24 @@ const runStep1 = async (): Promise<void> => {
       element: '[data-testid="so-row"]',
       popover: {
         title: 'Sales Order Details',
-        description: 'Click a Sales Order row to open its details.',
+        description: 'Click a Sales Order row to open its details.<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
         side: 'bottom',
         align: 'start'
       }
     })
+
+    // Add skip tour functionality
+    setTimeout(() => {
+      const skipLink = document.getElementById('skip-tour-link')
+      if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+          e.preventDefault()
+          setTourDismissed(true)
+          driverObj.destroy()
+          console.log('Tour dismissed by user')
+        })
+      }
+    }, 100)
 
     // Listen for click on SO row
     const handleClick = (event: Event) => {
@@ -118,11 +144,24 @@ const runStep2 = async (): Promise<void> => {
       element: '[data-testid="materials-tab"]',
       popover: {
         title: 'Sales Order Materials',
-        description: 'Click the Materials tab to view and edit order materials.',
+        description: 'Click the Materials tab to view and edit order materials.<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
         side: 'bottom',
         align: 'start'
       }
     })
+
+    // Add skip tour functionality
+    setTimeout(() => {
+      const skipLink = document.getElementById('skip-tour-link')
+      if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+          e.preventDefault()
+          setTourDismissed(true)
+          driverObj.destroy()
+          console.log('Tour dismissed by user')
+        })
+      }
+    }, 100)
 
     // Listen for tab change event instead of click
     const handleTabChange = () => {
@@ -213,11 +252,24 @@ const runStep3 = async (): Promise<void> => {
         element: '[data-testid="price-unit-weight-toggle"]',
         popover: {
           title: 'Price Unit Weight',
-          description: 'Switch to \'Price Unit Weight\' to enter the net weight in the same unit used for pricing.',
+          description: 'Switch to \'Price Unit Weight\' to enter the net weight in the same unit used for pricing.<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
           side: 'bottom',
           align: 'start'
         }
       })
+
+      // Add skip tour functionality
+      setTimeout(() => {
+        const skipLink = document.getElementById('skip-tour-link')
+        if (skipLink) {
+          skipLink.addEventListener('click', (e) => {
+            e.preventDefault()
+            setTourDismissed(true)
+            driverObj.destroy()
+            console.log('Tour dismissed by user')
+          })
+        }
+      }, 100)
 
     // Listen for click on toggle
     const handleClick = (event: Event) => {
@@ -257,11 +309,24 @@ const runStep4 = async (): Promise<void> => {
       element: selector,
       popover: {
         title: 'Material Unit Price',
-        description: 'Add fixed materials price or use variables',
+        description: 'Add fixed materials price or use variables<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
         side: 'bottom',
         align: 'start'
       }
     })
+
+    // Add skip tour functionality
+    setTimeout(() => {
+      const skipLink = document.getElementById('skip-tour-link')
+      if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+          e.preventDefault()
+          setTourDismissed(true)
+          driverObj.destroy()
+          console.log('Tour dismissed by user')
+        })
+      }
+    }, 100)
 
     // Listen for click on formula toggle
     const handleClick = (event: Event) => {
@@ -299,11 +364,24 @@ const runStep5 = async (): Promise<void> => {
         element: '[data-testid="material-price-unit"]',
         popover: {
           title: 'Price Unit Configuration',
-          description: 'Update the material\'s price unit here. If \'Price Unit Weight\' is enabled, the weight will use the same unit.',
+          description: 'Update the material\'s price unit here. If \'Price Unit Weight\' is enabled, the weight will use the same unit.<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
           side: 'bottom',
           align: 'start'
         }
       })
+
+      // Add skip tour functionality
+      setTimeout(() => {
+        const skipLink = document.getElementById('skip-tour-link')
+        if (skipLink) {
+          skipLink.addEventListener('click', (e) => {
+            e.preventDefault()
+            setTourDismissed(true)
+            driverObj.destroy()
+            console.log('Tour dismissed by user')
+          })
+        }
+      }, 100)
 
     // Listen for ANY interaction with the select field - focus, click, mousedown, etc.
     const handleInteraction = (event: Event) => {
@@ -353,11 +431,24 @@ const runStep6 = async (): Promise<void> => {
       element: '[data-testid="save-materials-btn"]',
       popover: {
         title: 'Save Changes',
-        description: 'Click Save to update the Sales Order.',
+        description: 'Click Save to update the Sales Order.<br><br><a href="#" id="skip-tour-link" style="color: #666; text-decoration: underline; font-size: 12px;">Skip Tour</a>',
         side: 'bottom',
         align: 'start'
       }
     })
+
+    // Add skip tour functionality
+    setTimeout(() => {
+      const skipLink = document.getElementById('skip-tour-link')
+      if (skipLink) {
+        skipLink.addEventListener('click', (e) => {
+          e.preventDefault()
+          setTourDismissed(true)
+          driverObj.destroy()
+          console.log('Tour dismissed by user')
+        })
+      }
+    }, 100)
 
     // Listen for click on save button - KILL TOUR IMMEDIATELY
     const handleClick = (event: Event) => {
@@ -454,6 +545,12 @@ export const startSalesOrderTour = (): void => {
   const currentPath = window.location.pathname
   console.log('Tour starting on path:', currentPath)
   
+  // Check if tour was dismissed
+  if (isTourDismissed()) {
+    console.log('Tour was dismissed by user - not starting')
+    return
+  }
+  
   // Auto-reset tour if needed based on current page
   autoResetTourIfNeeded()
   
@@ -511,4 +608,28 @@ export const isTourActive = (): boolean => {
 export const forceStartTour = (): void => {
   setTourStep('1')
   startSalesOrderTour()
+}
+
+// Restart tour from beginning (clears dismissed state)
+export const restartSalesOrderTour = (): void => {
+  setTourDismissed(false)
+  setTourStep('1')
+  console.log('Tour restarted from beginning')
+  startSalesOrderTour()
+}
+
+// Resume tour from current step (if not dismissed)
+export const resumeSalesOrderTour = (): void => {
+  if (isTourDismissed()) {
+    console.log('Tour was dismissed - cannot resume')
+    return
+  }
+  
+  const currentStep = getCurrentTourStep()
+  if (currentStep && currentStep !== '1') {
+    console.log('Resuming tour from step:', currentStep)
+    startSalesOrderTour()
+  } else {
+    console.log('No tour progress to resume')
+  }
 }

@@ -108,7 +108,8 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     if (materials.length === 0) return
     
     const updatedMaterials = materials.map(material => {
-      if (material.isEachMaterial) return material // Skip conversion for "ea" materials
+      // EXCEPTION: Skip conversion for "ea" materials - they always stay in 'ea' unit
+      if (material.isEachMaterial || material.pricingUnit === 'ea') return material
       
       const currentWeight = material.netWeight
       const currentUnit = material.pricingUnit
@@ -238,8 +239,12 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           // Calculate estimated total with proper unit conversion
           let weightInPricingUnit = material.netWeight
           
+          // EXCEPTION: If pricing unit is 'ea', no conversion needed
+          if (material.pricingUnit === 'ea') {
+            weightInPricingUnit = material.netWeight
+          }
           // If weight mode is 'scale' (pounds) but pricing unit is different, convert weight to pricing unit
-          if (weightMode === 'scale' && material.pricingUnit !== 'lb') {
+          else if (weightMode === 'scale' && material.pricingUnit !== 'lb') {
             switch (material.pricingUnit) {
               case 'NT': // Net Ton = 2000 lbs
                 weightInPricingUnit = material.netWeight / 2000
@@ -641,7 +646,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 padding: 0
               }}
               min={0}
-              precision={2}
+              precision={record.pricingUnit === 'ea' ? 0 : 2}
             />
           )}
         </div>
@@ -712,8 +717,9 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
         }
         
         // Convert weight based on mode for regular materials
-        const displayWeight = weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit)
-        const displayUnit = weightMode === 'scale' ? 'lb' : record.pricingUnit
+        // EXCEPTION: If pricing unit is 'ea', always show in 'ea' regardless of weight mode
+        const displayWeight = record.pricingUnit === 'ea' ? value : (weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit))
+        const displayUnit = record.pricingUnit === 'ea' ? 'ea' : (weightMode === 'scale' ? 'lb' : record.pricingUnit)
         
         return (
           <div style={{ 
@@ -730,7 +736,8 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
               <InputNumber
                 value={displayWeight}
                 onChange={(val) => {
-                  const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
+                  // EXCEPTION: If pricing unit is 'ea', no conversion needed
+                  const newWeight = record.pricingUnit === 'ea' ? val || 0 : (weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb'))
                   updateMaterial(index, 'netWeight', newWeight)
                 }}
                 style={{ 
@@ -776,14 +783,16 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   ]
 
   const totalWeightInPounds = materials.reduce((sum, material) => {
-    if (material.pricingUnit === 'ea') return sum
+    // EXCEPTION: Skip 'ea' materials from weight totals
+    if (material.pricingUnit === 'ea' || material.isEachMaterial) return sum
     // Convert current weight to pounds for accurate total
     const weightInPounds = convertWeight(material.netWeight, weightMode === 'scale' ? 'lb' : material.pricingUnit, 'lb')
     return sum + weightInPounds
   }, 0)
 
   const totalEachCount = materials.reduce((sum, material) => {
-    if (material.pricingUnit === 'ea') return sum + material.netWeight
+    // EXCEPTION: Count 'ea' materials separately
+    if (material.pricingUnit === 'ea' || material.isEachMaterial) return sum + material.netWeight
     return sum
   }, 0)
 
