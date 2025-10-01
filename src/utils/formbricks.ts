@@ -7,7 +7,7 @@ export const initializeFormbricks = async () => {
     
     // Setup Formbricks
     await formbricks.setup({
-      environmentId: "cmfy9tv1w1mlhx801szwepwom", // your environment ID
+      environmentId: "cmfy9tv371mlnx801lfcjfy80", // your environment ID
       appUrl: "https://app.formbricks.com",
     })
     
