@@ -10,3 +10,16 @@
 
 /*.mjs
   Content-Type: application/javascript; charset=utf-8
+
+# Additional headers for Arc browser compatibility
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-XSS-Protection: 1; mode=block
+
+# Force correct MIME types for all JavaScript files
+/SO_Load-workflow/assets/*.js
+  Content-Type: application/javascript; charset=utf-8
+
+/SO_Load-workflow/assets/*.mjs
+  Content-Type: application/javascript; charset=utf-8

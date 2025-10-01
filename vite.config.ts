@@ -26,5 +26,8 @@ export default defineConfig({
     headers: {
       'Content-Type': 'application/javascript; charset=utf-8',
     },
+    fs: {
+      strict: false,
+    },
   },
 })
