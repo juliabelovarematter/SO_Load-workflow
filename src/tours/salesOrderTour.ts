@@ -241,13 +241,57 @@ const runStep3 = async (): Promise<void> => {
   }
 }
 
-// Step 4: Highlight material price unit
+// Step 4: Highlight formula toggle
 const runStep4 = async (): Promise<void> => {
   try {
-    console.log('Step 4: Looking for material price unit...')
+    console.log('Step 4: Looking for formula toggle...')
+    
+    // Wait for the formula toggle button
+    const element = await waitForElement('[data-testid="formula-toggle"]')
+    console.log('Step 4: Found formula toggle')
+    const selector = '[data-testid="formula-toggle"]'
+    
+    const driverObj = driver(driverConfig)
+    
+    driverObj.highlight({
+      element: selector,
+      popover: {
+        title: 'Material Unit Price',
+        description: 'Add fixed materials price or use variables',
+        side: 'bottom',
+        align: 'start'
+      }
+    })
+
+    // Listen for click on formula toggle
+    const handleClick = (event: Event) => {
+      const target = event.target as Element
+      if (target.closest(selector)) {
+        setTourStep('5')
+        driverObj.destroy()
+        console.log('Step 4 completed - moving to step 5')
+        
+        // Start step 5 after a short delay
+        setTimeout(() => {
+          startSalesOrderTour()
+        }, 500)
+      }
+    }
+
+    document.addEventListener('click', handleClick, { once: true })
+    
+  } catch (error) {
+    console.warn('Step 4: Formula toggle not found, skipping tour step', error)
+  }
+}
+
+// Step 5: Highlight material price unit
+const runStep5 = async (): Promise<void> => {
+  try {
+    console.log('Step 5: Looking for material price unit...')
     
     const element = await waitForElement('[data-testid="material-price-unit"]')
-    console.log('Step 4: Found material price unit')
+    console.log('Step 5: Found material price unit')
     
     const driverObj = driver(driverConfig)
     
@@ -261,33 +305,47 @@ const runStep4 = async (): Promise<void> => {
         }
       })
 
-    // Listen for click on price unit select
-    const handleClick = (event: Event) => {
+    // Listen for ANY interaction with the select field - focus, click, mousedown, etc.
+    const handleInteraction = (event: Event) => {
       const target = event.target as Element
-      if (target.closest('[data-testid="material-price-unit"]')) {
-        setTourStep('5')
+      
+      console.log('Step 5: Interaction detected:', event.type, target)
+      
+      // Check if interaction is anywhere within the select field
+      const selectElement = target.closest('[data-testid="material-price-unit"]')
+      const selectSelector = target.closest('.ant-select-selector')
+      const selectSelectionItem = target.closest('.ant-select-selection-item')
+      const selectSelectionSearch = target.closest('.ant-select-selection-search')
+      
+      if (selectElement || selectSelector || selectSelectionItem || selectSelectionSearch) {
+        console.log('Step 5: Select field interacted with, advancing immediately')
+        setTourStep('6')
         driverObj.destroy()
-        console.log('Step 4 completed - tour paused, waiting for save button to appear')
+        console.log('Step 5 completed - tour paused, waiting for save button to appear')
         
         // Start monitoring for save button appearance
         monitorSaveButton()
       }
     }
 
-    document.addEventListener('click', handleClick, { once: true })
+    // Listen for multiple event types to catch any interaction
+    document.addEventListener('click', handleInteraction, { once: true })
+    document.addEventListener('focus', handleInteraction, { once: true })
+    document.addEventListener('mousedown', handleInteraction, { once: true })
+    document.addEventListener('touchstart', handleInteraction, { once: true })
     
   } catch (error) {
-    console.warn('Step 4: Material price unit not found, skipping tour step', error)
+    console.warn('Step 5: Material price unit not found, skipping tour step', error)
   }
 }
 
-// Step 5: Highlight save materials button
-const runStep5 = async (): Promise<void> => {
+// Step 6: Highlight save materials button
+const runStep6 = async (): Promise<void> => {
   try {
-    console.log('Step 5: Looking for save materials button...')
+    console.log('Step 6: Looking for save materials button...')
     
     const element = await waitForElement('[data-testid="save-materials-btn"]')
-    console.log('Step 5: Found save materials button')
+    console.log('Step 6: Found save materials button')
     
     const driverObj = driver(driverConfig)
     
@@ -301,20 +359,28 @@ const runStep5 = async (): Promise<void> => {
       }
     })
 
-    // Listen for click on save button
+    // Listen for click on save button - KILL TOUR IMMEDIATELY
     const handleClick = (event: Event) => {
       const target = event.target as Element
+      console.log('Step 6: Click detected on:', target)
+      console.log('Step 6: Checking for save button...')
+      
       if (target.closest('[data-testid="save-materials-btn"]')) {
+        console.log('Step 6: Save button clicked - KILLING TOUR NOW!')
         clearTourStep()
         driverObj.destroy()
-        console.log('Step 5 completed - tour finished')
+        console.log('Step 6 completed - tour finished')
+        return
       }
     }
 
+    // Add multiple event listeners to ensure we catch the click
     document.addEventListener('click', handleClick, { once: true })
+    document.addEventListener('mousedown', handleClick, { once: true })
+    document.addEventListener('touchstart', handleClick, { once: true })
     
   } catch (error) {
-    console.warn('Step 5: Save materials button not found, skipping tour step', error)
+    console.warn('Step 6: Save materials button not found, skipping tour step', error)
   }
 }
 
@@ -324,8 +390,8 @@ const monitorSaveButton = (): void => {
   
   const observer = new MutationObserver(() => {
     const saveButton = document.querySelector('[data-testid="save-materials-btn"]')
-    if (saveButton && getCurrentTourStep() === '5') {
-      console.log('Save button appeared - restarting tour at step 5')
+    if (saveButton && getCurrentTourStep() === '6') {
+      console.log('Save button appeared - restarting tour at step 6')
       observer.disconnect()
       startSalesOrderTour()
     }
@@ -338,8 +404,8 @@ const monitorSaveButton = (): void => {
 
   // Also check immediately in case button is already there
   const saveButton = document.querySelector('[data-testid="save-materials-btn"]')
-  if (saveButton && getCurrentTourStep() === '5') {
-    console.log('Save button already present - restarting tour at step 5')
+  if (saveButton && getCurrentTourStep() === '6') {
+    console.log('Save button already present - restarting tour at step 6')
     observer.disconnect()
     startSalesOrderTour()
   }
@@ -356,6 +422,7 @@ const isOnCorrectPage = (step: string): boolean => {
     case '3':
     case '4':
     case '5':
+    case '6':
       return currentPath.includes('/sales-order/')
     default:
       return false
@@ -413,12 +480,16 @@ export const startSalesOrderTour = (): void => {
       runStep3()
       break
     case '4':
-      console.log('Running Step 4: Material price unit highlight')
+      console.log('Running Step 4: Formula toggle highlight')
       runStep4()
       break
     case '5':
-      console.log('Running Step 5: Save materials button highlight')
+      console.log('Running Step 5: Material price unit highlight')
       runStep5()
+      break
+    case '6':
+      console.log('Running Step 6: Save materials button highlight')
+      runStep6()
       break
     default:
       console.log('Tour completed or invalid step')

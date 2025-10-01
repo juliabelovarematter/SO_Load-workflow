@@ -440,6 +440,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </button>
             <button
               onClick={() => updateMaterial(index, 'isFormula', true)}
+              data-testid="formula-toggle"
               style={{
                 padding: '4px 8px',
                 borderRadius: '3px',
@@ -658,6 +659,8 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           style={{ width: '100%' }}
           disabled={_record.isEachMaterial}
           data-testid="material-price-unit"
+          dropdownStyle={{ zIndex: 9999 }}
+          getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
         >
           <Option value="lb">lb</Option>
           <Option value="NT">NT</Option>
