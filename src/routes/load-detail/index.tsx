@@ -844,7 +844,7 @@ export const LoadDetail = () => {
   const handleGiveFeedback = async () => {
     console.log('🔄 Give Feedback button clicked!')
     try {
-      await triggerSurvey("cmg6z3ito68osvm01qbqf6n8c") // Load Materials survey ID
+      await triggerSurvey("cmg6z3ito68osvm01qbqf6n8c", ".load-detail-give-feedback-button") // Load Materials survey ID with Load button selector
       console.log('✅ Give Feedback clicked - survey triggered')
     } catch (error) {
       console.log('❌ Failed to trigger survey:', error)

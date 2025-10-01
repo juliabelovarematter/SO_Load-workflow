@@ -23,9 +23,10 @@ export const initializeFormbricks = async () => {
 }
 
 // Trigger survey
-export const triggerSurvey = async (surveyId: string) => {
+export const triggerSurvey = async (surveyId: string, cssSelector?: string) => {
   try {
     console.log('🔄 Triggering survey:', surveyId)
+    console.log('CSS Selector:', cssSelector)
     console.log('Formbricks instance available:', !!formbricks)
     
     // Check if Formbricks is initialized
@@ -33,8 +34,11 @@ export const triggerSurvey = async (surveyId: string) => {
       throw new Error('Formbricks not initialized or track method not available')
     }
     
+    // Use provided CSS selector or default to SO button
+    const selector = cssSelector || ".so-give-feedback-button"
+    
     // Track the event with the action key that matches the dashboard
-    await formbricks.track(".so-give-feedback-button", { 
+    await formbricks.track(selector, { 
       hiddenFields: {
         surveyId: surveyId
       } 
