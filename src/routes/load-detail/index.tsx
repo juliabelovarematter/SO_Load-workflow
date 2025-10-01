@@ -1,9 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoute } from 'wouter'
 import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popconfirm, Dropdown } from 'antd'
-import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle } from 'lucide-react'
+import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle, MessageCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
+import { initializeFormbricks, triggerSurvey } from '../../utils/formbricks'
 
 // Material interface (same as SO Materials)
 interface Material {
@@ -569,6 +570,12 @@ export const LoadDetail = () => {
     setMaterialsCount(soMaterials.length + materials.length)
   }, [materials, soMaterials])
 
+  // Initialize Formbricks
+  useEffect(() => {
+    console.log('🔄 useEffect: About to initialize Formbricks')
+    initializeFormbricks()
+  }, [])
+
   // Weight mode conversion logic (same as SO Materials)
   useEffect(() => {
     if (materials.length === 0) return
@@ -831,6 +838,17 @@ export const LoadDetail = () => {
   const handleDiscard = () => {
     form.setFieldsValue(originalFormData)
     setHasChanges(false)
+  }
+
+  // Handle Give Feedback button click
+  const handleGiveFeedback = async () => {
+    console.log('🔄 Give Feedback button clicked!')
+    try {
+      await triggerSurvey("cmg6z3ito68osvm01qbqf6n8c") // Load Materials survey ID
+      console.log('✅ Give Feedback clicked - survey triggered')
+    } catch (error) {
+      console.log('❌ Failed to trigger survey:', error)
+    }
   }
 
   const getStatusColor = (status: string) => {
@@ -1236,6 +1254,14 @@ export const LoadDetail = () => {
               </div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
+              <Button
+                type="default"
+                className="load-detail-give-feedback-button"
+                icon={<MessageCircle size={16} />}
+                onClick={handleGiveFeedback}
+              >
+                Give Feedback
+              </Button>
               <Button
                 danger
                 icon={<Trash2 size={16} />}

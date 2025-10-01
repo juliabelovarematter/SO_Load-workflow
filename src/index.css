@@ -328,3 +328,25 @@ body {
 .so-give-feedback-button .anticon {
   color: #7757F5 !important;
 }
+
+/* Load Detail Give Feedback Button Styling */
+.load-detail-give-feedback-button {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+}
+
+.load-detail-give-feedback-button:hover {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  background-color: rgba(119, 87, 245, 0.1) !important;
+}
+
+.load-detail-give-feedback-button:focus {
+  color: #7757F5 !important;
+  border-color: #7757F5 !important;
+  box-shadow: 0 0 0 2px rgba(119, 87, 245, 0.2) !important;
+}
+
+.load-detail-give-feedback-button .anticon {
+  color: #7757F5 !important;
+}
