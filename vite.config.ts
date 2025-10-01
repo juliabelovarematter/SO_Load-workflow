@@ -5,4 +5,16 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   base: '/SO_Load-workflow/',
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  server: {
+    headers: {
+      'Content-Type': 'application/javascript; charset=utf-8',
+    },
+  },
 })
