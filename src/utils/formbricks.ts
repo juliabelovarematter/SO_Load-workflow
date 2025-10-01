@@ -3,21 +3,16 @@ import formbricks from '@formbricks/js'
 // Initialize Formbricks (call this once in your app)
 export const initializeFormbricks = async () => {
   try {
-    // Check if already initialized
-    if (formbricks.isInitialized) {
-      console.log('ℹ️ Formbricks already initialized')
-      return true
-    }
-    
     console.log('🔄 Initializing Formbricks...')
     
+    // Setup Formbricks
     await formbricks.setup({
       environmentId: "cmfy9tv1w1mlhx801szwepwom", // your environment ID
       appUrl: "https://app.formbricks.com",
     })
     
-    // Wait a bit for setup to complete
-    await new Promise(resolve => setTimeout(resolve, 100))
+    // Wait longer for setup to complete
+    await new Promise(resolve => setTimeout(resolve, 500))
     
     // Logout any existing user first to avoid conflicts
     try {
@@ -32,6 +27,9 @@ export const initializeFormbricks = async () => {
     await formbricks.setUserId(userId)
     await formbricks.setAttribute("source", "prototype")
     await formbricks.setAttribute("environment", "production")
+    
+    // Wait a bit more to ensure user setup is complete
+    await new Promise(resolve => setTimeout(resolve, 200))
     
     console.log('✅ Formbricks initialized successfully with user:', userId)
     return true
@@ -70,8 +68,19 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
   try {
     console.log('Triggering survey:', surveyId, 'with context:', context)
     
-    // Ensure Formbricks is initialized first (only once)
-    await initializeFormbricks()
+    // Ensure Formbricks is initialized first and wait for it to complete
+    const isInitialized = await initializeFormbricks()
+    if (!isInitialized) {
+      console.log('⚠️ Formbricks initialization failed, cannot trigger survey')
+      return
+    }
+    
+    // Wait a bit more to ensure Formbricks is fully ready
+    await new Promise(resolve => setTimeout(resolve, 200))
+    
+    // Formbricks should be ready after initialization
+    
+    console.log('✅ Formbricks is ready, proceeding with survey trigger')
     
     // Use generic event names that are commonly configured in Formbricks
     let eventName = "survey-triggered"
@@ -85,19 +94,16 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     
     console.log('Using event name:', eventName)
     
-    // Since Formbricks is configured to trigger on CSS class clicks,
-    // we just need to ensure the button has the right class and send a simple event
-    formbricks.track("button-clicked", {
-      surveyId,
-      context: context || {},
-      timestamp: new Date().toISOString()
-    })
+    // Track the event with proper error handling
+    try {
+      formbricks.track("button-clicked", { hiddenFields: {} })
+      console.log('✅ Button click event sent for survey:', surveyId)
+    } catch (trackError) {
+      console.log('⚠️ Failed to track event:', trackError)
+      return
+    }
     
-    console.log('✅ Button click event sent for survey:', surveyId)
     console.log('ℹ️ Survey should trigger based on CSS class configuration')
-    
-    // Note: Direct survey opening is not available in @formbricks/js
-    // Surveys are triggered by events and shown based on dashboard configuration
     console.log('ℹ️ Survey trigger sent - survey will appear based on Formbricks dashboard configuration')
     
   } catch (error) {
@@ -138,21 +144,12 @@ export const testSurveyTrigger = async (surveyId: string, eventName: string) => 
     await initializeFormbricks()
     
     // Track the test event
-    formbricks.track(eventName, {
-      surveyId,
-      test: true,
-      timestamp: new Date().toISOString()
-    })
+    formbricks.track(eventName, { hiddenFields: {} })
     
     console.log('✅ Test event sent successfully')
     
     // Also try a generic event
-    formbricks.track("survey-triggered", {
-      surveyId,
-      eventName,
-      test: true,
-      timestamp: new Date().toISOString()
-    })
+    formbricks.track("survey-triggered", { hiddenFields: {} })
     
     console.log('✅ Generic survey event also sent')
     
