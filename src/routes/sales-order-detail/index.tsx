@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import { generateSOData } from '../../utils/mockData'
 import MaterialsTab from '../../components/MaterialsTab'
+import { initializeFormbricks, triggerSurvey, SO_FEEDBACK_SURVEY_ID } from '../../utils/formbricks'
 
 const { Option } = Select
 
@@ -37,6 +38,11 @@ export const SalesOrderDetail = () => {
   const [savedMaterials, setSavedMaterials] = useState<any[]>([])
   const [loadsCount, setLoadsCount] = useState(0)
   
+  // Initialize Formbricks
+  useEffect(() => {
+    initializeFormbricks()
+  }, [])
+
   // Load SO data based on the ID from the URL
   useEffect(() => {
     if (params?.id) {
@@ -268,7 +274,7 @@ export const SalesOrderDetail = () => {
               type="default" 
               className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
-              onClick={() => console.log('Give Feedback')}
+              onClick={handleGiveFeedback}
             >
               Give Feedback
             </Button>,
@@ -287,7 +293,7 @@ export const SalesOrderDetail = () => {
               type="default" 
               className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
-              onClick={() => console.log('Give Feedback')}
+              onClick={handleGiveFeedback}
             >
               Give Feedback
             </Button>,
@@ -315,7 +321,7 @@ export const SalesOrderDetail = () => {
               type="default" 
               className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
-              onClick={() => console.log('Give Feedback')}
+              onClick={handleGiveFeedback}
             >
               Give Feedback
             </Button>,
@@ -343,7 +349,7 @@ export const SalesOrderDetail = () => {
               type="default" 
               className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
-              onClick={() => console.log('Give Feedback')}
+              onClick={handleGiveFeedback}
             >
               Give Feedback
             </Button>,
@@ -366,7 +372,7 @@ export const SalesOrderDetail = () => {
               type="default" 
               className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
-              onClick={() => console.log('Give Feedback')}
+              onClick={handleGiveFeedback}
             >
               Give Feedback
             </Button>,
@@ -388,6 +394,15 @@ export const SalesOrderDetail = () => {
     }
   }
 
+
+  const handleGiveFeedback = async () => {
+    try {
+      await triggerSurvey(SO_FEEDBACK_SURVEY_ID)
+      console.log('Give Feedback clicked - survey triggered')
+    } catch (error) {
+      console.log('Failed to trigger survey:', error)
+    }
+  }
 
   const handleFieldChange = (field: string, value: any) => {
     setFormData(prev => {
