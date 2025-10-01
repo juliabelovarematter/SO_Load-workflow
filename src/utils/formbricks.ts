@@ -138,8 +138,9 @@ export const triggerSurvey = async (surveyId: string, context?: Record<string, a
     
     // Track the event with proper error handling
     try {
-      formbricks.track("button-clicked", { hiddenFields: {} })
-      console.log('✅ Button click event sent for survey:', surveyId)
+      // Use a more generic event name that's commonly available
+      formbricks.track("survey-triggered", { hiddenFields: {} })
+      console.log('✅ Survey trigger event sent for survey:', surveyId)
     } catch (trackError) {
       console.log('⚠️ Failed to track event:', trackError)
       return
