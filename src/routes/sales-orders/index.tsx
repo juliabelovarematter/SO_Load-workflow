@@ -1,6 +1,6 @@
 import { Table, Button, Tag, Input, Select, Checkbox, Dropdown, Menu } from 'antd'
 import { SearchOutlined, MoreOutlined } from '@ant-design/icons'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useLocation } from 'wouter'
 import { CreateSalesOrderModal } from '../../components/CreateSalesOrderModal'
 import { 
@@ -11,9 +11,10 @@ import {
   RotateCcw, 
   CheckCircle, 
   XCircle, 
-  Trash2 
+  Trash2,
 } from 'lucide-react'
 import { generateSOData, facilities, customers, accountReps, statuses } from '../../utils/mockData'
+import { startSalesOrderTour } from '../../tours/salesOrderTour'
 
 export const SalesOrders = () => {
   const [isModalVisible, setIsModalVisible] = useState(false)
@@ -28,6 +29,17 @@ export const SalesOrders = () => {
     setLocation('/sales-order/' + record.soNumber)
     console.log('Navigation called')
   }
+
+  const handleCreateSalesOrder = () => {
+    console.log('🔄 Create Sales Order button clicked')
+    setIsModalVisible(true)
+  }
+
+
+  // Auto-start click-driven tour
+  useEffect(() => {
+    startSalesOrderTour()
+  }, [])
 
   // Generate contextual menu items based on SO status
   const getMenuItems = (status: string, record: any) => {
@@ -372,10 +384,13 @@ export const SalesOrders = () => {
             />
           </div>
           
+          
           <Button 
+            id="create-sales-order-btn"
+            data-testid="create-so-btn"
             type="primary" 
             style={{ background: '#3b82f6', border: 'none' }}
-            onClick={() => setIsModalVisible(true)}
+            onClick={handleCreateSalesOrder}
           >
             Create Sales Order
           </Button>
@@ -424,7 +439,8 @@ export const SalesOrders = () => {
                   }}
                   onRow={(record) => ({
                     onClick: () => handleRowClick(record),
-                    style: { cursor: 'pointer' }
+                    style: { cursor: 'pointer' },
+                    'data-testid': 'so-row'
                   })}
                 />
               </div>

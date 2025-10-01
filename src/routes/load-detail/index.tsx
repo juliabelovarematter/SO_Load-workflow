@@ -851,6 +851,7 @@ export const LoadDetail = () => {
     }
   }
 
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Unassigned':

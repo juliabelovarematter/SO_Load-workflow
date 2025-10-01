@@ -6,6 +6,7 @@ import dayjs from 'dayjs'
 import { generateSOData } from '../../utils/mockData'
 import MaterialsTab from '../../components/MaterialsTab'
 import { initializeFormbricks, triggerSurvey, SO_FEEDBACK_SURVEY_ID, resetUserForSurvey } from '../../utils/formbricks'
+import { startSalesOrderTour } from '../../tours/salesOrderTour'
 
 const { Option } = Select
 
@@ -43,6 +44,12 @@ export const SalesOrderDetail = () => {
     console.log('🔄 useEffect: About to initialize Formbricks')
     initializeFormbricks()
   }, [])
+
+  // Auto-start click-driven tour
+  useEffect(() => {
+    startSalesOrderTour()
+  }, [])
+
 
   // Load SO data based on the ID from the URL
   useEffect(() => {
@@ -416,6 +423,8 @@ export const SalesOrderDetail = () => {
     }
   }
 
+
+
   const handleFieldChange = (field: string, value: any) => {
     setFormData(prev => {
       const newData = { ...prev, [field]: value }
@@ -679,7 +688,7 @@ export const SalesOrderDetail = () => {
             {
               key: 'materials',
               label: (
-                <span>
+                <span id="materials-tab" data-testid="materials-tab">
                   Materials <Tag style={{ marginLeft: '8px', fontSize: '10px' }}>{materialsCount}</Tag>
                 </span>
               ),

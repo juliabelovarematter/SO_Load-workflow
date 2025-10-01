@@ -1,6 +1,5 @@
 import { Layout } from 'antd'
 import { Router, Route, Switch, Redirect } from 'wouter'
-import { useLocation } from 'wouter'
 import { TopBar } from './components/Layout/TopBar'
 import { SideBar } from './components/Layout/SideBar'
 // import { Dashboard } from './routes/dashboard'
@@ -13,7 +12,6 @@ import { LoadDetail } from './routes/load-detail'
 import { SalesOrderDetail } from './routes/sales-order-detail'
 import { BookingDetail } from './routes/booking-detail'
 import { useState, useEffect } from 'react'
-import React from 'react'
 
 const { Content } = Layout
 

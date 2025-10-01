@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
+import { Button, Input, Select, Table, InputNumber, Popconfirm, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
 
 const { Option } = Select
@@ -101,7 +101,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   const [dropdownVisible, setDropdownVisible] = useState<{ [key: number]: boolean }>({})
   const [dropdownPosition, setDropdownPosition] = useState<{ [key: number]: { top: number, left: number } }>({})
   const inputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({})
-  const previousValues = useRef<{ [key: number]: string }>({})
+  // const previousValues = useRef<{ [key: number]: string }>({})
 
   // Handle weight mode changes and unit conversions
   useEffect(() => {
@@ -299,38 +299,38 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     setExpandedMaterials(newExpanded)
   }
 
-  const handleFormulaInput = (index: number, value: string) => {
-    console.log('Formula input change:', { index, value })
-    
-    // Update the material first
-    updateMaterial(index, 'unitPrice', value)
-    
-    // Check if $ was just typed
-    if (value.endsWith('$')) {
-      console.log('$ detected, showing dropdown')
-      const inputElement = inputRefs.current[index]
-      if (inputElement) {
-        const rect = inputElement.getBoundingClientRect()
-        console.log('Setting dropdown position:', rect)
-        
-        setDropdownPosition(prev => ({
-          ...prev,
-          [index]: {
-            top: rect.bottom + 4,
-            left: rect.left,
-            width: rect.width
-          }
-        }))
-        
-        setDropdownVisible(prev => ({
-          ...prev,
-          [index]: true
-        }))
-        
-        console.log('Dropdown should now be visible')
-      }
-    }
-  }
+  // const handleFormulaInput = (index: number, value: string) => {
+  //   console.log('Formula input change:', { index, value })
+  //   
+  //   // Update the material first
+  //   updateMaterial(index, 'unitPrice', value)
+  //   
+  //   // Check if $ was just typed
+  //   if (value.endsWith('$')) {
+  //     console.log('$ detected, showing dropdown')
+  //     const inputElement = inputRefs.current[index]
+  //     if (inputElement) {
+  //       const rect = inputElement.getBoundingClientRect()
+  //       console.log('Setting dropdown position:', rect)
+  //       
+  //       setDropdownPosition(prev => ({
+  //         ...prev,
+  //         [index]: {
+  //           top: rect.bottom + 4,
+  //           left: rect.left,
+  //           width: rect.width
+  //         }
+  //       }))
+  //       
+  //       setDropdownVisible(prev => ({
+  //         ...prev,
+  //         [index]: true
+  //       }))
+  //       
+  //       console.log('Dropdown should now be visible')
+  //     }
+  //   }
+  // }
 
   const insertVariable = (index: number, variable: string) => {
     console.log('Inserting variable:', variable, 'at index:', index)
@@ -378,7 +378,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       dataIndex: 'contractMaterial',
       key: 'contractMaterial',
       width: 200,
-      render: (value: string, record: Material, index: number) => (
+      render: (value: string, _record: Material, index: number) => (
         <Select
           value={value}
           onChange={(val) => updateMaterial(index, 'contractMaterial', val)}
@@ -386,7 +386,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           style={{ width: '100%' }}
           showSearch
           filterOption={(input, option) =>
-            (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
+            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
           }
         >
           {availableMaterials.map(material => (
@@ -460,7 +460,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           {record.isFormula ? (
             <div style={{ position: 'relative', flex: 1 }} className="formula-input">
               <Input
-                ref={(el) => { inputRefs.current[index] = el }}
+                ref={(el) => { inputRefs.current[index] = el?.input || null }}
                 value={typeof value === 'string' ? value : ''}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -595,7 +595,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                     overflowY: 'auto'
                   }}
                 >
-                  {console.log('Rendering dropdown for index:', index, 'visible:', dropdownVisible[index], 'value:', value)}
+                  {/* {console.log('Rendering dropdown for index:', index, 'visible:', dropdownVisible[index], 'value:', value)} */}
                   {['COMEX', 'LME', 'SHFE', 'NYMEX', 'CASH', 'SPOT', 'FUTURES'].map(variable => (
                     <div
                       key={variable}
@@ -651,12 +651,13 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       dataIndex: 'pricingUnit',
       key: 'pricingUnit',
       width: 120,
-      render: (value: string, record: Material, index: number) => (
+      render: (value: string, _record: Material, index: number) => (
         <Select
           value={value}
           onChange={(val) => updateMaterial(index, 'pricingUnit', val)}
           style={{ width: '100%' }}
-          disabled={record.isEachMaterial}
+          disabled={_record.isEachMaterial}
+          data-testid="material-price-unit"
         >
           <Option value="lb">lb</Option>
           <Option value="NT">NT</Option>
@@ -758,7 +759,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       title: 'Actions',
       key: 'actions',
       width: 80,
-      render: (_, record: Material, index: number) => (
+      render: (_: any, _record: Material, index: number) => (
         <Popconfirm
           title="Are you sure you want to delete this material?"
           onConfirm={() => deleteMaterial(index)}
@@ -832,6 +833,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 </button>
                 <button
                   className="price-unit-weight-toggle"
+                  data-testid="price-unit-weight-toggle"
                   onClick={() => setWeightMode('price')}
                   style={{
                     padding: '8px 16px',
@@ -896,6 +898,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 </p>
               </div>
               <Button 
+                data-testid="add-material-btn"
                 type="primary" 
                 icon={<Plus size={16} />}
                 onClick={addMaterial}
@@ -1045,6 +1048,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 justifyContent: 'flex-start' 
               }}>
                 <Button 
+                  data-testid="add-material-btn"
                   type="default"
                   icon={<Plus size={16} />}
                   onClick={addMaterial}
@@ -1098,6 +1102,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 onClick={handleSave} 
                 type="primary" 
                 className="save-updates-button"
+                data-testid="save-materials-btn"
                 style={{ 
                   height: '40px',
                   padding: '0 20px',

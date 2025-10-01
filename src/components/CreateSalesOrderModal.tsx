@@ -1,5 +1,5 @@
 import { Button, Input, Select, DatePicker, Checkbox, Upload, Form } from 'antd'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { X, Calendar, Upload as UploadIcon, ChevronDown } from 'lucide-react'
 import { useLocation } from 'wouter'
 
@@ -16,6 +16,7 @@ export const CreateSalesOrderModal = ({ visible, onClose }: CreateSalesOrderModa
   const [validationErrors, setValidationErrors] = useState<Record<string, boolean>>({})
   const [sameAsShip, setSameAsShip] = useState(false)
   const [, setLocation] = useLocation()
+
 
   if (!visible) return null
 
@@ -540,6 +541,8 @@ export const CreateSalesOrderModal = ({ visible, onClose }: CreateSalesOrderModa
               Cancel
             </Button>
             <Button 
+              id="save-sales-order-btn"
+              data-testid="save-so-btn"
               type="primary" 
               onClick={handleCreate}
               style={{ 
