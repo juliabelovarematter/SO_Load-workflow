@@ -266,7 +266,7 @@ export const SalesOrderDetail = () => {
             <Button 
               key="feedback" 
               type="default" 
-              className="give-feedback-button"
+              className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
               onClick={() => console.log('Give Feedback')}
             >
@@ -285,7 +285,7 @@ export const SalesOrderDetail = () => {
             <Button 
               key="feedback" 
               type="default" 
-              className="give-feedback-button"
+              className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
               onClick={() => console.log('Give Feedback')}
             >
@@ -313,7 +313,7 @@ export const SalesOrderDetail = () => {
             <Button 
               key="feedback" 
               type="default" 
-              className="give-feedback-button"
+              className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
               onClick={() => console.log('Give Feedback')}
             >
@@ -341,7 +341,7 @@ export const SalesOrderDetail = () => {
             <Button 
               key="feedback" 
               type="default" 
-              className="give-feedback-button"
+              className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
               onClick={() => console.log('Give Feedback')}
             >
@@ -364,7 +364,7 @@ export const SalesOrderDetail = () => {
             <Button 
               key="feedback" 
               type="default" 
-              className="give-feedback-button"
+              className="so-give-feedback-button"
               icon={<MessageCircle size={16} />}
               onClick={() => console.log('Give Feedback')}
             >
