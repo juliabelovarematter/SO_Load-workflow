@@ -396,11 +396,12 @@ export const SalesOrderDetail = () => {
 
 
   const handleGiveFeedback = async () => {
+    console.log('🔄 Give Feedback button clicked!')
     try {
       await triggerSurvey(SO_FEEDBACK_SURVEY_ID)
-      console.log('Give Feedback clicked - survey triggered')
+      console.log('✅ Give Feedback clicked - survey triggered')
     } catch (error) {
-      console.log('Failed to trigger survey:', error)
+      console.log('❌ Failed to trigger survey:', error)
     }
   }
 
