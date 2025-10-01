@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
-import { initializeFormbricks, triggerSurvey } from '../utils/formbricks'
 
 const { Option } = Select
 
@@ -135,10 +134,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     setHasChanges(true)
   }, [weightMode])
 
-  // Initialize Formbricks
-  useEffect(() => {
-    initializeFormbricks()
-  }, [])
 
   // Handle click outside to close dropdowns
   useEffect(() => {
@@ -370,12 +365,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     onMaterialsChange?.(materials.length)
     console.log('Materials saved successfully')
     
-    // Trigger survey when SO Materials Save Updates button is clicked
-    triggerSurvey("cmg5eady614awyt01kqe0i5q4", {
-      source: 'so-save-updates-button',
-      page: 'sales-order',
-      action: 'save-updates'
-    })
   }
 
   const handleDiscard = () => {
