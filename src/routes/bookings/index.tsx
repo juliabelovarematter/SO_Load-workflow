@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect } from 'react'
 import { FileText, Ship, CheckCircle, RotateCcw, Trash2, Plus } from 'lucide-react'
 import { generateAllBookingsData } from '../../utils/mockData'
 import dayjs from 'dayjs'
-import FeedbackButton from '../../components/FeedbackButton'
 
 export const Bookings = () => {
   console.log('Bookings component rendering...')
@@ -623,7 +622,6 @@ export const Bookings = () => {
         </div>
         
         <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <FeedbackButton />
           <Button 
             type="primary"
             style={{ background: '#3b82f6', border: 'none' }}
