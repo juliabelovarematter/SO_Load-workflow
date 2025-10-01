@@ -28,8 +28,13 @@ export const triggerSurvey = async (surveyId: string) => {
     console.log('🔄 Triggering survey:', surveyId)
     console.log('Formbricks instance available:', !!formbricks)
     
-    // Track the event
-    await formbricks.track("so-give-feedback-clicked", { 
+    // Check if Formbricks is initialized
+    if (!formbricks || !formbricks.track) {
+      throw new Error('Formbricks not initialized or track method not available')
+    }
+    
+    // Track the event with the action key that matches the dashboard
+    await formbricks.track(".so-give-feedback-button", { 
       hiddenFields: {
         surveyId: surveyId
       } 
