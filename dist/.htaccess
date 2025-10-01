@@ -6,6 +6,12 @@
     AddType text/javascript .mjs
 </IfModule>
 
+# Force correct MIME type for all JS files
+<FilesMatch "\.(js|mjs)$">
+    ForceType application/javascript
+    Header set Content-Type "application/javascript; charset=utf-8"
+</FilesMatch>
+
 # Enable compression
 <IfModule mod_deflate.c>
     AddOutputFilterByType DEFLATE text/plain
