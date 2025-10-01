@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 import { generateSOData } from '../../utils/mockData'
 import MaterialsTab from '../../components/MaterialsTab'
-import { initializeFormbricks, triggerSurvey, SO_FEEDBACK_SURVEY_ID } from '../../utils/formbricks'
+import { initializeFormbricks, triggerSurvey, SO_FEEDBACK_SURVEY_ID, resetUserForSurvey } from '../../utils/formbricks'
 
 const { Option } = Select
 
@@ -403,6 +403,16 @@ export const SalesOrderDetail = () => {
       console.log('✅ Give Feedback clicked - survey triggered')
     } catch (error) {
       console.log('❌ Failed to trigger survey:', error)
+    }
+  }
+
+  const handleResetUser = async () => {
+    console.log('🔄 Resetting user to see survey again...')
+    try {
+      await resetUserForSurvey()
+      console.log('✅ User reset complete - survey will show again')
+    } catch (error) {
+      console.log('❌ Failed to reset user:', error)
     }
   }
 

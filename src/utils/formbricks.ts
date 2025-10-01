@@ -47,3 +47,40 @@ export const triggerSurvey = async (surveyId: string) => {
 
 // Survey ID for SO Give Feedback
 export const SO_FEEDBACK_SURVEY_ID = "cmg5eady614awyt01kqe0i5q4"
+
+// Reset user to see survey again
+export const resetUserForSurvey = async () => {
+  try {
+    console.log('🔄 Resetting Formbricks user...')
+    
+    // Logout current user
+    if (formbricks && formbricks.logout) {
+      await formbricks.logout()
+      console.log('✅ User logged out')
+    }
+    
+    // Clear Formbricks storage
+    const formbricksKeys = Object.keys(localStorage).filter(key => 
+      key.startsWith('formbricks') || key.startsWith('fb_')
+    )
+    formbricksKeys.forEach(key => {
+      localStorage.removeItem(key)
+    })
+    
+    // Clear session storage
+    const sessionKeys = Object.keys(sessionStorage).filter(key => 
+      key.startsWith('formbricks') || key.startsWith('fb_')
+    )
+    sessionKeys.forEach(key => {
+      sessionStorage.removeItem(key)
+    })
+    
+    console.log('✅ Formbricks user reset - survey will show again')
+    
+    // Reinitialize with new user
+    await initializeFormbricks()
+    
+  } catch (error) {
+    console.log('⚠️ Failed to reset user:', error)
+  }
+}
