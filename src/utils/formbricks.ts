@@ -4,6 +4,13 @@ import formbricks from '@formbricks/js'
 export const initializeFormbricks = async () => {
   try {
     console.log('🔄 Initializing Formbricks...')
+    console.log('Formbricks import:', formbricks)
+    console.log('Formbricks type:', typeof formbricks)
+    
+    if (!formbricks) {
+      throw new Error('Formbricks import is null/undefined')
+    }
+    
     await formbricks.setup({
       environmentId: "cmfy9tv371mlnx801lfcjfy80",
       appUrl: "https://app.formbricks.com",

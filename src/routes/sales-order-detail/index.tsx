@@ -40,6 +40,7 @@ export const SalesOrderDetail = () => {
   
   // Initialize Formbricks
   useEffect(() => {
+    console.log('🔄 useEffect: About to initialize Formbricks')
     initializeFormbricks()
   }, [])
 
