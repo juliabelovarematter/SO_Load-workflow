@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useRoute } from 'wouter'
-import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popconfirm, Dropdown } from 'antd'
+import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Popconfirm, Dropdown, Checkbox } from 'antd'
 import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight, Camera, CheckCircle, MessageCircle } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
@@ -22,6 +22,7 @@ interface Material {
   selectedExchange?: string
   isTaggedMaterial?: boolean
   tagNumber?: string
+  addToSO?: boolean // New property for "Add to SO" checkbox
 }
 
 // Weight conversion utility (same as SO Materials)
@@ -674,7 +675,12 @@ export const LoadDetail = () => {
       
       // Set materials from the generated data
       if (data && data.materials && data.materials.length > 0) {
-        setMaterials(data.materials as Material[])
+        // Ensure all materials from generated data have addToSO property (default to true)
+        const materialsWithAddToSO = data.materials.map((material: Material) => ({
+          ...material,
+          addToSO: material.addToSO ?? true // Default to true if not set
+        }))
+        setMaterials(materialsWithAddToSO as Material[])
         setMaterialsCount(data.materials.length)
       } else {
         setMaterialsCount(0)
@@ -685,7 +691,14 @@ export const LoadDetail = () => {
       if (storedMaterials) {
         const materials = JSON.parse(storedMaterials)
         console.log('Loaded saved materials:', materials)
-        setMaterials(materials)
+        
+        // Ensure all materials have addToSO property (default to true)
+        const materialsWithAddToSO = materials.map((material: Material) => ({
+          ...material,
+          addToSO: material.addToSO ?? true // Default to true if not set
+        }))
+        
+        setMaterials(materialsWithAddToSO)
       }
       
       // Load saved SO materials if they exist
@@ -1320,10 +1333,11 @@ export const LoadDetail = () => {
         padding: activeTab === 'load-info' ? '24px' : '0'
       }}>
         {activeTab === 'load-info' && (
-          <Form
-            form={form}
-            layout="vertical"
-            onValuesChange={handleFieldChange}
+        <Form
+          form={form}
+          layout="vertical"
+          onValuesChange={handleFieldChange}
+          requiredMark={false}
           >
             {/* Basic Info Section */}
             <div style={{ marginBottom: '32px' }}>
@@ -1377,10 +1391,9 @@ filterOption={(input, option) =>
                   </Select>
                 </Form.Item>
                 <Form.Item
-                  label={<span>Expected Ship Date <span style={{ color: 'red' }}>*</span></span>}
+                  label={<span>Expected Ship Date <span style={{ color: '#DF173E' }}>*</span></span>}
                   name="expectedShipDate"
-                  required={false}
-                  rules={[{ required: true }]}
+                  rules={[{ required: true, message: 'Please select expected ship date' }]}
                 >
                   <DatePicker 
                     style={{ 
@@ -1395,10 +1408,9 @@ filterOption={(input, option) =>
                   />
                 </Form.Item>
                 <Form.Item
-                  label={<span>Facility <span style={{ color: 'red' }}>*</span></span>}
+                  label={<span>Facility <span style={{ color: '#DF173E' }}>*</span></span>}
                   name="facility"
-                  required={false}
-                  rules={[{ required: true }]}
+                  rules={[{ required: true, message: 'Please select facility' }]}
                 >
                   <Select 
                     placeholder="Select Facility"
@@ -2593,13 +2605,17 @@ filterOption={(input, option) =>
                       <tr>
                         {requestMode === 'request' ? (
                           <>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Material</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Unit Price</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Pricing Unit</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Requested Weight</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Inventory Tags</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'right', fontWeight: '600', fontSize: '14px' }}>Estimated Total</th>
-                            <th style={{ padding: '0px 8px 0px 8px', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}></th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'left', fontWeight: '600', fontSize: '14px', width: '260px' }}>Material</th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'right', fontWeight: '600', fontSize: '14px', width: '150px' }}>Unit Price</th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'left', fontWeight: '600', fontSize: '14px', width: '130px' }}>Pricing Unit</th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'right', fontWeight: '600', fontSize: '14px', width: '160px' }}>Requested Weight</th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'left', fontWeight: '600', fontSize: '14px', width: '170px' }}>Inventory Tags</th>
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'right', fontWeight: '600', fontSize: '14px', width: '150px' }}>Estimated Total</th>
+                            {/* Add to SO checkbox column - only show for Load Materials (OTHER materials) */}
+                            {(loadData?.status !== 'Unassigned' && loadData?.relatedSO) && (
+                              <th style={{ padding: '0px 16px 0px 16px', textAlign: 'center', fontWeight: '600', fontSize: '14px', width: '170px' }}>Add to SO</th>
+                            )}
+                            <th style={{ padding: '0px 16px 0px 16px', textAlign: 'center', fontWeight: '600', fontSize: '14px', width: '90px' }}></th>
                           </>
                         ) : (
                           <>
@@ -2607,6 +2623,10 @@ filterOption={(input, option) =>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Gross</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Tare</th>
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'left', fontWeight: '600', fontSize: '14px' }}>Net</th>
+                            {/* Add to SO checkbox column - only show for Load Materials (OTHER materials) */}
+                            {(loadData?.status !== 'Unassigned' && loadData?.relatedSO) && (
+                              <th style={{ padding: '0px 16px 0px 16px', textAlign: 'center', fontWeight: '600', fontSize: '14px', width: '170px' }}>Add to SO</th>
+                            )}
                             <th style={{ padding: '0px 8px 0px 8px', textAlign: 'center', fontWeight: '600', fontSize: '14px' }}></th>
                           </>
                         )}
@@ -3065,6 +3085,43 @@ filterOption={(input, option) =>
                                   </span>
                                 </div>
                               </td>
+                              {/* Add to SO checkbox - only show for Load Materials (OTHER materials) */}
+                              {(loadData?.status !== 'Unassigned' && loadData?.relatedSO) && (
+                                <td style={{ padding: '6px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                  <div style={{ 
+                                    backgroundColor: '#f3f4f6',
+                                    borderRadius: '6px',
+                                    padding: '8px 20px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    height: '40px',
+                                            minWidth: '150px',
+                                    justifyContent: 'center'
+                                  }}>
+                                    <Checkbox
+                                      checked={material.addToSO ?? true}
+                                      disabled={loadData?.status === 'Closed' || loadData?.status === 'Reconciled' || loadData?.status === 'Voided' || !isEditable}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        const updatedMaterials = [...materials];
+                                        updatedMaterials[index] = { 
+                                          ...updatedMaterials[index], 
+                                          addToSO: e.target.checked
+                                        };
+                                        setMaterials(updatedMaterials);
+                                        setHasChanges(true);
+                                      }}
+                                      style={{ 
+                                        marginRight: '8px',
+                                        fontSize: '14px',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      <span style={{ whiteSpace: 'nowrap' }}>Add to SO</span>
+                                    </Checkbox>
+                                  </div>
+                                </td>
+                              )}
                               {/* Delete button */}
                               <td style={{ padding: '6px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                                 <Button
@@ -3268,6 +3325,43 @@ filterOption={(input, option) =>
                                   )
                                 }
                               })()}
+                              {/* Add to SO checkbox - only show for Load Materials (OTHER materials) */}
+                              {(loadData?.status !== 'Unassigned' && loadData?.relatedSO) && (
+                                <td style={{ padding: '6px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                  <div style={{ 
+                                    backgroundColor: '#f3f4f6',
+                                    borderRadius: '6px',
+                                    padding: '8px 20px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    height: '40px',
+                                            minWidth: '150px',
+                                    justifyContent: 'center'
+                                  }}>
+                                    <Checkbox
+                                      checked={material.addToSO ?? true}
+                                      disabled={loadData?.status === 'Closed' || loadData?.status === 'Reconciled' || loadData?.status === 'Voided' || !isEditable}
+                                      onChange={(e) => {
+                                        e.stopPropagation();
+                                        const updatedMaterials = [...materials];
+                                        updatedMaterials[index] = { 
+                                          ...updatedMaterials[index], 
+                                          addToSO: e.target.checked
+                                        };
+                                        setMaterials(updatedMaterials);
+                                        setHasChanges(true);
+                                      }}
+                                      style={{ 
+                                        marginRight: '8px',
+                                        fontSize: '14px',
+                                        whiteSpace: 'nowrap'
+                                      }}
+                                    >
+                                      <span style={{ whiteSpace: 'nowrap' }}>Add to SO</span>
+                                    </Checkbox>
+                                  </div>
+                                </td>
+                              )}
                               <td style={{ padding: '6px', textAlign: 'center' }}>
                                 <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
                                   <Button

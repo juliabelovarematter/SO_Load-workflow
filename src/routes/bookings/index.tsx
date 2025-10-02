@@ -766,7 +766,7 @@ export const Bookings = () => {
               <div style={{ marginBottom: '12px' }}>
                 <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>Basic Info</h4>
                 <Form.Item
-                  label="Booking #"
+                  label={<span>Booking # <span style={{ color: '#DF173E' }}>*</span></span>}
                   name="bookingNumber"
                   rules={[{ required: true, message: 'Please enter booking number' }]}
                   style={{ marginBottom: '6px' }}
@@ -781,7 +781,7 @@ export const Bookings = () => {
                 <h4 style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600', color: '#1f2937' }}>Freight Info</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                   <Form.Item
-                    label="Steamship Line"
+                    label={<span>Steamship Line <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="steamshipLine"
                     rules={[{ required: true, message: 'Please enter steamship line' }]}
                     style={{ marginBottom: '6px' }}
@@ -790,7 +790,7 @@ export const Bookings = () => {
                     <Input placeholder="Enter steamship line" />
                   </Form.Item>
                   <Form.Item
-                    label="Vessel Name"
+                    label={<span>Vessel Name <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="vesselName"
                     rules={[{ required: true, message: 'Please enter vessel name' }]}
                     style={{ marginBottom: '6px' }}
@@ -799,7 +799,7 @@ export const Bookings = () => {
                     <Input placeholder="Enter vessel name" />
                   </Form.Item>
                   <Form.Item
-                    label="Port of Loading"
+                    label={<span>Port of Loading <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="portOfLoading"
                     rules={[{ required: true, message: 'Please enter port of loading' }]}
                     style={{ marginBottom: '6px' }}
@@ -808,7 +808,7 @@ export const Bookings = () => {
                     <Input placeholder="Enter port of loading" />
                   </Form.Item>
                   <Form.Item
-                    label="Loading Terminal"
+                    label={<span>Loading Terminal <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="loadingTerminal"
                     rules={[{ required: true, message: 'Please select loading terminal' }]}
                     style={{ marginBottom: '6px' }}
@@ -821,7 +821,7 @@ export const Bookings = () => {
                     </Select>
                   </Form.Item>
                   <Form.Item
-                    label="Port of Discharge"
+                    label={<span>Port of Discharge <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="portOfDischarge"
                     rules={[{ required: true, message: 'Please enter port of discharge' }]}
                     style={{ marginBottom: '6px' }}
@@ -830,7 +830,7 @@ export const Bookings = () => {
                     <Input placeholder="Enter port of discharge" />
                   </Form.Item>
                   <Form.Item
-                    label="Discharge Terminal"
+                    label={<span>Discharge Terminal <span style={{ color: '#DF173E' }}>*</span></span>}
                     name="dischargeTerminal"
                     rules={[{ required: true, message: 'Please select discharge terminal' }]}
                     style={{ marginBottom: '6px' }}
