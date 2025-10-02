@@ -610,14 +610,6 @@ export const forceStartTour = (): void => {
   startSalesOrderTour()
 }
 
-// Restart tour from beginning (clears dismissed state)
-export const restartSalesOrderTour = (): void => {
-  setTourDismissed(false)
-  setTourStep('1')
-  console.log('Tour restarted from beginning')
-  startSalesOrderTour()
-}
-
 // Resume tour from current step (if not dismissed)
 export const resumeSalesOrderTour = (): void => {
   if (isTourDismissed()) {
@@ -632,4 +624,19 @@ export const resumeSalesOrderTour = (): void => {
   } else {
     console.log('No tour progress to resume')
   }
+}
+
+export const restartSalesOrderTour = (): void => {
+  console.log('🔄 Restarting tour from beginning...')
+  setTourDismissed(false) // Clear dismissal state
+  clearTourStep() // Reset tour step
+  setTimeout(() => {
+    startSalesOrderTour()
+  }, 500) // Small delay to ensure state is cleared
+}
+
+// Make restart function available globally for debugging
+if (typeof window !== 'undefined') {
+  (window as any).restartTour = restartSalesOrderTour
+  console.log('💡 Type restartTour() in console to restart the tour')
 }

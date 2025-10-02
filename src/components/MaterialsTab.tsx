@@ -441,6 +441,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </button>
             <button
               onClick={() => updateMaterial(index, 'isFormula', true)}
+              data-testid="formula-toggle"
               style={{
                 padding: '4px 8px',
                 borderRadius: '3px',
@@ -611,6 +612,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           onChange={(val) => updateMaterial(index, 'pricingUnit', val)}
           style={{ width: '100%' }}
           disabled={record.isEachMaterial}
+          data-testid="material-price-unit"
         >
           <Option value="lb">lb</Option>
           <Option value="NT">NT</Option>
@@ -787,6 +789,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 <button
                   className="price-unit-weight-toggle"
                   onClick={() => setWeightMode('price')}
+                  data-testid="price-unit-weight-toggle"
                   style={{
                     padding: '8px 16px',
                     borderRadius: '6px',
@@ -1052,6 +1055,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 onClick={handleSave} 
                 type="primary" 
                 className="save-updates-button"
+                data-testid="save-materials-btn"
                 style={{ 
                   height: '40px',
                   padding: '0 20px',

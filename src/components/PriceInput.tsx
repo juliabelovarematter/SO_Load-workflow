@@ -11,13 +11,15 @@ interface PriceInputProps {
   onChange: (value: string | number) => void;
   mode?: Mode;
   onModeChange?: (mode: Mode) => void;
+  dataTestId?: string;
 }
 
 export const PriceInput: React.FC<PriceInputProps> = ({
   value,
   onChange,
   mode: externalMode,
-  onModeChange
+  onModeChange,
+  dataTestId
 }) => {
   const [internalMode, setInternalMode] = useState<Mode>("currency");
   
@@ -73,6 +75,7 @@ export const PriceInput: React.FC<PriceInputProps> = ({
         type={mode === "formula" ? "primary" : "default"}
         icon={<FunctionOutlined />}
         onClick={() => handleModeToggle("formula")}
+        data-testid={dataTestId}
         style={{ 
           borderRadius: mode === "formula" ? "0 4px 4px 0" : "0",
           fontSize: "12px",
