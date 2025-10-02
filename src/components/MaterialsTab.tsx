@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Button, Input, Select, Table, InputNumber, Popconfirm, Switch } from 'antd'
+import { Button, Input, Select, Table, InputNumber, Popconfirm, Dropdown, Switch } from 'antd'
 import { Plus, Trash2, ChevronDown, ChevronRight } from 'lucide-react'
+import { PriceInput } from './PriceInput'
 
 const { Option } = Select
 
@@ -101,15 +102,14 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   const [dropdownVisible, setDropdownVisible] = useState<{ [key: number]: boolean }>({})
   const [dropdownPosition, setDropdownPosition] = useState<{ [key: number]: { top: number, left: number } }>({})
   const inputRefs = useRef<{ [key: number]: HTMLInputElement | null }>({})
-  // const previousValues = useRef<{ [key: number]: string }>({})
+  const previousValues = useRef<{ [key: number]: string }>({})
 
   // Handle weight mode changes and unit conversions
   useEffect(() => {
     if (materials.length === 0) return
     
     const updatedMaterials = materials.map(material => {
-      // EXCEPTION: Skip conversion for "ea" materials - they always stay in 'ea' unit
-      if (material.isEachMaterial || material.pricingUnit === 'ea') return material
+      if (material.isEachMaterial) return material // Skip conversion for "ea" materials
       
       const currentWeight = material.netWeight
       const currentUnit = material.pricingUnit
@@ -239,12 +239,8 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           // Calculate estimated total with proper unit conversion
           let weightInPricingUnit = material.netWeight
           
-          // EXCEPTION: If pricing unit is 'ea', no conversion needed
-          if (material.pricingUnit === 'ea') {
-            weightInPricingUnit = material.netWeight
-          }
           // If weight mode is 'scale' (pounds) but pricing unit is different, convert weight to pricing unit
-          else if (weightMode === 'scale' && material.pricingUnit !== 'lb') {
+          if (weightMode === 'scale' && material.pricingUnit !== 'lb') {
             switch (material.pricingUnit) {
               case 'NT': // Net Ton = 2000 lbs
                 weightInPricingUnit = material.netWeight / 2000
@@ -304,38 +300,38 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
     setExpandedMaterials(newExpanded)
   }
 
-  // const handleFormulaInput = (index: number, value: string) => {
-  //   console.log('Formula input change:', { index, value })
-  //   
-  //   // Update the material first
-  //   updateMaterial(index, 'unitPrice', value)
-  //   
-  //   // Check if $ was just typed
-  //   if (value.endsWith('$')) {
-  //     console.log('$ detected, showing dropdown')
-  //     const inputElement = inputRefs.current[index]
-  //     if (inputElement) {
-  //       const rect = inputElement.getBoundingClientRect()
-  //       console.log('Setting dropdown position:', rect)
-  //       
-  //       setDropdownPosition(prev => ({
-  //         ...prev,
-  //         [index]: {
-  //           top: rect.bottom + 4,
-  //           left: rect.left,
-  //           width: rect.width
-  //         }
-  //       }))
-  //       
-  //       setDropdownVisible(prev => ({
-  //         ...prev,
-  //         [index]: true
-  //       }))
-  //       
-  //       console.log('Dropdown should now be visible')
-  //     }
-  //   }
-  // }
+  const handleFormulaInput = (index: number, value: string) => {
+    console.log('Formula input change:', { index, value })
+    
+    // Update the material first
+    updateMaterial(index, 'unitPrice', value)
+    
+    // Check if $ was just typed
+    if (value.endsWith('$')) {
+      console.log('$ detected, showing dropdown')
+      const inputElement = inputRefs.current[index]
+      if (inputElement) {
+        const rect = inputElement.getBoundingClientRect()
+        console.log('Setting dropdown position:', rect)
+        
+        setDropdownPosition(prev => ({
+          ...prev,
+          [index]: {
+            top: rect.bottom + 4,
+            left: rect.left,
+            width: rect.width
+          }
+        }))
+        
+        setDropdownVisible(prev => ({
+          ...prev,
+          [index]: true
+        }))
+        
+        console.log('Dropdown should now be visible')
+      }
+    }
+  }
 
   const insertVariable = (index: number, variable: string) => {
     console.log('Inserting variable:', variable, 'at index:', index)
@@ -383,7 +379,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       dataIndex: 'contractMaterial',
       key: 'contractMaterial',
       width: 200,
-      render: (value: string, _record: Material, index: number) => (
+      render: (value: string, record: Material, index: number) => (
         <Select
           value={value}
           onChange={(val) => updateMaterial(index, 'contractMaterial', val)}
@@ -391,7 +387,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           style={{ width: '100%' }}
           showSearch
           filterOption={(input, option) =>
-            (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+            (option?.children as string)?.toLowerCase().includes(input.toLowerCase())
           }
         >
           {availableMaterials.map(material => (
@@ -445,7 +441,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
             </button>
             <button
               onClick={() => updateMaterial(index, 'isFormula', true)}
-              data-testid="formula-toggle"
               style={{
                 padding: '4px 8px',
                 borderRadius: '3px',
@@ -466,7 +461,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
           {record.isFormula ? (
             <div style={{ position: 'relative', flex: 1 }} className="formula-input">
               <Input
-                ref={(el) => { inputRefs.current[index] = el?.input || null }}
+                ref={(el) => { inputRefs.current[index] = el }}
                 value={typeof value === 'string' ? value : ''}
                 onChange={(e) => {
                   const newValue = e.target.value
@@ -535,53 +530,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 }}
               />
               
-              {/* Debug indicator */}
-              {dropdownVisible[index] && (
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '-20px', 
-                  left: '0', 
-                  background: 'red', 
-                  color: 'white', 
-                  padding: '2px 4px', 
-                  fontSize: '10px',
-                  zIndex: 1001
-                }}>
-                  DROPDOWN ACTIVE
-                </div>
-              )}
-              
-              {/* Test button */}
-              <button
-                onClick={() => {
-                  console.log('Test button clicked for index:', index)
-                  const inputElement = inputRefs.current[index]
-                  if (inputElement) {
-                    const rect = inputElement.getBoundingClientRect()
-                    setDropdownPosition(prev => ({ 
-                      ...prev, 
-                      [index]: { 
-                        top: rect.bottom + 4, 
-                        left: rect.left - 8
-                      } 
-                    }))
-                  }
-                  setDropdownVisible(prev => ({ ...prev, [index]: true }))
-                }}
-                style={{
-                  position: 'absolute',
-                  top: '-30px',
-                  right: '0',
-                  background: 'blue',
-                  color: 'white',
-                  border: 'none',
-                  padding: '2px 4px',
-                  fontSize: '10px',
-                  cursor: 'pointer'
-                }}
-              >
-                TEST
-              </button>
               
               {/* Variable Dropdown */}
               {(dropdownVisible[index] || (typeof value === 'string' && value.includes('$'))) && (
@@ -601,7 +549,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                     overflowY: 'auto'
                   }}
                 >
-                  {/* {console.log('Rendering dropdown for index:', index, 'visible:', dropdownVisible[index], 'value:', value)} */}
+                  {console.log('Rendering dropdown for index:', index, 'visible:', dropdownVisible[index], 'value:', value)}
                   {['COMEX', 'LME', 'SHFE', 'NYMEX', 'CASH', 'SPOT', 'FUTURES'].map(variable => (
                     <div
                       key={variable}
@@ -646,7 +594,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 padding: 0
               }}
               min={0}
-              precision={record.pricingUnit === 'ea' ? 0 : 2}
+              precision={2}
             />
           )}
         </div>
@@ -657,15 +605,12 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       dataIndex: 'pricingUnit',
       key: 'pricingUnit',
       width: 120,
-      render: (value: string, _record: Material, index: number) => (
+      render: (value: string, record: Material, index: number) => (
         <Select
           value={value}
           onChange={(val) => updateMaterial(index, 'pricingUnit', val)}
           style={{ width: '100%' }}
-          disabled={_record.isEachMaterial}
-          data-testid="material-price-unit"
-          dropdownStyle={{ zIndex: 9999 }}
-          getPopupContainer={(triggerNode) => triggerNode.parentElement || document.body}
+          disabled={record.isEachMaterial}
         >
           <Option value="lb">lb</Option>
           <Option value="NT">NT</Option>
@@ -717,9 +662,8 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
         }
         
         // Convert weight based on mode for regular materials
-        // EXCEPTION: If pricing unit is 'ea', always show in 'ea' regardless of weight mode
-        const displayWeight = record.pricingUnit === 'ea' ? value : (weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit))
-        const displayUnit = record.pricingUnit === 'ea' ? 'ea' : (weightMode === 'scale' ? 'lb' : record.pricingUnit)
+        const displayWeight = weightMode === 'scale' ? value : convertWeight(value, 'lb', record.pricingUnit)
+        const displayUnit = weightMode === 'scale' ? 'lb' : record.pricingUnit
         
         return (
           <div style={{ 
@@ -736,8 +680,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
               <InputNumber
                 value={displayWeight}
                 onChange={(val) => {
-                  // EXCEPTION: If pricing unit is 'ea', no conversion needed
-                  const newWeight = record.pricingUnit === 'ea' ? val || 0 : (weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb'))
+                  const newWeight = weightMode === 'scale' ? val || 0 : convertWeight(val || 0, record.pricingUnit, 'lb')
                   updateMaterial(index, 'netWeight', newWeight)
                 }}
                 style={{ 
@@ -769,7 +712,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
       title: 'Actions',
       key: 'actions',
       width: 80,
-      render: (_: any, _record: Material, index: number) => (
+      render: (_, record: Material, index: number) => (
         <Popconfirm
           title="Are you sure you want to delete this material?"
           onConfirm={() => deleteMaterial(index)}
@@ -783,16 +726,14 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   ]
 
   const totalWeightInPounds = materials.reduce((sum, material) => {
-    // EXCEPTION: Skip 'ea' materials from weight totals
-    if (material.pricingUnit === 'ea' || material.isEachMaterial) return sum
+    if (material.pricingUnit === 'ea') return sum
     // Convert current weight to pounds for accurate total
     const weightInPounds = convertWeight(material.netWeight, weightMode === 'scale' ? 'lb' : material.pricingUnit, 'lb')
     return sum + weightInPounds
   }, 0)
 
   const totalEachCount = materials.reduce((sum, material) => {
-    // EXCEPTION: Count 'ea' materials separately
-    if (material.pricingUnit === 'ea' || material.isEachMaterial) return sum + material.netWeight
+    if (material.pricingUnit === 'ea') return sum + material.netWeight
     return sum
   }, 0)
 
@@ -845,7 +786,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 </button>
                 <button
                   className="price-unit-weight-toggle"
-                  data-testid="price-unit-weight-toggle"
                   onClick={() => setWeightMode('price')}
                   style={{
                     padding: '8px 16px',
@@ -910,7 +850,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 </p>
               </div>
               <Button 
-                data-testid="add-material-btn"
                 type="primary" 
                 icon={<Plus size={16} />}
                 onClick={addMaterial}
@@ -1060,7 +999,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 justifyContent: 'flex-start' 
               }}>
                 <Button 
-                  data-testid="add-material-btn"
                   type="default"
                   icon={<Plus size={16} />}
                   onClick={addMaterial}
@@ -1114,7 +1052,6 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 onClick={handleSave} 
                 type="primary" 
                 className="save-updates-button"
-                data-testid="save-materials-btn"
                 style={{ 
                   height: '40px',
                   padding: '0 20px',
