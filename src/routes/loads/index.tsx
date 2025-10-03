@@ -1,10 +1,11 @@
 import { Table, Button, Input, Select, Dropdown, Modal, Form, DatePicker } from 'antd'
 import { MoreOutlined } from '@ant-design/icons'
-import { useState, useMemo } from 'react'
-import { FileText, Ship, CheckCircle, RotateCcw, Printer, Trash2 } from 'lucide-react'
+import { useState, useMemo, useEffect } from 'react'
+import { FileText, CheckCircle, RotateCcw, Printer, Trash2 } from 'lucide-react'
 import { useLocation } from 'wouter'
 import dayjs from 'dayjs'
 import { generateAllLoadsData } from '../../utils/mockData'
+import { startLoadsTour } from '../../tours/loadsTour'
 
 export const Loads = () => {
   
@@ -58,12 +59,30 @@ export const Loads = () => {
   const [selectedStatus, setSelectedStatus] = useState<string | undefined>()
   
   // Table data state for updates
-  const [data, setData] = useState(allData)
+  const [data] = useState(allData)
   
   // Modal states
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
   const [form] = Form.useForm()
   const [, setLocation] = useLocation()
+  
+  // Start tour when component mounts
+  useEffect(() => {
+    console.log('🔄 Loads page mounted - checking for tour...')
+    
+    // Check if this is first visit or if tour was dismissed
+    const tourDismissed = localStorage.getItem('loadsTourDismissed')
+    const tourStep = localStorage.getItem('loadsTourStep')
+    
+    if (!tourDismissed && !tourStep) {
+      console.log('🎯 First visit to loads page - starting tour')
+      setTimeout(() => {
+        startLoadsTour().catch(error => {
+          console.error('❌ Failed to start tour:', error);
+        });
+      }, 500); // Small delay to let page render
+    }
+  }, [])
   
   // Filter the data based on search and filters (memoized)
   const filteredData = useMemo(() => {
@@ -268,7 +287,7 @@ export const Loads = () => {
       title: 'Actions',
       key: 'actions',
       width: 80,
-      render: (_, record) => {
+      render: (_: any, record: any) => {
         const getMenuItems = (status: string) => {
           switch (status) {
             case 'Unassigned':
@@ -605,13 +624,16 @@ export const Loads = () => {
           />
         </div>
         
-        <Button 
-          type="primary"
-          style={{ background: '#3b82f6', border: 'none' }}
-          onClick={() => setIsCreateModalVisible(true)}
-        >
-          Create Load
-        </Button>
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <Button 
+            type="primary"
+            style={{ background: '#3b82f6', border: 'none' }}
+            onClick={() => setIsCreateModalVisible(true)}
+          >
+            Create Load
+          </Button>
+          
+        </div>
       </div>
 
       {/* Scrollable Table Container */}
@@ -639,10 +661,13 @@ export const Loads = () => {
             x: 1500,
             y: 'calc(100vh - 200px)' // Fixed height for vertical scroll
           }}
-          onRow={(record) => ({
+          rowKey="key"
+          onRow={(record, index) => ({
             onClick: () => handleRowClick(record),
-            style: { cursor: 'pointer' }
+            style: { cursor: 'pointer' },
+            'data-testid': index === 0 ? 'load-row' : undefined // Only add to first row
           })}
+          data-testid="loads-table"
         />
       </div>
       

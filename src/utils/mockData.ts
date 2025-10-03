@@ -306,7 +306,15 @@ export const generateAllLoadsData = () => {
   const data = []
   for (let i = 0; i < 50; i++) {
     const loadNumber = `#${String(860000 + i).padStart(6, '0')}`
-    data.push(generateLoadData(loadNumber))
+    const loadData = generateLoadData(loadNumber)
+    
+    // For the first load (index 0), force it to have "Open" status with related SO
+    if (i === 0) {
+      loadData.status = 'Open'
+      loadData.relatedSO = '#002002'
+    }
+    
+    data.push(loadData)
   }
   return data
 }

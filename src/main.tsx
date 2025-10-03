@@ -5,6 +5,8 @@ import './index.css'
 import './global-overrides.css'
 import App from './App.tsx'
 
+console.log('🚀 Main.tsx is loading...')
+
 // Suppress Ant Design React 19 compatibility warning
 const originalWarn = console.warn
 console.warn = (...args) => {
@@ -14,10 +16,16 @@ console.warn = (...args) => {
   originalWarn.apply(console, args)
 }
 
-createRoot(document.getElementById('root')!).render(
-  <StrictMode>
-    <ConfigProvider>
-      <App />
-    </ConfigProvider>
-  </StrictMode>,
-)
+console.log('🔄 About to render React app...')
+try {
+  createRoot(document.getElementById('root')!).render(
+    <StrictMode>
+      <ConfigProvider>
+        <App />
+      </ConfigProvider>
+    </StrictMode>,
+  )
+  console.log('✅ React app rendering initiated successfully...')
+} catch (error) {
+  console.error('❌ Error rendering React app:', error)
+}

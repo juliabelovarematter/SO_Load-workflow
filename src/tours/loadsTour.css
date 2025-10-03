@@ -1,0 +1,36 @@
+/* Loads Tour CSS Overrides */
+
+/* Ensure that when Driver.js highlights a table row, the full row is styled */
+tr[data-testid='load-row'] {
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* Alternative selector for fallback case */
+.loads-table tbody tr:first-child {
+  position: relative !important;
+  width: 100% !important;
+}
+
+/* When Driver.js highlights the row, make it more prominent */
+.driver-highlight tr[data-testid='load-row'],
+.loads-table tbody tr:first-child.driver-highlight {
+  background-color: rgba(24, 144, 255, 0.1) !important;
+  border: 2px solid #1890ff !important;
+  border-radius: 4px !important;
+}
+
+/* Hide Done and Previous buttons */
+.driver-popover-footer {
+  display: none !important;
+}
+
+/* Hide all driver controls */
+.driver-controls {
+  display: none !important;
+}
+
+/* Ensure the driver overlay doesn't interfere with table layout */
+.driver-overlay {
+  z-index: 9999 !important;
+}

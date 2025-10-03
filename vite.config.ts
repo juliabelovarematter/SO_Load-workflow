@@ -19,15 +19,15 @@ export default defineConfig({
         entryFileNames: 'assets/[name]-[hash].js',
       },
     },
-    target: 'es2015',
-    minify: 'esbuild',
+    target: 'esnext',
+    minify: false,
   },
   server: {
-    headers: {
-      'Content-Type': 'application/javascript; charset=utf-8',
-    },
     fs: {
       strict: false,
     },
+    cors: true,
+    host: true,
+    port: 5173,
   },
 })

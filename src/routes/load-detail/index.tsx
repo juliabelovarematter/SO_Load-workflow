@@ -5,6 +5,7 @@ import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, Weight,
 import dayjs from 'dayjs'
 import { generateLoadData, generateSOData } from '../../utils/mockData'
 import { initializeFormbricks, triggerSurvey, LOAD_FEEDBACK_SURVEY_ID } from '../../utils/formbricks'
+import { startLoadsTour } from '../../tours/loadsTour'
 
 // Material interface (same as SO Materials)
 interface Material {
@@ -634,6 +635,13 @@ export const LoadDetail = () => {
           // Existing load from table - generate consistent data
           data = generateLoadData(`#${params.id}`)
           
+          // SPECIAL CASE: Load #860000 should always be "Open" for tour demonstration
+          if (params.id === '860000') {
+            data.status = 'Open'
+            data.relatedSO = '#002002'
+            console.log('🏆 Tour Load Fix: Force #860000 to "Open" status with SO #002002')
+          }
+          
           // ENFORCE BUSINESS RULE: Unassigned loads cannot have SOs
           if (data.status === 'Unassigned' && data.relatedSO) {
             // CRITICAL: Unassigned loads CANNOT have SOs - remove the SO
@@ -804,6 +812,112 @@ export const LoadDetail = () => {
       }
     }
   }, [params?.id, form])
+
+  // Trigger Loads Tour Step 2 when component mounts and data is loaded
+  useEffect(() => {
+    // Only start tour if we have load data and are on a load detail page
+    if (params?.id && loadData) {
+      console.log('🚀 Load Detail page loaded, KILLING STEP 1 IMMEDIATELY!');
+      
+      // NUCLEAR OPTION: Destroy Step 1 IMMEDIATELY
+      const NUCLEAR_KILL_STEP1 = () => {
+        console.log('💀 NUCLEAR DESTRUCTION OF STEP 1!');
+        
+        // Force kill ALL driver instances globally
+        if ((window as any).currentDriverInstance) {
+          try {
+            (window as any).currentDriverInstance.destroy();
+            (window as any).currentDriverInstance = null;
+          } catch (err) {
+            console.log('❌ Error destroying global instance:', err);
+          }
+        }
+        
+        // Remove ALL driver elements manually
+        document.querySelectorAll('[class*="driver"], .driver-overlay, [data-driver-overlay], .driver-popover, .driver-popover-overlay').forEach(el => {
+          if (el instanceof HTMLElement) {
+            el.style.display = 'none !important';
+            el.style.visibility = 'hidden !important';
+            el.style.opacity = '0 !important';
+            el.style.zIndex = '-9999 !important';
+            el.remove();
+          }
+        });
+        
+        // Force clear Step 1 from localStorage
+        localStorage.setItem('loadsTourStep', '2');
+        localStorage.removeItem('loadsTourDismissed');
+        
+        console.log('💀 STEP 1 NUCLEAR ANNIHILATED!');
+      };
+      
+      // Execute immediately
+      NUCLEAR_KILL_STEP1();
+      
+      console.log('📊 Current localStorage keys after nuke:', {
+        loadsTourStep: localStorage.getItem('loadsTourStep'),
+        loadsTourDismissed: localStorage.getItem('loadsTourDismissed')
+      });
+      
+      // Add a small delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        const currentStep = localStorage.getItem('loadsTourStep');
+        console.log('📋 Current tour step:', currentStep);
+        
+        // NUCLEAR BACKUP: Destroy any lingering Step 1 tours AGAIN
+        console.log('💥 NUCLEAR BACKUP - DESTROYING STEP 1 AGAIN!');
+        
+        // Kill global driver instance
+        if ((window as any).currentDriverInstance) {
+          try {
+            (window as any).currentDriverInstance.destroy();
+            (window as any).currentDriverInstance = null;
+          } catch (err) {
+            console.log('❌ Error destroying backup instance:', err);
+          }
+        }
+        
+        // MANUALLY REMOVE EVERYTHING DRIVER-RELATED
+        const overlays = document.querySelectorAll('[class*="driver"], .driver-overlay, [data-driver-overlay], .driver-popover, .driver-popover-overlay, [class*="popover-overlay"]');
+        overlays.forEach(overlay => {
+          if (overlay instanceof HTMLElement) {
+            overlay.style.display = 'none !important';
+            overlay.style.visibility = 'hidden !important';
+            overlay.style.opacity = '0 !important';
+            overlay.style.zIndex = '-9999 !important';
+            overlay.remove();
+          }
+        });
+        
+        // Also remove any driver popover parent elements
+        document.querySelectorAll('body > div').forEach(div => {
+          if (div.className && div.className.includes('driver')) {
+            (div as HTMLElement).remove();
+          }
+        });
+        
+        // Clear Step 1 from localStorage to prevent re-rendering
+        if (currentStep === '1') {
+          console.log('🧹 Clearing Step 1 from localStorage');
+          localStorage.setItem('loadsTourStep', '2');
+        } else if (!currentStep) {
+          console.log('🧹 No tour step found, setting to Step 2');
+          localStorage.setItem('loadsTourStep', '2');
+        }
+        
+        // Start tour based on current localStorage step
+        if (currentStep === '2' || currentStep === '3' || currentStep === '1') {
+          console.log('🚀 Starting tour for step:', localStorage.getItem('loadsTourStep'));
+          startLoadsTour().catch(error => {
+            console.error('❌ Failed to start tour from page:', error);
+          });
+        } else {
+          console.log('🔍 No valid tour step found:', currentStep);
+        }
+      }, 1500); // Longer delay for better reliability
+    }
+  }, [params?.id, loadData]);
+
 
   const handleFieldChange = () => {
     const currentValues = form.getFieldsValue()
@@ -1298,7 +1412,7 @@ export const LoadDetail = () => {
             {
               key: 'materials',
               label: (
-                <span>
+                <span data-testid="materials-tab">
                   Materials <Tag style={{ marginLeft: '8px', fontSize: '10px' }}>{materialsCount}</Tag>
                 </span>
               ),
@@ -1333,10 +1447,10 @@ export const LoadDetail = () => {
         padding: activeTab === 'load-info' ? '24px' : '0'
       }}>
         {activeTab === 'load-info' && (
-        <Form
-          form={form}
-          layout="vertical"
-          onValuesChange={handleFieldChange}
+          <Form
+            form={form}
+            layout="vertical"
+            onValuesChange={handleFieldChange}
           requiredMark={false}
           >
             {/* Basic Info Section */}
@@ -1351,6 +1465,7 @@ export const LoadDetail = () => {
                     placeholder={loadData?.status === 'Unassigned' ? 'No SO (Unassigned Load)' : 'Select SO'}
                     disabled={!isEditable}
                     allowClear
+                    data-testid="related-so-select"
                     showSearch
 filterOption={(input, option) =>
   (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
@@ -1822,25 +1937,25 @@ filterOption={(input, option) =>
                         {/* 101 - Aluminum Cans */}
                         {soMaterials.find(m => m.id === 'so-1') && (
                         <div style={{
-                          display: 'grid',
+                            display: 'grid',
                           gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
-                          padding: '12px 16px',
+                            padding: '12px 16px',
                           alignItems: 'center',
                           marginBottom: '6px'
-                        }}>
-                          <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
+                          }}>
+                            <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             101 - Aluminum Cans
-                          </div>
-                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                            </div>
+                            <div style={{ fontSize: '14px', color: '#374151' }}>
                             $ 0.12 /lb
-                          </div>
-                          <div style={{
-                            padding: '8px 12px',
-                            backgroundColor: '#f1f5f9',
-                            borderRadius: '6px',
-                            fontSize: '14px',
-                            color: '#374151',
+                            </div>
+                            <div style={{
+                              padding: '8px 12px',
+                              backgroundColor: '#f1f5f9',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              color: '#374151',
                             textAlign: 'center',
                             height: '40px',
                             display: 'flex',
@@ -1848,13 +1963,13 @@ filterOption={(input, option) =>
                             justifyContent: 'center'
                           }}>
                             500 lb
-                          </div>
-                          <div style={{
-                            padding: '8px 12px',
-                            backgroundColor: '#f1f5f9',
-                            borderRadius: '6px',
-                            fontSize: '14px',
-                            color: '#374151',
+                            </div>
+                            <div style={{
+                              padding: '8px 12px',
+                              backgroundColor: '#f1f5f9',
+                              borderRadius: '6px',
+                              fontSize: '14px',
+                              color: '#374151',
                             textAlign: 'center',
                             height: '40px',
                             display: 'flex',
@@ -1862,25 +1977,25 @@ filterOption={(input, option) =>
                             justifyContent: 'center'
                           }}>
                             450 lb
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <button
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <button
                               onClick={() => handleUseRemainingWeight('so-1')}
                               disabled={!isEditable}
-                              style={{
-                                padding: '6px 8px',
-                                backgroundColor: '#f8f9fa',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '4px',
-                                cursor: isEditable ? 'pointer' : 'not-allowed',
-                                fontSize: '14px',
+                                style={{
+                                  padding: '6px 8px',
+                                  backgroundColor: '#f8f9fa',
+                                  border: '1px solid #e5e7eb',
+                                  borderRadius: '4px',
+                                  cursor: isEditable ? 'pointer' : 'not-allowed',
+                                  fontSize: '14px',
                                 color: isEditable ? '#6b7280' : '#9ca3af',
                                 height: '40px',
                                 opacity: isEditable ? 1 : 0.5
-                              }}
-                            >
-                              →
-                            </button>
+                                }}
+                              >
+                                →
+                              </button>
                             <Input
                               value={soMaterials.find(m => m.id === 'so-1')?.requestedWeight || 0}
                               onChange={(e) => {
@@ -1895,7 +2010,7 @@ filterOption={(input, option) =>
                                 setHasChanges(true)
                               }}
                               suffix="lb"
-                              disabled={!isEditable}
+                                disabled={!isEditable}
                               style={{ 
                                 width: '70px', 
                                 textAlign: 'right', 
@@ -1906,12 +2021,12 @@ filterOption={(input, option) =>
                                   color: '#495057'
                                 })
                               }}
-                            />
-                          </div>
-                          <div>
-                            <Select
-                              placeholder="Select..."
-                              disabled={!isEditable}
+                              />
+                            </div>
+                            <div>
+                              <Select
+                                placeholder="Select..."
+                                disabled={!isEditable}
                               style={{ 
                                 width: '100%', 
                                 height: '40px',
@@ -1922,23 +2037,23 @@ filterOption={(input, option) =>
                                   borderRadius: '6px'
                                 })
                               }}
-                            />
-                          </div>
-                          <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            padding: '8px 12px',
-                            backgroundColor: '#f8f9fa',
-                            borderRadius: '6px',
-                            fontSize: '14px',
+                              />
+                            </div>
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              padding: '8px 12px',
+                              backgroundColor: '#f8f9fa',
+                              borderRadius: '6px',
+                              fontSize: '14px',
                             color: '#374151',
                             height: '40px'
-                          }}>
-                            <span style={{ color: '#6b7280' }}>$</span>
+                            }}>
+                              <span style={{ color: '#6b7280' }}>$</span>
                             <span>1,230.90</span>
-                          </div>
-                          <div style={{ display: 'flex', gap: '4px' }}>
+                            </div>
+                            <div style={{ display: 'flex', gap: '4px' }}>
                             <Button icon={<Camera size={14} />} style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             <Popconfirm
                               title="Remove SO from the Load?"
@@ -1949,26 +2064,26 @@ filterOption={(input, option) =>
                             >
                               <Button icon={<Trash2 size={14} />} danger style={{ padding: '4px', minWidth: '32px', height: '40px' }} />
                             </Popconfirm>
+                            </div>
                           </div>
-                        </div>
                         )}
 
                         {/* 100 - Aluminum Radiator */}
                         {soMaterials.find(m => m.id === 'so-2') && (
-                        <div style={{
-                          display: 'grid',
+                      <div style={{
+                        display: 'grid',
                           gridTemplateColumns: '1.5fr 1fr 1fr 1.2fr 1.2fr 1.3fr 1.2fr 60px',
                           gap: '6px',
-                          padding: '12px 16px',
+                        padding: '12px 16px',
                           alignItems: 'center',
                           marginBottom: '6px'
-                        }}>
+                      }}>
                           <div style={{ fontSize: '14px', color: '#374151', fontWeight: '500' }}>
                             100 - Aluminum Radiator...
                           </div>
-                          <div style={{ fontSize: '14px', color: '#374151' }}>
+                        <div style={{ fontSize: '14px', color: '#374151' }}>
                             $ 0.12 /lb
-                          </div>
+                        </div>
                           <div style={{
                             padding: '8px 12px',
                             backgroundColor: '#f1f5f9',
@@ -2584,12 +2699,12 @@ filterOption={(input, option) =>
                           disabled={!isEditable || getAvailableSOMaterials().length === 0}
                           trigger={['click']}
                         >
-                          <Button
-                            icon={<Plus size={16} />}
+                        <Button
+                          icon={<Plus size={16} />}
                             style={{ height: '40px' }}
                           >
                             Add SO Material {getAvailableSOMaterials().length > 0 && `(${getAvailableSOMaterials().length})`}
-                          </Button>
+                        </Button>
                         </Dropdown>
                       </div>
                     </div>
@@ -2662,9 +2777,9 @@ filterOption={(input, option) =>
                                   disabled={!isEditable}
                                   onChange={(value) => updateMaterial(index, 'contractMaterial', value)}
                                   showSearch
-filterOption={(input, option) =>
+                                  filterOption={(input, option) =>
   (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
-}
+                                  }
                                 >
                                   {availableMaterials.map((mat) => (
                                     <Select.Option key={mat.name} value={mat.name}>
@@ -3178,9 +3293,9 @@ filterOption={(input, option) =>
                                     }
                                   }}
                                   showSearch
-filterOption={(input, option) =>
+                                  filterOption={(input, option) =>
   (option?.value as string)?.toLowerCase().includes(input.toLowerCase())
-}
+                                  }
                                 >
                                   {(material.isTaggedMaterial ? availableTaggedMaterials : availableMaterials).map((mat) => (
                                     <Select.Option key={mat.name} value={mat.name}>
@@ -3412,9 +3527,9 @@ filterOption={(input, option) =>
                                 
                                 return (
                                   <>
-                                    <div style={{ fontWeight: 'bold' }}>
-                                      <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
-                                    </div>
+                                      <div style={{ fontWeight: 'bold' }}>
+                                        <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                      </div>
                                     {eaTotal > 0 && (
                                       <div style={{ fontWeight: 'bold' }}>
                                         <strong>{eaTotal.toFixed(0)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
@@ -3427,19 +3542,19 @@ filterOption={(input, option) =>
                           </td>
                           <td style={{ padding: '6px', textAlign: 'left' }}>
                             <div style={{ fontSize: '14px', color: '#071429' }}>
-                              {(() => {
-                                const lbMaterials = materials.filter(m => {
+                                {(() => {
+                                  const lbMaterials = materials.filter(m => {
                                   const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
                                                         availableMaterials.find(am => am.name === m.contractMaterial)
-                                  return !selectedMaterial?.isEachMaterial
-                                })
+                                    return !selectedMaterial?.isEachMaterial
+                                  })
                                 const eaMaterials = materials.filter(m => {
                                   const selectedMaterial = availableTaggedMaterials.find(am => am.name === m.contractMaterial) ||
                                                         availableMaterials.find(am => am.name === m.contractMaterial)
                                   return selectedMaterial?.isEachMaterial
                                 })
                                 
-                                const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.tareWeight || 0), 0)
+                                  const lbTotal = lbMaterials.reduce((sum, m) => sum + (m.tareWeight || 0), 0)
                                 const eaTotal = eaMaterials.length // Count of ea materials (they don't have tare)
                                 
                                 return (
@@ -3447,7 +3562,7 @@ filterOption={(input, option) =>
                                     <strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
                                   </div>
                                 )
-                              })()}
+                                })()}
                             </div>
                           </td>
                           <td style={{ padding: '6px', textAlign: 'left' }}>
@@ -3469,9 +3584,9 @@ filterOption={(input, option) =>
                                 
                                 return (
                                   <>
-                                    <div style={{ fontWeight: 'bold' }}>
-                                      <strong>{lbNetTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
-                                    </div>
+                                      <div style={{ fontWeight: 'bold' }}>
+                                        <strong>{lbNetTotal.toFixed(2)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>lb</span>
+                                      </div>
                                     {eaTotal > 0 && (
                                       <div style={{ fontWeight: 'bold' }}>
                                         <strong>{eaTotal.toFixed(0)}</strong> <span style={{ fontWeight: 'normal', color: '#6b7280' }}>ea</span>
@@ -3658,7 +3773,7 @@ filterOption={(input, option) =>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
                           <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
                             {materials.length} Materials
-                          </span>
+                      </span>
                         </td>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
                           {/* Unit Price column - empty */}
@@ -3668,37 +3783,37 @@ filterOption={(input, option) =>
                         </td>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
                           <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
-                            {(() => {
-                              // Calculate separate totals for weight materials and each materials
-                              const weightMaterials = materials.filter(m => !m.isEachMaterial)
-                              const eachMaterials = materials.filter(m => m.isEachMaterial)
-                              
-                              const weightTotal = weightMaterials.reduce((sum, m) => {
-                                const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
-                                return sum + weightInPounds
-                              }, 0)
-                              
-                              const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
-                              
-                              return (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                  {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
-                                  {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
-                                </div>
-                              )
-                            })()}
-                          </span>
+                          {(() => {
+                            // Calculate separate totals for weight materials and each materials
+                            const weightMaterials = materials.filter(m => !m.isEachMaterial)
+                            const eachMaterials = materials.filter(m => m.isEachMaterial)
+                            
+                            const weightTotal = weightMaterials.reduce((sum, m) => {
+                              const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
+                              return sum + weightInPounds
+                            }, 0)
+                            
+                            const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                            
+                            return (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
+                                {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
+                              </div>
+                            )
+                          })()}
+                      </span>
                         </td>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
-                          {/* Inventory Tags column - empty */}
+                    {/* Inventory Tags column - empty */}
                         </td>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
                           <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
                             ${(Math.round(materials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0) * 100) / 100).toFixed(2)}
-                          </span>
+                      </span>
                         </td>
                         <td style={{ padding: '0px 8px 0px 8px', textAlign: 'center' }}>
-                          {/* Actions column - empty */}
+                    {/* Actions column - empty */}
                         </td>
                       </tr>
                     </tbody>
