@@ -67,20 +67,54 @@ export const Loads = () => {
   const [, setLocation] = useLocation()
   
   // Start tour when component mounts
+  // Tour state debugging (only logging, no tour starting)
   useEffect(() => {
-    console.log('🔄 Loads page mounted - checking for tour...')
-    
-    // Check if this is first visit or if tour was dismissed
+    console.log('🔍 Tour state check on loads page:')
     const tourDismissed = localStorage.getItem('loadsTourDismissed')
     const tourStep = localStorage.getItem('loadsTourStep')
+    console.log('- tourDismissed:', tourDismissed)
+    console.log('- tourStep:', tourStep)
+    // NO TOUR STARTING HERE - that's handled by the next useEffect
+  }, [])
+  
+  // AUTO-START TOUR ON LOADS PAGE
+  useEffect(() => {
+    console.log('🚀 Loads page mounted - auto-starting tour...');
     
-    if (!tourDismissed && !tourStep) {
-      console.log('🎯 First visit to loads page - starting tour')
+    // Use same logic as Emergency Tour Restart button
+    console.log('🧹 Clearing localStorage before tour start...');
+    localStorage.clear();
+    
+    // Verify localStorage is clear
+    console.log('📋 localStorage after clear:', {
+      loadsTourStep: localStorage.getItem('loadsTourStep'),
+      loadsTourDismissed: localStorage.getItem('loadsTourDismissed')
+    });
+    
+    setTimeout(() => {
+      console.log('🚀 Starting loads tour automatically...');
+      console.trace('Stack trace for delayed tour start:');
+      startLoadsTour().catch(error => {
+        console.error('❌ Auto-start tour failed:', error);
+      });
+    }, 800);
+    
+    // Disable React strict mode double execution prevention
+    return () => {
+      console.log('🧹 Cleanup function called (component unmounting)');
+    };
+  }, []);
+
+  // Add debug helper to window for testing
+  useEffect(() => {
+    (window as any).debugTour = () => {
+      console.log('🚨 FORCE STARTING TOUR (DEBUG)')
+      localStorage.clear()
       setTimeout(() => {
         startLoadsTour().catch(error => {
-          console.error('❌ Failed to start tour:', error);
+          console.error('❌ Debug tour failed:', error);
         });
-      }, 500); // Small delay to let page render
+      }, 100)
     }
   }, [])
   

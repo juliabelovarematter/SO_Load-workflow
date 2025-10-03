@@ -8,6 +8,7 @@ const DISMISS_KEY = "loadsTourDismissed";
 
 // --- state flags
 let advancing = false;
+let tourStarting = false; // Prevent multiple simultaneous tour starts
 let currentDriverInstance: any = null;
 
 // --- storage helpers
@@ -38,10 +39,12 @@ async function waitForAny(selectors: string[], per = 8000): Promise<string> {
 // --- selectors for Step 2 + Step 3
 const SEL = {
   relatedSoClickTargets: [
+    ".ant-select[name='relatedSO'] .ant-select-selector",
     "[data-testid='related-so-select'] .ant-select-selector",
     ".ant-select[data-field='relatedSalesOrder'] .ant-select-selector",
     "div[role='combobox'][aria-controls*='related']",
-    "#related-so-select .ant-select-selector"
+    "#related-so-select .ant-select-selector",
+    ".ant-form-item-control-input .ant-select-selector"
   ],
   materialsTabButton: [
     "div[role='tab']#rc-tabs-3-tab-materials",
@@ -104,11 +107,19 @@ export async function startLoadsTourStep2() {
       popover: {
         title: "Assign Sales Order",
         description: "Select the Sales Order which the Load should be assigned to",
-        position: "bottom",
+        position: "left",
+        side: "left",
+        align: "start",
       },
       onHighlightStarted: (el) => {
+        console.log('🎯 Step 2: Successfully highlighted Related SO field');
+        console.log('🎯 Element:', el);
+        console.log('🎯 Element text:', el.textContent);
+        console.log('🎯 Element classes:', el.className);
+        
         // Listen to single user click (no 'change' required)
         const onClick = () => {
+          console.log('🎯 Step 2: Related SO field clicked!');
           advancing = true;
           setStep("3");
           d.destroy();              // tear down Step 2
@@ -469,10 +480,29 @@ if (typeof window !== 'undefined') {
  * Public API: start the tour based on current localStorage step
  */
 export async function startLoadsTour() {
+  // Prevent multiple simultaneous starts
+  if (tourStarting) {
+    console.log('🚫 Tour already starting, ignoring duplicate call');
+    return;
+  }
+  
+  tourStarting = true;
   console.log('🚀 Starting Loads Tour...');
+  
+  // Prevent multiple tours running simultaneously
+  if (currentDriverInstance) {
+    console.log('⚠️ Tour already running, destroying existing instance...');
+    try {
+      currentDriverInstance.destroy();
+      currentDriverInstance = null;
+    } catch (err) {
+      console.log('❌ Error destroying existing tour:', err);
+    }
+  }
   
   if (isDismissed()) {
     console.log('❌ Tour was dismissed, not starting');
+    tourStarting = false;
     return;
   }
   
@@ -496,4 +526,7 @@ export async function startLoadsTour() {
       console.log('🎯 Starting from Step 1 (default)');
       await startLoadsTourStep1();
   }
+  
+  // Reset the flag when done
+  tourStarting = false;
 }
