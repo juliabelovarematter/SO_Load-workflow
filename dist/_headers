@@ -14,11 +14,11 @@
 /*.svg
   Content-Type: image/svg+xml
 
-# Cache static assets
-/assets/*
+# Cache static assets - CRITICAL: Point to dist folder
+/SO_Load-workflow/assets/*
   Cache-Control: public, max-age=31536000, immutable
 
-# Handle client-side routing
-/*
+# Handle client-side routing - CRITICAL: Point to dist folder
+/SO_Load-workflow/*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff

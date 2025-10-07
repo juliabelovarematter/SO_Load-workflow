@@ -40,12 +40,18 @@
     ExpiresByType image/svg+xml "access plus 1 year"
 </IfModule>
 
-# Handle client-side routing
+# Handle client-side routing - CRITICAL: Point to dist folder
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /SO_Load-workflow/
+    
+    # Serve built assets from dist folder
+    RewriteCond %{REQUEST_URI} ^/SO_Load-workflow/assets/
+    RewriteRule ^(.*)$ /SO_Load-workflow/dist/$1 [L]
+    
+    # Handle client-side routing
     RewriteRule ^index\.html$ - [L]
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule . /SO_Load-workflow/index.html [L]
+    RewriteRule . /SO_Load-workflow/dist/index.html [L]
 </IfModule>
