@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useRoute, useLocation } from 'wouter'
 import { Button, Tag, Tabs, Form, Input, Select, DatePicker, InputNumber, Dropdown } from 'antd'
-import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, MessageCircle, MoreHorizontal, CheckCircle, Ship } from 'lucide-react'
+import { ArrowLeft, Trash2, Plus, Upload, FileText, StickyNote, Monitor, MoreHorizontal, CheckCircle, Ship } from 'lucide-react'
 import dayjs from 'dayjs'
 import { generateAllBookingsData } from '../../utils/mockData'
 // Formbricks removed - no survey trigger for booking page
@@ -134,12 +134,6 @@ export const BookingDetail = () => {
     }
   }
 
-  // Handle Give Feedback button click
-  const handleGiveFeedback = async () => {
-    console.log('🔄 Give Feedback button clicked!')
-    // No survey trigger for booking page
-    console.log('✅ Give Feedback clicked - no survey triggered')
-  }
 
   const handleBack = () => {
     setLocation('/bookings')
@@ -151,15 +145,6 @@ export const BookingDetail = () => {
       case 'Draft':
         return {
           primaryActions: [
-            <Button 
-              key="feedback" 
-              type="default" 
-              className="booking-detail-give-feedback-button"
-              icon={<MessageCircle size={16} />}
-              onClick={handleGiveFeedback}
-            >
-              Give Feedback
-            </Button>,
             <Button key="void" danger type="default" onClick={() => console.log('Void')}>
               Void
             </Button>
@@ -170,15 +155,6 @@ export const BookingDetail = () => {
       case 'Open':
         return {
           primaryActions: [
-            <Button 
-              key="feedback" 
-              type="default" 
-              className="booking-detail-give-feedback-button"
-              icon={<MessageCircle size={16} />}
-              onClick={handleGiveFeedback}
-            >
-              Give Feedback
-            </Button>,
             <Button key="void" danger type="default" onClick={() => console.log('Void')}>
               Void
             </Button>
@@ -214,15 +190,6 @@ export const BookingDetail = () => {
       case 'Shipped':
         return {
           primaryActions: [
-            <Button 
-              key="feedback" 
-              type="default" 
-              className="booking-detail-give-feedback-button"
-              icon={<MessageCircle size={16} />}
-              onClick={handleGiveFeedback}
-            >
-              Give Feedback
-            </Button>,
             <Button key="complete" type="primary" onClick={() => console.log('Complete Booking')}>
               Complete Booking
             </Button>
@@ -258,17 +225,7 @@ export const BookingDetail = () => {
       
       case 'Closed':
         return {
-          primaryActions: [
-            <Button 
-              key="feedback" 
-              type="default" 
-              className="booking-detail-give-feedback-button"
-              icon={<MessageCircle size={16} />}
-              onClick={handleGiveFeedback}
-            >
-              Give Feedback
-            </Button>
-          ],
+          primaryActions: [],
           moreActions: [
             {
               key: 'revertShipped',
@@ -293,17 +250,7 @@ export const BookingDetail = () => {
       
       case 'Voided':
         return {
-          primaryActions: [
-            <Button 
-              key="feedback" 
-              type="default" 
-              className="booking-detail-give-feedback-button"
-              icon={<MessageCircle size={16} />}
-              onClick={handleGiveFeedback}
-            >
-              Give Feedback
-            </Button>
-          ],
+          primaryActions: [],
           moreActions: [
             {
               key: 'revertOpen',

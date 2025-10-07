@@ -79,21 +79,33 @@ export const Loads = () => {
   
   // AUTO-START TOUR ON LOADS PAGE
   useEffect(() => {
-    console.log('🚀 Loads page mounted - auto-starting tour...');
+    console.log('🚀 Loads page mounted - checking tour state...');
     
-    // Use same logic as Emergency Tour Restart button
-    console.log('🧹 Clearing localStorage before tour start...');
+    // Check if tour was dismissed first
+    const isDismissed = localStorage.getItem('loadsTourDismissed') === 'true';
+    console.log('🤔 Is tour dismissed?', isDismissed);
+    
+    if (isDismissed) {
+      console.log('🛄 Tour was dismissed, not auto-starting');
+      return;
+    }
+    
+    // If not dismissed, clear localStorage but preserve dismissal flag
+    console.log('🧹 Clearing localStorage but preserving dismissal...');
+    const dismissalFlag = localStorage.getItem('loadsTourDismissed');
     localStorage.clear();
+    if (dismissalFlag) {
+      localStorage.setItem('loadsTourDismissed', dismissalFlag);
+    }
     
-    // Verify localStorage is clear
-    console.log('📋 localStorage after clear:', {
+    // Verify localStorage state
+    console.log('📋 localStorage after selective clear:', {
       loadsTourStep: localStorage.getItem('loadsTourStep'),
       loadsTourDismissed: localStorage.getItem('loadsTourDismissed')
     });
     
     setTimeout(() => {
       console.log('🚀 Starting loads tour automatically...');
-      console.trace('Stack trace for delayed tour start:');
       startLoadsTour().catch(error => {
         console.error('❌ Auto-start tour failed:', error);
       });

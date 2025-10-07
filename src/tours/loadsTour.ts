@@ -10,6 +10,7 @@ const DISMISS_KEY = "loadsTourDismissed";
 let advancing = false;
 let tourStarting = false; // Prevent multiple simultaneous tour starts
 let currentDriverInstance: any = null;
+let tourAborted = false; // Global abort flag
 
 // --- storage helpers
 function setStep(step: string) { localStorage.setItem(STEP_KEY, step); }
@@ -54,6 +55,43 @@ const SEL = {
   ],
 };
 
+// Mark the SO Materials header cell with an attribute for reliable targeting
+function markSoMaterialsHeader(): HTMLElement | null {
+  const headers = Array.from(document.querySelectorAll('table thead th')) as HTMLElement[];
+  for (const th of headers) {
+    const text = th.textContent?.trim() || '';
+    if (/^SO\s+Materials$/i.test(text)) {
+      th.setAttribute('data-so-materials-header', 'true');
+      return th;
+    }
+  }
+  return null;
+}
+
+async function waitForSoMaterialsHeader(timeout = 1500): Promise<HTMLElement | null> {
+  const found = markSoMaterialsHeader();
+  if (found) return found;
+  return new Promise(resolve => {
+    const obs = new MutationObserver(() => {
+      const el = markSoMaterialsHeader();
+      if (el) { obs.disconnect(); resolve(el); }
+    });
+    obs.observe(document.body, { childList: true, subtree: true });
+    setTimeout(() => { obs.disconnect(); resolve(markSoMaterialsHeader()); }, timeout);
+  });
+}
+
+// --- utilities: hide default Driver.js footer buttons (Previous/Done/Next)
+function ensureDriverButtonsHiddenCss() {
+  const styleId = 'driver-hide-footer-buttons';
+  if (document.getElementById(styleId)) return;
+  const css = `/* per-step showButtons controls visibility; no global hiding */`;
+  const style = document.createElement('style');
+  style.id = styleId;
+  style.textContent = css;
+  document.head.appendChild(style);
+}
+
 // --- simple cleanup
 function cleanupExistingTour() {
   if (currentDriverInstance) {
@@ -69,15 +107,34 @@ function cleanupExistingTour() {
 // --- common driver config for these steps
 function makeDriverConfig(): Config {
   return {
-    allowClose: true,
+    allowClose: true,  // Enable close button (X)
     overlayClickNext: false,
-    showButtons: ["close"],
+    showButtons: [],   // No default buttons - per-step buttons will override
     showProgress: false,
     smoothScroll: true,
     stagePadding: 4,
+    animate: true,
     onDestroyStarted: () => {
-      // Only count as "dismissed" if the user explicitly closes the tour
-      if (!advancing) markDismissed();
+      // If the tour is destroyed because the user skipped/closed (not because of advancing to the next step)
+      if (!advancing) {
+        console.log('🚫 User dismissed/skipped tour - marking as dismissed');
+        localStorage.setItem("loadsTourDismissed", "true");
+        // Clear any stored step so nothing resumes accidentally
+        localStorage.removeItem(STEP_KEY);
+        // Block subsequent steps in this session and persist skip
+        tourAborted = true;
+        try { if (currentDriverInstance) currentDriverInstance.destroy(); } catch {}
+        try { localStorage.setItem('tourSkipped', 'true'); } catch {}
+      } else {
+        console.log('✅ Tour advancing - not marking as dismissed');
+      }
+    },
+    onDeselected: () => {
+      // If aborted, ensure the driver is fully reset/destroyed
+      if (tourAborted && currentDriverInstance) {
+        try { currentDriverInstance.destroy(); } catch {}
+        currentDriverInstance = null;
+      }
     },
     onDestroyed: () => {
       console.log('💀 Driver instance completely destroyed!');
@@ -91,13 +148,15 @@ function makeDriverConfig(): Config {
  * - When user clicks the combobox, immediately set step=3, destroy tour, then launch Step 3.
  */
 export async function startLoadsTourStep2() {
-  if (isDismissed()) return;
+  if (isDismissed() || tourAborted) return;
   if (getStep() !== "2") return;
 
   // Clean up any existing tours first
   cleanupExistingTour();
 
   const clickSel = await waitForAny(SEL.relatedSoClickTargets);
+  if (tourAborted) return;
+  ensureDriverButtonsHiddenCss();
   const d = driver(makeDriverConfig());
   currentDriverInstance = d; // Track the current instance
 
@@ -106,11 +165,11 @@ export async function startLoadsTourStep2() {
       element: clickSel,
       popover: {
         title: "Assign Sales Order",
-        description: "Select the Sales Order which the Load should be assigned to",
+        description: `<div style="margin-bottom: 12px;">Select the Sales Order which the Load should be assigned to</div><div style="text-align: left;"><a href="#" onclick="window.skipLoadsTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
         position: "left",
         side: "left",
-        align: "start",
       },
+      showButtons: [], // Step 2: hide all buttons
       onHighlightStarted: (el) => {
         console.log('🎯 Step 2: Successfully highlighted Related SO field');
         console.log('🎯 Element:', el);
@@ -173,7 +232,7 @@ export async function startLoadsTourStep3() {
   console.log('📋 Is dismissed:', isDismissed());
   console.log('📋 Current step:', getStep());
   
-  if (isDismissed()) {
+  if (isDismissed() || tourAborted) {
     console.log('❌ Step 3 cancelled - tour dismissed');
     return;
   }
@@ -192,6 +251,8 @@ export async function startLoadsTourStep3() {
   const tabSel = await waitForAny(SEL.materialsTabButton);
   console.log('✅ Found Materials tab selector:', tabSel);
   
+  if (tourAborted) return;
+  ensureDriverButtonsHiddenCss();
   const d = driver(makeDriverConfig());
   currentDriverInstance = d; // Track the current instance
 
@@ -200,23 +261,289 @@ export async function startLoadsTourStep3() {
       element: tabSel,
       popover: {
         title: "Load Materials",
-        description: "Click on Materials tab to view & manage Load Materials",
+        description: `<div style=\"margin-bottom: 12px;\">Click on Materials tab to view & manage Load Materials</div><div style=\"text-align: left;\"><a href=\"#\" onclick=\"window.skipLoadsTour(); return false;\" style=\"text-decoration: underline; color: #1890ff; cursor: pointer;\">Skip Tour</a></div>`,
         position: "bottom",
       },
+      showButtons: [], // Step 3: hide all buttons
       onHighlightStarted: (el) => {
         const onClick = () => {
           advancing = true;
-          setStep("4");    // next section (explanatory steps)
-          d.destroy();
-          currentDriverInstance = null; // Clear global instance
-          advancing = false;
+          setStep("4");
+          try { d.moveNext(); } catch {}
         };
         el.addEventListener("click", onClick, { once: true });
-        // Some AntD themes render the clickable area on the inner .ant-tabs-tab-btn
-        const btn = (el as HTMLElement).closest(".ant-tabs-tab")?.querySelector(".ant-tabs-tab-btn") as HTMLElement | null;
-        if (btn && btn !== el) btn.addEventListener("click", onClick, { once: true });
+        const btn = (el as HTMLElement).closest('.ant-tabs-tab')?.querySelector('.ant-tabs-tab-btn') as HTMLElement | null;
+        if (btn && btn !== el) btn.addEventListener('click', onClick, { once: true });
       },
     },
+    {
+      element: "div[style*='font-size: 14px'][style*='font-weight: 600'][style*='color: rgb(55, 65, 81)']",
+      popover: {
+        title: "SO Materials",
+        description: "This section displays all Sales Order materials.",
+        position: "bottom",
+        side: "bottom",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 4: Previous + Next
+      onHighlighted: () => {
+        // Guard against abort
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: "button.ant-btn-dangerous.ant-btn-icon-only",
+      popover: {
+        title: "Delete SO Material from the Load",
+        description: "After deleting the material it will be removed only from this Load, but kept on the SO.",
+        position: "left",
+        side: "left",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 5: show navigation buttons
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: () => {
+        // Find button containing "Add SO Material" text
+        const buttons = document.querySelectorAll('button');
+        for (const btn of buttons) {
+          if (btn.textContent?.includes('Add SO Material')) {
+            return btn;
+          }
+        }
+        return null;
+      },
+      popover: {
+        title: "Add Sales Order Materials",
+        description: "If you removed SO materials from the load, you can add them back here",
+        position: "top",
+        side: "top",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 6: show navigation buttons
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: () => {
+        // Find button containing "Add Material" text (not "Add SO Material")
+        const buttons = document.querySelectorAll('button');
+        for (const btn of buttons) {
+          const text = btn.textContent?.trim();
+          if (text && (text.includes('Add Material') && !text.includes('Add SO Material'))) {
+            return btn;
+          }
+        }
+        return null;
+      },
+      popover: {
+        title: "Add Other Materials",
+        description: "Here you're able to add other materials, which are not included into the Sales Order.",
+        position: "bottom",
+        side: "bottom",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 7: show navigation buttons
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: () => {
+        // Find "Add to SO" checkbox area - look for label containing "Add to SO"
+        const labels = document.querySelectorAll('label');
+        for (const label of labels) {
+          if (label.textContent?.includes('Add to SO')) {
+            // Return the parent container or the label itself for highlighting
+            return label.closest('div') || label;
+          }
+        }
+        
+        // Fallback: look for checkbox with "Add to SO" in nearby text
+        const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+        for (const checkbox of checkboxes) {
+          const parent = checkbox.closest('div, label, span');
+          if (parent && parent.textContent?.includes('Add to SO')) {
+            return parent;
+          }
+        }
+        
+        return null;
+      },
+      popover: {
+        title: "Add Material to the SO",
+        description: "Check the box \"Add to SO\" if this material should be included into the SO.",
+        position: "right",
+        side: "right",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 8: show navigation buttons
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: () => {
+        // Find "Price Unit Weight" toggle - look for label containing "Price Unit Weight"
+        const labels = document.querySelectorAll('label');
+        for (const label of labels) {
+          if (label.textContent?.includes('Price Unit Weight')) {
+            // Return the parent container or the label itself for highlighting
+            return label.closest('div') || label;
+          }
+        }
+        
+        // Fallback: look for switch/toggle with "Price Unit Weight" in nearby text
+        const switches = document.querySelectorAll('.ant-switch, input[type="checkbox"]');
+        for (const switchEl of switches) {
+          const parent = switchEl.closest('div, label, span');
+          if (parent && parent.textContent?.includes('Price Unit Weight')) {
+            return parent;
+          }
+        }
+        
+        // Additional fallback: look for any element containing "Price Unit Weight"
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+          if (el.textContent?.trim() === 'Price Unit Weight') {
+            return el.closest('div, label, span') || el;
+          }
+        }
+        
+        return null;
+      },
+      popover: {
+        title: "Price Unit Weight",
+        description: "Enable Price Unit Weight to enter material weight in Price Unit. As soon as enabled, weight will be recalculated accordingly.",
+        position: "left",
+        side: "left",
+        align: "start",
+      },
+      showButtons: ['previous', 'next'], // Step 9: show navigation buttons
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+      }
+    },
+    {
+      element: () => {
+        // Find "Stage" toggle - look for label containing "Stage"
+        const labels = document.querySelectorAll('label');
+        for (const label of labels) {
+          if (label.textContent?.includes('Stage')) {
+            // Return the parent container or the label itself for highlighting
+            return label.closest('div') || label;
+          }
+        }
+        
+        // Fallback: look for switch/toggle with "Stage" in nearby text
+        const switches = document.querySelectorAll('.ant-switch, input[type="checkbox"]');
+        for (const switchEl of switches) {
+          const parent = switchEl.closest('div, label, span');
+          if (parent && parent.textContent?.includes('Stage')) {
+            return parent;
+          }
+        }
+        
+        // Additional fallback: look for any element containing "Stage"
+        const allElements = document.querySelectorAll('*');
+        for (const el of allElements) {
+          if (el.textContent?.trim() === 'Stage') {
+            return el.closest('div, label, span') || el;
+          }
+        }
+        
+        return null;
+      },
+      popover: {
+        title: "Stage Materials",
+        description: `<div style="margin-bottom: 12px;">To stage Materials, enable this toggle and proceed with weighing the materials. All Materials added from this mode will be marked as staged and can be easily added to the SO with entered weights.</div><div style="text-align: left;"><a href="#" onclick="window.emergencyDismissTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
+        position: "left",
+        side: "left",
+        align: "start",
+      },
+      showButtons: ['previous'], // Step 10: show only Previous (no Done button)
+      onHighlighted: () => {
+        if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
+        
+        console.log('🎯 Step 10 highlighted - creating custom Done button');
+        
+        // Create custom Done button and add it to the popover
+        setTimeout(() => {
+          const popover = document.querySelector('.driver-popover');
+          if (popover) {
+            // Remove ALL existing footers and buttons
+            const existingFooters = popover.querySelectorAll('.driver-popover-footer');
+            existingFooters.forEach(footer => footer.remove());
+            
+            // Remove any existing Done buttons
+            const existingDoneButtons = popover.querySelectorAll('.driver-done-btn, button:contains("Done")');
+            existingDoneButtons.forEach(btn => btn.remove());
+            
+            // Create custom footer with Done button
+            const customFooter = document.createElement('div');
+            customFooter.className = 'driver-popover-footer';
+            customFooter.style.cssText = `
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              padding: 12px 16px;
+              border-top: 1px solid #e8e8e8;
+              background: #fafafa;
+            `;
+            
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous';
+            prevBtn.className = 'driver-prev-btn';
+            prevBtn.style.cssText = `
+              background: #fff;
+              border: 1px solid #d9d9d9;
+              border-radius: 6px;
+              padding: 6px 15px;
+              cursor: pointer;
+              font-size: 14px;
+            `;
+            prevBtn.onclick = () => {
+              if (currentDriverInstance) {
+                try {
+                  currentDriverInstance.movePrevious();
+                } catch (err) {
+                  console.log('❌ Error moving to previous step:', err);
+                }
+              }
+            };
+            
+            // Done button
+            const doneBtn = document.createElement('button');
+            doneBtn.textContent = 'Done';
+            doneBtn.className = 'driver-done-btn-custom';
+            doneBtn.style.cssText = `
+              background: #1890ff;
+              color: white;
+              border: none;
+              border-radius: 6px;
+              padding: 6px 15px;
+              cursor: pointer;
+              font-size: 14px;
+            `;
+            doneBtn.onclick = () => {
+              console.log('🚨 CUSTOM DONE BUTTON CLICKED - DISMISSING TOUR!');
+              emergencyDismissTour();
+            };
+            
+            customFooter.appendChild(prevBtn);
+            customFooter.appendChild(doneBtn);
+            popover.appendChild(customFooter);
+            
+            console.log('✅ Custom Done button created and added to popover');
+          }
+        }, 100);
+      }
+    }
   ];
 
   d.setSteps(steps);
@@ -289,7 +616,7 @@ export async function startLoadsTourStep1() {
   const config: Config = {
     allowClose: true,
     overlayClickNext: false,
-    showButtons: ["close"],
+    showButtons: [],
     showProgress: false,
     smoothScroll: true,
     stagePadding: 8,
@@ -317,13 +644,31 @@ export async function startLoadsTourStep1() {
     element: rowSelector,
     popover: {
       title: "Load",
-      description: "Click on the Load row to view & manage Load information",
+      description: `<div style="margin-bottom: 12px;">Click on the Load row to view & manage Load information</div><div style="text-align: left;"><a href="#" onclick="window.skipLoadsTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
       position: "bottom",
+    },
+    showButtons: [], // Step 1: hide all buttons
+    onDeselected: () => {
+      // If the user dismissed the tour (via Skip or Close), make sure step is cleared
+      if (isDismissed()) {
+        console.log('🔒 Step 1 onDeselected - tour dismissed, clearing step');
+        localStorage.removeItem(STEP_KEY);
+      }
     },
     onHighlightStarted: (el) => {
       console.log('🎯 Load row highlighted - adding click listener...');
       
+      // Pre-calc cells so the handler can remove listeners if needed
+      const cells = el.querySelectorAll('td');
+
       const clickHandler = () => {
+        // GUARD: If user skipped the tour, ignore any lingering listeners
+        if (isDismissed()) {
+          console.log('🚫 Tour is dismissed – ignoring row click and removing listeners');
+          el.removeEventListener("click", clickHandler as any);
+          cells.forEach(cell => cell.removeEventListener("click", clickHandler as any));
+          return;
+        }
         console.log('🎯 Load row clicked - Step 1 complete!');
         
         advancing = true;
@@ -341,27 +686,16 @@ export async function startLoadsTourStep1() {
       el.addEventListener("click", clickHandler, { once: true });
       
       // Also add listeners to all cells in the row
-      const cells = el.querySelectorAll('td');
       cells.forEach(cell => {
         cell.addEventListener("click", clickHandler, { once: true });
       });
     },
   }];
 
+  ensureDriverButtonsHiddenCss();
   d.setSteps(steps);
   console.log('🚀 Starting loads tour Step 1...');
   d.drive();
-}
-
-/**
- * Public API: Restart Loads Tour from Step 1
- * Clears dismissal and resets tour to step 1
- */
-export function restartLoadsTour(): void {
-  console.log('🔄 Restarting Loads Tour...');
-  localStorage.removeItem(DISMISS_KEY);
-  localStorage.setItem(STEP_KEY, "1");
-  console.log('✅ Tour restart completed - current step: 1');
 }
 
 /**
@@ -386,13 +720,113 @@ export function resumeLoadsTour(): void {
   }
 }
 
+/** Skip Tour Function - Kills tour from ANY step */
+function skipLoadsTour() {
+  console.log('🚫 Tour skipped by user from step:', getStep());
+  
+  // Set advancing flag to prevent onDestroyStarted from interfering
+  advancing = true;
+  tourAborted = true;
+  
+  // Mark tour as dismissed
+  localStorage.setItem("loadsTourDismissed", "true");
+  try { localStorage.setItem('tourSkipped', 'true'); } catch {}
+  
+  // Clear the tour step
+  localStorage.removeItem("loadsTourStep");
+  
+  // Destroy current tour if running
+  if (currentDriverInstance) {
+    try {
+      console.log('💀 Destroying driver instance on skip...');
+      currentDriverInstance.destroy();
+      currentDriverInstance = null;
+    } catch (err) {
+      console.log('❌ Error destroying tour on skip:', err);
+    }
+  }
+  
+  // Reset advancing flag
+  advancing = false;
+  
+  console.log('✅ Tour completely killed - will not auto-start');
+}
+
+/** Helper function to restart the tour */
+export function restartLoadsTour() {
+  console.log('🔄 Restarting loads tour...');
+  
+  // Clear all tour flags and reset to step 1
+  localStorage.removeItem("loadsTourDismissed");
+  localStorage.removeItem("tourSkipped");
+  localStorage.removeItem("tourCompleted");
+  localStorage.setItem("loadsTourStep", "1");
+  
+  // Start the tour
+  startLoadsTour();
+}
+
+/** EMERGENCY TOUR DISMISSAL - Global function to force close tour */
+function emergencyDismissTour() {
+  console.log('🚨 EMERGENCY: Force dismissing tour!');
+  
+  // Set all dismissal flags
+  localStorage.setItem("tourCompleted", "true");
+  localStorage.setItem("loadsTourDismissed", "true");
+  localStorage.setItem("tourSkipped", "true");
+  localStorage.removeItem(STEP_KEY);
+  
+  // Destroy driver instance
+  if (currentDriverInstance) {
+    try {
+      currentDriverInstance.destroy();
+      currentDriverInstance = null;
+    } catch (err) {
+      console.log('❌ Error destroying tour:', err);
+    }
+  }
+  
+  // Remove ALL Driver.js elements from DOM
+  const driverElements = document.querySelectorAll('.driver-overlay, .driver-popover, .driver-highlighted-element, .driver-popover-footer, .driver-popover-title, .driver-popover-description');
+  driverElements.forEach(el => el.remove());
+  
+  // Remove any Driver.js styles
+  const driverStyles = document.querySelectorAll('style[data-driver], style[id*="driver"]');
+  driverStyles.forEach(el => el.remove());
+  
+  console.log('💀 EMERGENCY TOUR DISMISSED!');
+}
+
 /** Global exposure for debugging */
 if (typeof window !== 'undefined') {
   (window as any).startLoadsTourStep1 = startLoadsTourStep1;
   (window as any).startLoadsTourStep2 = startLoadsTourStep2;
   (window as any).startLoadsTourStep3 = startLoadsTourStep3;
   (window as any).restartLoadsTour = restartLoadsTour;
-  (window as any).resumeLoadsTour = resumeLoadsTour;
+  (window as any).skipLoadsTour = skipLoadsTour;
+  (window as any).emergencyDismissTour = emergencyDismissTour;
+  
+  // GLOBAL EMERGENCY: Listen for ANY "Done" button clicks and dismiss tour (one-time only)
+  if (!(window as any).__tourDoneListenerAdded) {
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target && target.textContent?.trim() === 'Done') {
+        console.log('🚨 GLOBAL: Done button clicked - dismissing tour!');
+        emergencyDismissTour();
+      }
+    });
+    (window as any).__tourDoneListenerAdded = true;
+  }
+  
+  // Test function to verify skip works
+  (window as any).testSkipTour = () => {
+    console.log('🧪 Testing skip tour functionality...');
+    skipLoadsTour();
+    console.log('📋 localStorage after skip:', {
+      loadsTourDismissed: localStorage.getItem('loadsTourDismissed'),
+      loadsTourStep: localStorage.getItem('loadsTourStep')
+    });
+  };
   
   // Debug helper to manually test Step 3
   (window as any).testStep3 = () => {
@@ -500,8 +934,13 @@ export async function startLoadsTour() {
     }
   }
   
-  if (isDismissed()) {
-    console.log('❌ Tour was dismissed, not starting');
+  // Check if tour was dismissed, skipped, or completed
+  const isDismissed = localStorage.getItem("loadsTourDismissed") === "true";
+  const skipped = localStorage.getItem('tourSkipped') === 'true';
+  const isCompleted = localStorage.getItem("tourCompleted") === "true";
+  
+  if (isDismissed || skipped || isCompleted) {
+    console.log('🛑 Tour was dismissed/skipped/completed, not auto-starting');
     tourStarting = false;
     return;
   }

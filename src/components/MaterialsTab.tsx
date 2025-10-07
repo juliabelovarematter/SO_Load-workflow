@@ -728,15 +728,18 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
   ]
 
   const totalWeightInPounds = materials.reduce((sum, material) => {
-    if (material.pricingUnit === 'ea') return sum
-    // Convert current weight to pounds for accurate total
-    const weightInPounds = convertWeight(material.netWeight, weightMode === 'scale' ? 'lb' : material.pricingUnit, 'lb')
-    return sum + weightInPounds
+    if (material.isEachMaterial) return sum
+    // For weight materials, sum the actual netWeight values (they're already in the correct units)
+    return sum + (material.netWeight || 0)
   }, 0)
 
   const totalEachCount = materials.reduce((sum, material) => {
-    if (material.pricingUnit === 'ea') return sum + material.netWeight
+    if (material.isEachMaterial) return sum + (material.netWeight || 0)
     return sum
+  }, 0)
+
+  const totalEstimatedValue = materials.reduce((sum, material) => {
+    return sum + (material.estimatedTotal || 0)
   }, 0)
 
 
@@ -873,17 +876,16 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                 dataSource={materials}
                 pagination={false}
                 size="small"
-              >
-                {materials.length > 0 && (
-                  <Table.Summary fixed>
+                summary={() => (
+                  materials.length > 0 ? (
                     <Table.Summary.Row style={{ 
-                      backgroundColor: '#f8f9fa',
+                      backgroundColor: '#F9FAFB',
                       borderTop: '1px solid #e5e7eb',
                       fontWeight: '600'
                     }}>
                       <Table.Summary.Cell index={0}>
                         <div style={{ fontWeight: '600', color: '#1f2937' }}>
-                          Total
+                          {materials.length} Materials
                         </div>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={1}>
@@ -906,7 +908,7 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={4}>
                         <div style={{ textAlign: 'right', fontWeight: '600', color: '#1f2937' }}>
-                          ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
+                          ${totalEstimatedValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </div>
                       </Table.Summary.Cell>
                       <Table.Summary.Cell index={5}>
@@ -914,86 +916,9 @@ const MaterialsTab: React.FC<MaterialsTabProps> = ({
                         </div>
                       </Table.Summary.Cell>
                     </Table.Summary.Row>
-                  </Table.Summary>
+                  ) : null
                 )}
-              </Table>
-              
-              {/* Summary Row - Perfect Alignment */}
-              {materials.length > 0 && (
-                <div style={{ 
-                  display: 'table',
-                  width: '100%',
-                  backgroundColor: '#f9fafb'
-                }}>
-                  <div style={{ 
-                    display: 'table-row'
-                  }}>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '200px',
-                      padding: '12px 16px',
-                      fontWeight: '600',
-                      color: '#1f2937',
-                      fontSize: '14px',
-                      verticalAlign: 'middle'
-                    }}>
-                      Total
-                    </div>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '200px',
-                      padding: '12px 16px',
-                      textAlign: 'right',
-                      verticalAlign: 'middle'
-                    }}>
-                    </div>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '120px',
-                      padding: '12px 16px',
-                      textAlign: 'right',
-                      verticalAlign: 'middle'
-                    }}>
-                    </div>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '150px',
-                      padding: '12px 16px',
-                      textAlign: 'right',
-                      fontWeight: '600',
-                      color: '#1f2937',
-                      fontSize: '14px',
-                      verticalAlign: 'middle'
-                    }}>
-                      {totalWeightInPounds.toLocaleString()} lb
-                      {totalEachCount > 0 && (
-                        <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '2px' }}>
-                          {totalEachCount.toLocaleString()} ea
-                        </div>
-                      )}
-                    </div>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '120px',
-                      padding: '12px 16px',
-                      textAlign: 'right',
-                      fontWeight: '600',
-                      color: '#1f2937',
-                      fontSize: '14px',
-                      verticalAlign: 'middle'
-                    }}>
-                      ${materials.reduce((sum, material) => sum + (material.estimatedTotal || 0), 0).toLocaleString()}
-                    </div>
-                    <div style={{ 
-                      display: 'table-cell',
-                      width: '80px',
-                      padding: '12px 16px',
-                      verticalAlign: 'middle'
-                    }}>
-                    </div>
-                  </div>
-                </div>
-              )}
+              />
               
               {/* Add Material Button */}
               <div style={{ 

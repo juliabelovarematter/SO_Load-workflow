@@ -3606,6 +3606,8 @@ filterOption={(input, option) =>
                   </table>
                   </div>
 
+                  {/* Summary for Other Materials (outside table) */}
+
                   {/* Scales and Camera Section - Only in Stage Mode and when Show Scales is enabled */}
                   {requestMode === 'staged' && showScales && (
                     <div style={{ flex: '0 0 24%', display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -3764,61 +3766,81 @@ filterOption={(input, option) =>
                   )}
                 </div>
 
+                {/* Summary for Other Materials - Outside the flex container */}
+                {requestMode === 'request' && materials.length > 0 && (
+                  <div style={{ 
+                    display: 'flex', 
+                    alignItems: 'center',
+                    borderTop: '1px solid #e5e7eb',
+                    background: '#F9FAFB',
+                    minHeight: '40px',
+                    width: '100%',
+                    marginTop: '8px'
+                  }}>
+                    {/* Material count under Material column (260px) */}
+                    <div style={{ width: '260px', padding: '0 16px', fontWeight: 600, color: '#1f2937' }}>
+                      {materials.length} Materials
+                    </div>
+                    {/* Unit Price (150px) - empty */}
+                    <div style={{ width: '150px', padding: '0 16px' }} />
+                    {/* Pricing Unit (130px) - empty */}
+                    <div style={{ width: '130px', padding: '0 16px' }} />
+                    {/* Requested Weight total (160px) */}
+                    <div style={{ width: '160px', padding: '0 16px', textAlign: 'right', fontWeight: 600, color: '#1f2937' }}>
+                      {(() => {
+                        const eaMaterials = materials.filter(m => m.pricingUnit === 'ea')
+                        const eaTotal = eaMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                        
+                        let lbTotal = 0
+                        
+                        if (weightMode === 'scale') {
+                          // Scale Unit Weight mode: Always show total in pounds (netWeight is already in pounds)
+                          const nonEaMaterials = materials.filter(m => m.pricingUnit !== 'ea')
+                          lbTotal = nonEaMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                        } else {
+                          // Price Unit Weight mode: Convert each material's weight to pounds based on its pricing unit
+                          const lbMaterials = materials.filter(m => m.pricingUnit === 'lb')
+                          const ntMaterials = materials.filter(m => m.pricingUnit === 'NT')
+                          const kgMaterials = materials.filter(m => m.pricingUnit === 'kg')
+                          const mtMaterials = materials.filter(m => m.pricingUnit === 'MT')
 
-                {/* Summary Section */}
-                {requestMode === 'request' ? (
-                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                    <tbody>
-                      <tr>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
-                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
-                            {materials.length} Materials
-                      </span>
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
-                          {/* Unit Price column - empty */}
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
-                          {/* Pricing Unit column - empty */}
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
-                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
-                          {(() => {
-                            // Calculate separate totals for weight materials and each materials
-                            const weightMaterials = materials.filter(m => !m.isEachMaterial)
-                            const eachMaterials = materials.filter(m => m.isEachMaterial)
-                            
-                            const weightTotal = weightMaterials.reduce((sum, m) => {
-                              const weightInPounds = convertWeight(m.netWeight || 0, weightMode === 'scale' ? 'lb' : (m.pricingUnit || 'lb'), 'lb')
-                              return sum + weightInPounds
-                            }, 0)
-                            
-                            const eachTotal = eachMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
-                            
-                            return (
-                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                {weightTotal > 0 && <div>{weightTotal.toFixed(2)} lb</div>}
-                                {eachTotal > 0 && <div>{eachTotal.toFixed(0)} ea</div>}
-                              </div>
-                            )
-                          })()}
-                      </span>
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'left' }}>
-                    {/* Inventory Tags column - empty */}
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'right' }}>
-                          <span style={{ fontSize: '14px', color: '#071429', fontWeight: '600' }}>
-                            ${(Math.round(materials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0) * 100) / 100).toFixed(2)}
-                      </span>
-                        </td>
-                        <td style={{ padding: '0px 8px 0px 8px', textAlign: 'center' }}>
-                    {/* Actions column - empty */}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                ) : null}
+                          const lbFromLb = lbMaterials.reduce((sum, m) => sum + (m.netWeight || 0), 0)
+                          const lbFromNt = ntMaterials.reduce((sum, m) => sum + ((m.netWeight || 0) * 2000), 0)
+                          const lbFromKg = kgMaterials.reduce((sum, m) => sum + ((m.netWeight || 0) * 2.20462), 0)
+                          const lbFromMt = mtMaterials.reduce((sum, m) => sum + ((m.netWeight || 0) * 2204.62), 0)
+
+                          lbTotal = lbFromLb + lbFromNt + lbFromKg + lbFromMt
+                        }
+
+                        return (
+                          <>
+                            <div><strong>{lbTotal.toFixed(2)}</strong> <span style={{ fontWeight: 400, color: '#6b7280' }}>lb</span></div>
+                            {eaTotal > 0 && (
+                              <div><strong>{eaTotal.toFixed(0)}</strong> <span style={{ fontWeight: 400, color: '#6b7280' }}>ea</span></div>
+                            )}
+                          </>
+                        )
+                      })()}
+                    </div>
+                    {/* Inventory Tags (170px) - empty */}
+                    <div style={{ width: '170px', padding: '0 16px' }} />
+                    {/* Estimated Total (150px) */}
+                    <div style={{ width: '150px', padding: '0 16px', textAlign: 'right', fontWeight: 600, color: '#1f2937' }}>
+                      {(() => {
+                        const total = materials.reduce((sum, m) => sum + (m.estimatedTotal || 0), 0)
+                        return `$${total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                      })()}
+                    </div>
+                    {/* Add to SO (170px) - present only when visible in header */}
+                    {(loadData?.status !== 'Unassigned' && loadData?.relatedSO) && (
+                      <div style={{ width: '170px', padding: '0 16px' }} />
+                    )}
+                    {/* Actions (90px) - empty */}
+                    <div style={{ width: '90px', padding: '0 16px' }} />
+                  </div>
+                )}
+
+                {/* Secondary summary (removed) */}
                 
                 {/* Add Material Buttons */}
                 <div style={{ 
