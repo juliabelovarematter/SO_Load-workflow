@@ -5,6 +5,9 @@ import react from '@vitejs/plugin-react-swc'
 export default defineConfig({
   plugins: [react()],
   base: '/SO_Load-workflow/',
+  esbuild: {
+    target: 'esnext',
+  },
   build: {
     rollupOptions: {
       output: {
@@ -21,6 +24,8 @@ export default defineConfig({
     },
     target: 'esnext',
     minify: false,
+    assetsDir: 'assets',
+    sourcemap: false,
   },
   server: {
     fs: {
@@ -29,5 +34,9 @@ export default defineConfig({
     cors: true,
     host: true,
     port: 5173,
+    middlewareMode: false,
+    hmr: {
+      port: 5173,
+    },
   },
 })

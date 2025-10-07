@@ -1,25 +1,24 @@
-# Netlify headers file for correct MIME types
-/assets/*.js
-  Content-Type: application/javascript; charset=utf-8
-
-/assets/*.mjs
-  Content-Type: application/javascript; charset=utf-8
-
+# MIME type fixes for Vite production build
 /*.js
-  Content-Type: application/javascript; charset=utf-8
+  Content-Type: application/javascript
 
 /*.mjs
-  Content-Type: application/javascript; charset=utf-8
+  Content-Type: application/javascript
 
-# Additional headers for Arc browser compatibility
+/*.css
+  Content-Type: text/css
+
+/*.json
+  Content-Type: application/json
+
+/*.svg
+  Content-Type: image/svg+xml
+
+# Cache static assets
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Handle client-side routing
 /*
-  X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
-  X-XSS-Protection: 1; mode=block
-
-# Force correct MIME types for all JavaScript files
-/SO_Load-workflow/assets/*.js
-  Content-Type: application/javascript; charset=utf-8
-
-/SO_Load-workflow/assets/*.mjs
-  Content-Type: application/javascript; charset=utf-8
+  X-Content-Type-Options: nosniff
