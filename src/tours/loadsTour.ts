@@ -108,7 +108,6 @@ function cleanupExistingTour() {
 function makeDriverConfig(): Config {
   return {
     allowClose: true,  // Enable close button (X)
-    overlayClickNext: false,
     showButtons: [],   // No default buttons - per-step buttons will override
     showProgress: false,
     smoothScroll: true,
@@ -166,11 +165,23 @@ export async function startLoadsTourStep2() {
       popover: {
         title: "Assign Sales Order",
         description: `<div style="margin-bottom: 12px;">Select the Sales Order which the Load should be assigned to</div><div style="text-align: left;"><a href="#" onclick="window.skipLoadsTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
-        position: "left",
         side: "left",
       },
-      showButtons: [], // Step 2: hide all buttons
+      onHighlighted: () => {
+        // SENIOR ENGINEER SOLUTION: Remove all default buttons for Step 2
+        setTimeout(() => {
+          const popover = document.querySelector('.driver-popover');
+          if (popover) {
+            const footer = popover.querySelector('.driver-popover-footer');
+            if (footer) {
+              footer.remove();
+              console.log('✅ Step 2: Removed default buttons (Previous/Done)');
+            }
+          }
+        }, 50);
+      },
       onHighlightStarted: (el) => {
+        if (!el) return;
         console.log('🎯 Step 2: Successfully highlighted Related SO field');
         console.log('🎯 Element:', el);
         console.log('🎯 Element text:', el.textContent);
@@ -262,10 +273,22 @@ export async function startLoadsTourStep3() {
       popover: {
         title: "Load Materials",
         description: `<div style=\"margin-bottom: 12px;\">Click on Materials tab to view & manage Load Materials</div><div style=\"text-align: left;\"><a href=\"#\" onclick=\"window.skipLoadsTour(); return false;\" style=\"text-decoration: underline; color: #1890ff; cursor: pointer;\">Skip Tour</a></div>`,
-        position: "bottom",
       },
-      showButtons: [], // Step 3: hide all buttons
+      onHighlighted: () => {
+        // SENIOR ENGINEER SOLUTION: Remove all default buttons for Step 3
+        setTimeout(() => {
+          const popover = document.querySelector('.driver-popover');
+          if (popover) {
+            const footer = popover.querySelector('.driver-popover-footer');
+            if (footer) {
+              footer.remove();
+              console.log('✅ Step 3: Removed default buttons (Previous/Done)');
+            }
+          }
+        }, 50);
+      },
       onHighlightStarted: (el) => {
+        if (!el) return;
         const onClick = () => {
           advancing = true;
           setStep("4");
@@ -281,11 +304,9 @@ export async function startLoadsTourStep3() {
       popover: {
         title: "SO Materials",
         description: "This section displays all Sales Order materials.",
-        position: "bottom",
         side: "bottom",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 4: Previous + Next
+      // showButtons: ['previous', 'next'], // Step 4: Previous + Next
       onHighlighted: () => {
         // Guard against abort
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
@@ -296,11 +317,9 @@ export async function startLoadsTourStep3() {
       popover: {
         title: "Delete SO Material from the Load",
         description: "After deleting the material it will be removed only from this Load, but kept on the SO.",
-        position: "left",
         side: "left",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 5: show navigation buttons
+      // showButtons: ['previous', 'next'], // Step 5: show navigation buttons
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
       }
@@ -314,16 +333,14 @@ export async function startLoadsTourStep3() {
             return btn;
           }
         }
-        return null;
+        return document.body; // Fallback to body if not found
       },
       popover: {
         title: "Add Sales Order Materials",
         description: "If you removed SO materials from the load, you can add them back here",
-        position: "top",
         side: "top",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 6: show navigation buttons
+      // showButtons: ['previous', 'next'], // Step 6: show navigation buttons
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
       }
@@ -338,16 +355,14 @@ export async function startLoadsTourStep3() {
             return btn;
           }
         }
-        return null;
+        return document.body; // Fallback to body if not found
       },
       popover: {
         title: "Add Other Materials",
         description: "Here you're able to add other materials, which are not included into the Sales Order.",
-        position: "bottom",
         side: "bottom",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 7: show navigation buttons
+      // showButtons: ['previous', 'next'], // Step 7: show navigation buttons
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
       }
@@ -372,16 +387,14 @@ export async function startLoadsTourStep3() {
           }
         }
         
-        return null;
+        return document.body; // Fallback to body if not found
       },
       popover: {
         title: "Add Material to the SO",
         description: "Check the box \"Add to SO\" if this material should be included into the SO.",
-        position: "right",
         side: "right",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 8: show navigation buttons
+      // showButtons: ['previous', 'next'], // Step 8: show navigation buttons
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
       }
@@ -414,16 +427,14 @@ export async function startLoadsTourStep3() {
           }
         }
         
-        return null;
+        return document.body; // Fallback to body if not found
       },
       popover: {
         title: "Price Unit Weight",
         description: "Enable Price Unit Weight to enter material weight in Price Unit. As soon as enabled, weight will be recalculated accordingly.",
-        position: "left",
         side: "left",
-        align: "start",
       },
-      showButtons: ['previous', 'next'], // Step 9: show navigation buttons
+      // showButtons: ['previous', 'next'], // Step 9: show navigation buttons
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
       }
@@ -456,16 +467,14 @@ export async function startLoadsTourStep3() {
           }
         }
         
-        return null;
+        return document.body; // Fallback to body if not found
       },
       popover: {
         title: "Stage Materials",
         description: `<div style="margin-bottom: 12px;">To stage Materials, enable this toggle and proceed with weighing the materials. All Materials added from this mode will be marked as staged and can be easily added to the SO with entered weights.</div><div style="text-align: left;"><a href="#" onclick="window.emergencyDismissTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
-        position: "left",
         side: "left",
-        align: "start",
       },
-      showButtons: ['previous'], // Step 10: show only Previous (no Done button)
+      // showButtons: ['previous'], // Step 10: show only Previous (no Done button)
       onHighlighted: () => {
         if (tourAborted || localStorage.getItem('tourSkipped') === 'true') return;
         
@@ -615,7 +624,6 @@ export async function startLoadsTourStep1() {
 
   const config: Config = {
     allowClose: true,
-    overlayClickNext: false,
     showButtons: [],
     showProgress: false,
     smoothScroll: true,
@@ -645,9 +653,7 @@ export async function startLoadsTourStep1() {
     popover: {
       title: "Load",
       description: `<div style="margin-bottom: 12px;">Click on the Load row to view & manage Load information</div><div style="text-align: left;"><a href="#" onclick="window.skipLoadsTour(); return false;" style="text-decoration: underline; color: #1890ff; cursor: pointer;">Skip Tour</a></div>`,
-      position: "bottom",
     },
-    showButtons: [], // Step 1: hide all buttons
     onDeselected: () => {
       // If the user dismissed the tour (via Skip or Close), make sure step is cleared
       if (isDismissed()) {
@@ -655,7 +661,21 @@ export async function startLoadsTourStep1() {
         localStorage.removeItem(STEP_KEY);
       }
     },
+    onHighlighted: () => {
+      // SENIOR ENGINEER SOLUTION: Remove all default buttons for Step 1
+      setTimeout(() => {
+        const popover = document.querySelector('.driver-popover');
+        if (popover) {
+          const footer = popover.querySelector('.driver-popover-footer');
+          if (footer) {
+            footer.remove();
+            console.log('✅ Step 1: Removed default buttons (Previous/Done)');
+          }
+        }
+      }, 50);
+    },
     onHighlightStarted: (el) => {
+      if (!el) return;
       console.log('🎯 Load row highlighted - adding click listener...');
       
       // Pre-calc cells so the handler can remove listeners if needed
